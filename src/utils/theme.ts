@@ -5,7 +5,7 @@ import fonts from '../assets/fonts';
 // import colors from '../assets/colors';
 
 export const fontFamilies = StyleSheet.create({
-  interManropeRegular8: {
+  interMonrope: {
     fontFamily: fonts.ManropeRegular,
     fontSize: moderateScale(8),
     lineHeight: moderateScale(14),
@@ -24,6 +24,34 @@ export const fontFamilies = StyleSheet.create({
     fontFamily: fonts.ManropeRegular,
     fontSize: moderateScale(14),
     lineHeight: moderateScale(20),
+  },
+  interManropeRegular16: {
+    fontFamily: fonts.ManropeRegular,
+    fontSize: moderateScale(16),
+    lineHeight: moderateScale(22),
+  },
+
+
+  interManropeSemiBold12: {
+    fontFamily: fonts.ManropeSemiBold,
+    fontSize: moderateScale(12),
+    lineHeight: moderateScale(18),
+  },
+  interManropeSemiBold16: {
+    fontFamily: fonts.ManropeSemiBold,
+    fontSize: moderateScale(16),
+    lineHeight: moderateScale(22),
+  },
+  interManropeSemiBold18: {
+    fontFamily: fonts.ManropeSemiBold,
+    fontSize: moderateScale(18),
+    lineHeight: moderateScale(24),
+  },
+
+  interManropeSemiBold32: {
+    fontFamily: fonts.ManropeSemiBold,
+    fontSize: moderateScale(32),
+    lineHeight: moderateScale(38),
   },
 });
 
