@@ -2,32 +2,47 @@ import { StyleSheet } from 'react-native';
 import { moderateScale } from 'react-native-size-matters';
 import { screenWidth } from './screenResponsive';
 import fonts from '../assets/fonts';
-import colors from '../assets/colors';
+// import colors from '../assets/colors';
 
 export const fontFamilies = StyleSheet.create({
-  interRegular10: {
-    fontFamily: fonts.InterRegular,
+  interManropeRegular8: {
+    fontFamily: fonts.ManropeRegular,
+    fontSize: moderateScale(8),
+    lineHeight: moderateScale(14),
+  },
+  interManropeRegular10: {
+    fontFamily: fonts.ManropeRegular,
     fontSize: moderateScale(10),
     lineHeight: moderateScale(16),
+  },
+  interManropeRegular12: {
+    fontFamily: fonts.ManropeRegular,
+    fontSize: moderateScale(12),
+    lineHeight: moderateScale(18),
+  },
+  interManropeRegular14: {
+    fontFamily: fonts.ManropeRegular,
+    fontSize: moderateScale(14),
+    lineHeight: moderateScale(20),
   },
 });
 
 export const fontWeights = StyleSheet.create({
-  fontWeight600: {
-    fontStyle: 'normal',
-    fontWeight: '600',
-  },
   fontWeight400: {
     fontStyle: 'normal',
     fontWeight: '400',
   },
-  fontWeight700: {
-    fontStyle: 'normal',
-    fontWeight: '700',
-  },
   fontWeight500: {
     fontStyle: 'normal',
     fontWeight: '500',
+  },
+  fontWeight600: {
+    fontStyle: 'normal',
+    fontWeight: '600',
+  },
+  fontWeight700: {
+    fontStyle: 'normal',
+    fontWeight: '700',
   },
 });
 
@@ -461,26 +476,26 @@ export const helpers = StyleSheet.create({
   textAlignRight: {
     textAlign: 'right',
   },
-  shadow2S: {
-    shadowColor: colors.warmGrey900,
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.06,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  shadow4S: {
-    shadowColor: colors.warmGrey900,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
-    elevation: 4,
-  },
+  // shadow2S: {
+  //   shadowColor: colors.warmGrey900,
+  //   shadowOffset: {
+  //     width: 0,
+  //     height: 1,
+  //   },
+  //   shadowOpacity: 0.06,
+  //   shadowRadius: 2,
+  //   elevation: 2,
+  // },
+  // shadow4S: {
+  //   shadowColor: colors.warmGrey900,
+  //   shadowOffset: {
+  //     width: 0,
+  //     height: 4,
+  //   },
+  //   shadowOpacity: 0.03,
+  //   shadowRadius: 6,
+  //   elevation: 4,
+  // },
   gap8: {
     gap: moderateScale(8),
   },
