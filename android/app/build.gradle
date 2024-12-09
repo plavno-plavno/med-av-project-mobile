@@ -1,7 +1,14 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+
+project.ext.envConfigFiles = [
+   production: ".env.production",
+   staging: ".env.staging",
+   development: ".env.development"
+]
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
@@ -77,13 +84,27 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.medav"
+    flavorDimensions "default"
+    productFlavors {
+        production {
+            minSdkVersion rootProject.ext.minSdkVersion
+            applicationId "com.MedAV"
+            targetSdkVersion rootProject.ext.targetSdkVersion
+        }
+        development {
+            minSdkVersion rootProject.ext.minSdkVersion
+            applicationId "com.MedAV.development"
+            targetSdkVersion rootProject.ext.targetSdkVersion
+        }
+    }
+    namespace "com.MedAV"
     defaultConfig {
-        applicationId "com.medav"
+        applicationId "com.MedAV"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        resValue "string", "build_config_package", "com.MedAV"
     }
     signingConfigs {
         debug {
@@ -96,6 +117,7 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            matchingFallbacks = ['debug', 'release']
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -104,6 +126,11 @@ android {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
+    }
+
+    compileOptions {
+	    sourceCompatibility JavaVersion.VERSION_1_8
+	    targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 

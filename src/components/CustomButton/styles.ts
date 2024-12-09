@@ -10,6 +10,7 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: moderateScale(18),
+        flexDirection: 'row',
     },
 
     button_primary_text: {

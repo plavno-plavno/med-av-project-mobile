@@ -5,7 +5,7 @@ import { fontFamilies } from '../../utils/theme';
 
 export const styles = StyleSheet.create({
     container: {
-
+        flex: 1,
     },
     navigation_container: {
         flexDirection: 'row',
@@ -26,5 +26,14 @@ export const styles = StyleSheet.create({
         backgroundColor: colors.pearlAqua,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    childrenContainer: {
+        flex: 1,
+        borderTopLeftRadius: moderateScale(32),
+        borderTopRightRadius: moderateScale(32),
+        backgroundColor: colors.white,
+        paddingHorizontal: moderateScale(20),
+        paddingTop: moderateScale(20),
+        paddingBottom: moderateScale(15),
     }
 });

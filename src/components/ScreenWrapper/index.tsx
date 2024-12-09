@@ -1,10 +1,11 @@
 import React, {memo} from 'react';
-import {ViewStyle, SafeAreaView, View, Text, StatusBar} from 'react-native';
+import {ViewStyle, View, Text, StatusBar} from 'react-native';
 import {styles} from './styles';
 import BackButton from '../BackButton';
 import {Icon} from '../Icon';
 import colors from '../../assets/colors';
 import {helpers} from '../../utils/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface Props {
   styles?: ViewStyle | ViewStyle[];
@@ -29,7 +30,8 @@ const ScreenWrapper: React.FC<Props> = memo(
 
     return (
       <>
-        <SafeAreaView style={[styles.container, {backgroundColor}]} />
+        <SafeAreaView  style={{backgroundColor}} edges={['top']}/>
+        <View style={[styles.container, {backgroundColor}]}>
         <StatusBar barStyle="light-content" />
 
         {onboardingScreen && (
@@ -39,14 +41,17 @@ const ScreenWrapper: React.FC<Props> = memo(
         )}
 
         {isBackButton && (
-          <View style={styles.navigation_container}>
+          <View style={[styles.navigation_container, {backgroundColor}]}>
             <BackButton />
             <Text style={styles.title}>{title}</Text>
             {isCenterTitle && <View style={styles.empty_view} />}
           </View>
         )}
 
-        <View style={[helpers.flexGrow1, {backgroundColor}]}>{children}</View>
+        <View style={styles.childrenContainer}>{children}</View>
+
+        <SafeAreaView style={{backgroundColor: colors.white}} edges={['bottom']} />
+        </View>
       </>
     );
   },

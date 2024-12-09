@@ -1,4 +1,4 @@
-package com.medav
+package com.MedAV
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -16,6 +16,9 @@ class MainActivity : ReactActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
       SplashScreen.show(this)
+      // Initialize the WebRTC module options.
+      WebRTCModuleOptions options = WebRTCModuleOptions.getInstance();
+      options.enableMediaProjectionService = true;
       super.onCreate(savedInstanceState)
   }
 

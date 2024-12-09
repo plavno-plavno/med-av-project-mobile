@@ -7,12 +7,13 @@ import SplashScreen from 'react-native-splash-screen';
 import OnboardingScreen from '../features/Auth/screens/OnboardingScreen';
 import {ScreensEnum} from './ScreensEnum';
 import LoginScreen from '../features/Auth/screens/LoginScreen';
+import BottomTabNavigator from './BottomTabNavigator';
 
 const Stack = createNativeStackNavigator();
 
 const Navigation: React.FC = () => {
   const getRoute = useCallback(async () => {
-    RootNavigation.navigate(ScreensEnum.ONBOARDING);
+    RootNavigation.navigate(ScreensEnum.MAIN);
     SplashScreen.hide();
   }, []);
 
@@ -20,16 +21,33 @@ const Navigation: React.FC = () => {
     getRoute();
   }, [getRoute]);
 
+
+  const config = {
+    screens: {
+      emailVerifiedScreen: 'emailVerifiedScreen/:item',
+    },
+  };
+
+  const linking = {
+    prefixes: [
+      'https://your-domain.com',
+    ],
+    config,
+  };
+
   return (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer ref={navigationRef} linking={linking}>
       <Stack.Navigator
-        initialRouteName={ScreensEnum.ONBOARDING}
+        initialRouteName={ScreensEnum.MAIN}
         screenOptions={{headerShown: false, gestureEnabled: false}}>
         <Stack.Screen
           name={ScreensEnum.ONBOARDING}
           component={OnboardingScreen}
         />
         <Stack.Screen name={ScreensEnum.LOGIN} component={LoginScreen} />
+
+        <Stack.Screen name={ScreensEnum.MAIN} component={BottomTabNavigator} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

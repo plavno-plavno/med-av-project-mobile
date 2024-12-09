@@ -1,12 +1,12 @@
-import {SvgProps} from 'react-native-svg';
-import * as Icons from '../../assets/icons';
+import { SvgProps } from "react-native-svg"
+import * as Icons from "../../assets/icons"
 
 declare global {
-  type IconName = keyof typeof Icons;
+  type IconName = keyof typeof Icons
 }
 
 interface Props extends SvgProps {
-  name: IconName;
+  name: IconName
 }
 
-export const Icon = ({name, ...rest}: Props) => Icons[name](rest);
+export const Icon = ({ name, ...rest }: Props) => Icons[name](rest)

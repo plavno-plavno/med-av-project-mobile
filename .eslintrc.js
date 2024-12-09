@@ -1,4 +1,135 @@
 module.exports = {
-  root: true,
-  extends: '@react-native',
+  'root': true,
+  'extends': [
+    'airbnb-typescript',
+    'plugin:@typescript-eslint/eslint-recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:react/recommended',
+    'plugin:react-hooks/recommended',
+    'plugin:import/errors',
+    'plugin:import/warnings',
+    'plugin:import/typescript',
+    'prettier',
+  ],
+  'parser': '@typescript-eslint/parser',
+  'parserOptions': {
+    'sourceType': 'module',
+    'project': ['./tsconfig.json'],
+  },
+  'plugins': [
+    'react',
+    'react-native',
+    'react-hooks',
+    '@typescript-eslint',
+    'import',
+    'prettier',
+  ],
+  'rules': {
+    'quotes': [
+      'warn',
+      'double',
+      {
+        'avoidEscape': true,
+        'allowTemplateLiterals': true,
+      },
+    ],
+    'react/react-in-jsx-scope': 'off',
+    'import/prefer-default-export': 'off',
+    'import/newline-after-import': [
+      'error',
+      {
+        'count': 1,
+      },
+    ],
+    'no-console': 'warn',
+    'no-debugger': 'off',
+    'strict': ['error', 'function'],
+    'new-cap': [
+      'error',
+      {
+        'newIsCap': true,
+        'capIsNew': false,
+      },
+    ],
+    'import/extensions': 'off',
+    'react/no-unescaped-entities': 'off',
+    'styled-components-a11y/no-autofocus': 'off',
+    'no-empty-function': 'off',
+    'no-use-before-define': 'off',
+    'import/no-unresolved': 'off',
+    'import/no-extraneous-dependencies': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/no-use-before-define': 'off',
+    '@typescript-eslint/lines-between-class-members': 'off',
+    'arrow-body-style': ['error', 'as-needed'],
+    'newline-after-var': ['error', 'always'],
+    'newline-before-return': 'error',
+    'no-nested-ternary': 'off',
+    'no-new-object': 'error',
+    'no-extra-parens': 'off',
+    'no-useless-escape': 'off',
+    '@typescript-eslint/no-unused-expressions': 'off',
+    '@typescript-eslint/no-shadow': 'off',
+    'camelcase': 'off',
+    'one-var': ['error', 'never'],
+    'no-underscore-dangle': 'off',
+    '@typescript-eslint/naming-convention': 'off',
+    '@typescript-eslint/no-empty-function': 'error',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-redeclare': 'off',
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      {
+        'argsIgnorePattern': '^_',
+        'varsIgnorePattern': '^_',
+      },
+    ],
+    'react-hooks/exhaustive-deps': [
+      'off',
+      {
+        'additionalHooks': 'useDispatch|useOtherHookWhichWillDefinitelyNotChange',
+      },
+    ],
+    'react/jsx-no-bind': 'off',
+    'react/display-name': 'off',
+    'react/jsx-props-no-spreading': 'off',
+    'react/require-default-props': 'off',
+    'import/order': [
+      'error',
+      {
+        'groups': ['external', ['parent', 'sibling']],
+        'pathGroups': [
+          {
+            'pattern': '**/*.scss',
+            'group': 'index',
+            'position': 'after',
+          },
+        ],
+        'newlines-between': 'always',
+      },
+    ],
+    'jsx-a11y/label-has-associated-control': 'off',
+  },
+  'env': {
+    'node': true,
+  },
+  'ignorePatterns': [
+    '.eslintrc.js',
+    'metro.config.js',
+    'babel.config.js',
+    'jest.config.js',
+    'index.js',
+  ],
+  'settings': {
+    'import/resolver': {
+      'node': {
+        'extensions': ['.js', '.jsx', '.ts', '.tsx', '*.ts', '*.tsx'],
+        'moduleDirectory': ['node_modules', 'src/', 'App.tsx'],
+      },
+    },
+    'import/ignore': ['react-native'],
+    'react': {
+      'version': 'detect',
+    },
+  },
 };

@@ -6,8 +6,6 @@ import { fontFamilies, fontWeights } from '../../../../utils/theme';
 export const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
-        paddingHorizontal: moderateScale(20),
-        paddingVertical: moderateScale(20),
         borderTopLeftRadius: moderateScale(32),
         borderTopRightRadius: moderateScale(32),
         backgroundColor: colors.white,
