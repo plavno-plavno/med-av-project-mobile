@@ -13,7 +13,7 @@ const Stack = createNativeStackNavigator();
 
 const Navigation: React.FC = () => {
   const getRoute = useCallback(async () => {
-    RootNavigation.navigate(ScreensEnum.MAIN);
+    RootNavigation.navigate(ScreensEnum.ONBOARDING);
     SplashScreen.hide();
   }, []);
 
@@ -38,7 +38,7 @@ const Navigation: React.FC = () => {
   return (
     <NavigationContainer ref={navigationRef} linking={linking}>
       <Stack.Navigator
-        initialRouteName={ScreensEnum.MAIN}
+        initialRouteName={ScreensEnum.ONBOARDING}
         screenOptions={{headerShown: false, gestureEnabled: false}}>
         <Stack.Screen
           name={ScreensEnum.ONBOARDING}
