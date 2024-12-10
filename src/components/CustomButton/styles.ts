@@ -27,6 +27,6 @@ export const styles = StyleSheet.create({
         color: colors.charcoal,
     },
     disabled: {
-        opacity: 0.5,
+        opacity: 0.48,
     }
 });

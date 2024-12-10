@@ -8,6 +8,11 @@ const colors = {
     charcoal: '#2E3946',
     midGrey: '#58616B',
     cadetGrey: '#9AA6B6',
+    
+    placeholder: '#9BA0A6',
+    borderGrey: "#EAEEF2",
+    
+    alertRed: "#E44E58",
 };
 
 export default colors;

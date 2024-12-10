@@ -31,6 +31,12 @@ export const fontFamilies = StyleSheet.create({
     lineHeight: moderateScale(22),
   },
 
+  interManropeBold16: {
+    fontFamily: fonts.ManropeBold,
+    fontSize: moderateScale(16),
+    lineHeight: moderateScale(22),
+  },
+
 
   interManropeSemiBold12: {
     fontFamily: fonts.ManropeSemiBold,
@@ -526,5 +532,11 @@ export const helpers = StyleSheet.create({
   // },
   gap8: {
     gap: moderateScale(8),
+  },
+  gap16: {
+    gap: moderateScale(16),
+  },
+  gap24: {
+    gap: moderateScale(24),
   },
 });

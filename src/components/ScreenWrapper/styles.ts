@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 import colors from '../../assets/colors';
 import { moderateScale } from 'react-native-size-matters';
-import { fontFamilies } from '../../utils/theme';
+import { fontFamilies, fontWeights } from '../../utils/theme';
 
 export const styles = StyleSheet.create({
     container: {
@@ -16,6 +16,7 @@ export const styles = StyleSheet.create({
     },
     title: {
         ...fontFamilies.interManropeSemiBold18,
+        ...fontWeights.fontWeight600,
         color: colors.white,
     },
     empty_view: {

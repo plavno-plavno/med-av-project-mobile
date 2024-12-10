@@ -1,3 +1,7 @@
 export { default as backArrow } from './backArrow.svg';
 export { default as getStartedStar } from './getStartedStar.svg';
 export { default as onboardingLogo } from './onboardingLogo.svg';
+export { default as eyeOpen } from "./eyeOpen.svg";
+export { default as eyeClose } from "./eyeClose.svg";
+export { default as close } from "./close.svg";
+export { default as errorInput } from "./errorInput.svg"

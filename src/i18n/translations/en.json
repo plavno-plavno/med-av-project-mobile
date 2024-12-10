@@ -4,5 +4,13 @@
     "CreateAccount": "Create Account",
     "GetStarted": "Get Started",
     "ConnectAndCollaborate": "Connect and collaborate with video conferencing and meeting planning",
-    "TermsAndConditions": "By continuing you agree to <termsOfUse>Terms of Use</termsOfUse> and <privacyPolicy>Privacy Policy</privacyPolicy> which tell about how we use your data"
+    "TermsAndConditions": "By continuing you agree to <termsOfUse>Terms of Use</termsOfUse> and <privacyPolicy>Privacy Policy</privacyPolicy> which tell about how we use your data",
+    "WeAreHappyToSeeYouBackPleaseLogInToContinue": "We are happy to see you back. \nPlease Log In to continue",
+    "WelcomeBack": "Welcome back",
+    "ForgotPassword": "Forgot Password?",
+    "IDontHaveAnAccount": "I don’t have an account",
+    "E-mail": "E-mail",
+    "Password": "Password",
+    "EnterYourEmail": "Enter your e-mail",
+    "EnterYourPassword": "Enter your password"
 }
