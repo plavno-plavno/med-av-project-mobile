@@ -11,6 +11,8 @@ const colors = {
     
     placeholder: '#9BA0A6',
     borderGrey: "#EAEEF2",
+
+    backgroundGrey: "#F3FAFA",
     
     alertRed: "#E44E58",
 };

@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React from "react"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { useTranslation } from "react-i18next"
 import { useEmailLoginMutation } from "src/api/auth/authApi"
@@ -9,14 +9,19 @@ import { Formik } from "formik"
 import CustomInput from "src/components/CustomInput"
 import { helpers } from "@utils/theme"
 import { validationLoginSchema } from "@utils/validationSchemas"
+import { ScreensEnum } from "src/navigation/ScreensEnum"
+import { useNavigation } from "@react-navigation/native"
+import { ROUTES } from "src/navigation/RoutesTypes"
 
 const LoginScreen = () => {
   const { t } = useTranslation()
+  const navigation = useNavigation<ROUTES>()
 
   const [emailLogin, { isLoading: isEmailLoginLoading }] =
     useEmailLoginMutation()
 
   const handleLogin = async (values: { email: string; password: string }) => {
+    // TODO: REFACTOR LOGIN
     try {
       const res = await emailLogin(values).unwrap()
       console.log(res, "res login")
@@ -83,9 +88,7 @@ const LoginScreen = () => {
               <CustomButton
                 type="secondary"
                 text={t("IDontHaveAnAccount")}
-                onPress={() => {
-                  console.log("IDontHaveAnAccount")
-                }}
+                onPress={() => navigation.navigate(ScreensEnum.SIGN_UP)}
                 isLoading={false}
               />
             </View>

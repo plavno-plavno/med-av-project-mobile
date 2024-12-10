@@ -49,7 +49,9 @@ export const CustomButton = ({
         {text}
       </Text>
 
-      {rightIcon && !isLoading && <Icon name={rightIcon} />}
+      {rightIcon && !isLoading && (
+        <Icon name={rightIcon} style={[helpers.ml8]} />
+      )}
       {isLoading && <ActivityIndicator size={"small"} style={[helpers.ml8]} />}
     </Pressable>
   )

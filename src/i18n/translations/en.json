@@ -1,7 +1,10 @@
 {
     "Back": "Back",
     "LogIn": "Log In",
+    "SignUp": "Sign Up",
     "CreateAccount": "Create Account",
+    "CreateYourAccount": "Create your account",
+    "CreateFreeAccount": "Create your free account to unleash \nthe full potential of service. \nNo credit card required.",
     "GetStarted": "Get Started",
     "ConnectAndCollaborate": "Connect and collaborate with video conferencing and meeting planning",
     "TermsAndConditions": "By continuing you agree to <termsOfUse>Terms of Use</termsOfUse> and <privacyPolicy>Privacy Policy</privacyPolicy> which tell about how we use your data",
@@ -9,8 +12,14 @@
     "WelcomeBack": "Welcome back",
     "ForgotPassword": "Forgot Password?",
     "IDontHaveAnAccount": "I don’t have an account",
+    "IHaveAnAccount": "I have an account",
     "E-mail": "E-mail",
     "Password": "Password",
     "EnterYourEmail": "Enter your e-mail",
-    "EnterYourPassword": "Enter your password"
+    "EnterYourPassword": "Enter your password",
+    "emailAlreadyExists": "Email already exists",
+    "VerifyYourEmail": "Verify your email",
+    "WeSentAVerificationLinkToYourEmail": "We’ ve sent a verification link to your email",
+    "PleaseCheckYourEmail": "Please check your email and click on the verification link to complete your registration. \nThe link will expire in 24 hours.",
+    "DontReceiveTheEmail": "Don’t receive the e-mail?  <resend>Resend</resend>"
 }

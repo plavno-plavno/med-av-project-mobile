@@ -13,5 +13,4 @@ export interface IEmailSingUpRequest {
 }
 
 export interface IEmailSingUpResponse {
-
 }
