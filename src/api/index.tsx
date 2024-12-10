@@ -13,7 +13,8 @@ import {Mutex} from 'async-mutex';
 // import store from '../redux/store';
 import {navigationRef} from '../navigation/RootNavigation';
 
-const baseURL = Config.USER_API_URL;
+const baseURL = Config.BASE_API_URL;
+console.log(baseURL, 'baseURL');
 
 const mutex = new Mutex();
 
