@@ -1,5 +1,11 @@
 import React, { useState } from "react"
-import { ActivityIndicator, Pressable, Text } from "react-native"
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleProp,
+  Text,
+  ViewStyle,
+} from "react-native"
 import { Icon } from "../Icon"
 import { styles } from "./styles"
 import { helpers } from "@utils/theme"
@@ -11,6 +17,7 @@ interface IProps {
   type?: "primary" | "secondary"
   rightIcon?: IconName
   isLoading?: boolean
+  style?: StyleProp<ViewStyle>
 }
 
 export const CustomButton = ({
@@ -20,6 +27,7 @@ export const CustomButton = ({
   type = "primary",
   rightIcon,
   isLoading,
+  style,
 }: IProps) => {
   const [isPressed, setIsPressed] = useState(false)
 
@@ -33,6 +41,7 @@ export const CustomButton = ({
       onPressOut={handlePressed}
       onPress={onPress}
       style={[
+        style,
         styles.button_primary,
         type === "secondary" && styles.button_secondary,
         disabled && styles.disabled,

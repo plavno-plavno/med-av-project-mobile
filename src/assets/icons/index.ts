@@ -7,3 +7,5 @@ export { default as eyeClose } from "./eyeClose.svg";
 export { default as close } from "./close.svg";
 export { default as errorInput } from "./errorInput.svg";
 export { default as mail } from "./mail.svg";
+export { default as noConnection } from "./noConnection.svg"
+export { default as refresh } from "./refresh.svg"

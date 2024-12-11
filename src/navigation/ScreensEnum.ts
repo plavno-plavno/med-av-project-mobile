@@ -6,6 +6,7 @@ export enum ScreensEnum {
     RESET_PASSWORD = 'RESET_PASSWORD',
     CREATE_PASSWORD = 'CREATE_PASSWORD',
     FORGOT_PASSWORD = 'FORGOT_PASSWORD',
+    NO_CONNECTION = 'NO_CONNECTION',
 
 
     // Bottom tab routes

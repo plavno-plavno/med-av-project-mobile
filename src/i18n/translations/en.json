@@ -38,5 +38,8 @@
     "CreatePassword": "Create Password",
     "ConfirmPassword": "Confirm Password",
     "RequestPasswordReset": "Request Password Reset",
-    "EnterYourEmailAddress": "Enter your email address. \nWe’ll send a link to reset your password"
+    "EnterYourEmailAddress": "Enter your email address. \nWe’ll send a link to reset your password",
+    "OopsYouAreOffline": "Oops, you are offline",
+    "YourInternetConnectionIsNotWorking": "Your internet connection is not working. Please check it or try again later.",
+    "Refresh": "Refresh"
 }
