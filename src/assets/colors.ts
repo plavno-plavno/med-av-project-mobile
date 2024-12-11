@@ -15,6 +15,7 @@ const colors = {
     backgroundGrey: "#F3FAFA",
     
     alertRed: "#E44E58",
+    successGreen: "#5EC18E"
 };
 
 export default colors;

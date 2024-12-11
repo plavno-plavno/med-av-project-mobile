@@ -9,3 +9,6 @@ export { default as errorInput } from "./errorInput.svg";
 export { default as mail } from "./mail.svg";
 export { default as noConnection } from "./noConnection.svg"
 export { default as refresh } from "./refresh.svg"
+export { default as toastSuccess } from "./toastSuccess.svg"
+export { default as toastError } from "./toastError.svg"
+export { default as closeButton } from "./closeButton.svg"

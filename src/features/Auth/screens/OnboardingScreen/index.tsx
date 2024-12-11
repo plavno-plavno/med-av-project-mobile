@@ -9,6 +9,7 @@ import { useNavigation } from "@react-navigation/native"
 import { ScreensEnum } from "../../../../navigation/ScreensEnum"
 import { ROUTES } from "../../../../navigation/RoutesTypes"
 import { styles } from "./styles"
+import Toast from "react-native-toast-message"
 
 const OnboardingScreen = () => {
   const { t } = useTranslation()

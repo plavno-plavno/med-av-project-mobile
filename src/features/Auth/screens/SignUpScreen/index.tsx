@@ -13,7 +13,6 @@ import { ScreensEnum } from "src/navigation/ScreensEnum"
 import { useNavigation } from "@react-navigation/native"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import TermsAndConditions from "src/components/TermsAndConditions"
-import NoConnectionScreen from "src/components/NoConnetctionModal"
 
 interface FormValues {
   email: string

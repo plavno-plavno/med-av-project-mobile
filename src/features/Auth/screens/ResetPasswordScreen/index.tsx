@@ -11,11 +11,19 @@ import { ScreensEnum } from "src/navigation/ScreensEnum"
 import { useNavigation } from "@react-navigation/native"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import { styles } from "./styles"
+import Toast from "react-native-toast-message"
 
 const ResetPasswordScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<ROUTES>()
 
+  // const onResetPassword = () => {
+  //   Toast.show({
+  //     type: "error",
+  //     text1: t("PasswordChanged!"),
+  //   })
+  //   navigation.navigate(ScreensEnum.LOGIN)
+  // }
   return (
     <ScreenWrapper isBackButton title={t("LogIn")} isCenterTitle>
       <Formik
