@@ -17,6 +17,7 @@ export const styles = StyleSheet.create({
         color: colors.charcoal,
       },
       subtitle: {
+        alignItems: 'center',
         textAlign: 'center',
         ...fontFamilies.interManropeRegular16,
         ...fontWeights.fontWeight400,
@@ -37,5 +38,11 @@ export const styles = StyleSheet.create({
       ...fontFamilies.interManropeRegular16,
       ...fontWeights.fontWeight400,
       color: colors.charcoal,
+    }
+    ,
+    resendContainer: {
+      alignItems: 'center',
+      gap: moderateScale(8),
+      flexDirection: 'row',
     }
 });

@@ -12,7 +12,7 @@ import { useNavigation } from "@react-navigation/native"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import { styles } from "./styles"
 
-const ResetPasswordScreen = () => {
+const CreatePasswordScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<ROUTES>()
 
@@ -34,13 +34,13 @@ const ResetPasswordScreen = () => {
           <View style={styles.container}>
             <View style={[helpers.gap24]}>
               <View style={[helpers.gap8]}>
-                <Text style={styles.title}>{t("EnterANewPassword")}</Text>
-                <Text style={styles.subtitle}>{t("CreateANewPassword")}</Text>
+                <Text style={styles.title}>{t("EmailVerified")}</Text>
+                <Text style={styles.subtitle}>{t("CreateAPassword")}</Text>
               </View>
 
               <View style={[helpers.gap16]}>
                 <CustomInput
-                  label={t("NewPassword")}
+                  label={t("CreatePassword")}
                   placeholder={t("EnterYourPassword")}
                   onBlur={handleBlur("password")}
                   onChangeText={handleChange("password")}
@@ -61,12 +61,20 @@ const ResetPasswordScreen = () => {
               </View>
             </View>
 
-            <CustomButton
-              type="primary"
-              text={t("ResetPassword")}
-              onPress={handleSubmit}
-              isLoading={false}
-            />
+            <View style={[helpers.gap8]}>
+              <CustomButton
+                type="primary"
+                text={t("SignUp")}
+                onPress={handleSubmit}
+                isLoading={false}
+              />
+              <CustomButton
+                type="secondary"
+                text={t("IHaveAnAccount")}
+                onPress={() => navigation.navigate(ScreensEnum.LOGIN)}
+                isLoading={false}
+              />
+            </View>
           </View>
         )}
       </Formik>
@@ -74,4 +82,4 @@ const ResetPasswordScreen = () => {
   )
 }
 
-export default ResetPasswordScreen
+export default CreatePasswordScreen

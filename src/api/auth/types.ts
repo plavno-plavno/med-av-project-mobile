@@ -1,16 +1,27 @@
-
-export interface IEmailLoginRequest {
+export interface IEmailRequest {
+    email: string;
+  }
+export interface ILoginRequest {
     email: string;
     password: string;
 }
-
-export interface IEmailLoginResponse {
-
+export interface ILoginResponse {
 }
 
-export interface IEmailSingUpRequest {
-    email: string;
+export interface ISingUpRequest extends IEmailRequest{};
+export interface ISingUpResponse {
 }
 
-export interface IEmailSingUpResponse {
+export interface IResendEmailRequest extends IEmailRequest {};
+export interface IResendEmailResponse {
+}
+export interface IResetPasswordRequest {
+    password: string;
+    hash: string;
+}
+export interface IResetPasswordResponse {
+
+}
+export interface IForgotPasswordRequest extends IEmailRequest {};
+export interface IForgotPasswordResponse {
 }

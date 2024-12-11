@@ -13,15 +13,23 @@ export const styles = StyleSheet.create({
     color: colors.charcoal,
     marginBottom: moderateScale(8),
   },
-  input: {
-    height: moderateScale(48),
+  inputContainer: {
     borderWidth: 1,
     borderColor: colors.borderGrey,
     borderRadius: moderateScale(12),
+  },
+  input: {
+    height: moderateScale(48),
     paddingHorizontal: moderateScale(8),
+    maxWidth: '90%',
+  },
+  focusedInput: {
+    borderColor: colors.lightAqua,
+    boxShadow: '0px 0px 0px 2px rgba(78, 183, 189, 0.16)',
   },
   errorInput: {
     borderColor: colors.alertRed,
+    boxShadow: 'none'
   },
   errorText: {
     color: colors.alertRed,

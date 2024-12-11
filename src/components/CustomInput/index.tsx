@@ -19,7 +19,7 @@ interface CustomInputProps {
   value: string
   onChangeText: (text: string) => void
   secureTextEntry?: boolean
-  isSecureProps?: boolean
+  isHidePassword?: boolean
   keyboardType?: "default" | "email-address" | "numeric" | "phone-pad"
   error?: boolean | string
   onFocus?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
@@ -38,10 +38,10 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
       placeholder,
       value,
       onChangeText,
-      secureTextEntry,
-      keyboardType,
+      secureTextEntry = false,
+      isHidePassword = true,
+      keyboardType = "default",
       error,
-      isSecureProps = true,
       onFocus: propOnFocus,
       onBlur: propOnBlur,
       style,
@@ -52,8 +52,10 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
     const inputRef = useRef<TextInput>(null)
 
     const [isFocused, setIsFocused] = useState(false)
-    const [isSecure, setIsSecure] = useState<boolean>(isSecureProps)
-    const isNotAPasswordInput = !secureTextEntry
+    const [isSecure, setIsSecure] = useState<boolean>(
+      secureTextEntry && isHidePassword
+    )
+
     useImperativeHandle(ref, () => ({
       focus: () => {
         inputRef.current?.focus()
@@ -64,52 +66,65 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
       setIsSecure((prev) => !prev)
     }
 
-    const onFocusHandler = (
-      e: NativeSyntheticEvent<TextInputFocusEventData>
-    ) => {
+    const handleFocus = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
       setIsFocused(true)
       propOnFocus?.(e)
     }
 
-    const onBlurHandler = (
-      e: NativeSyntheticEvent<TextInputFocusEventData>
-    ) => {
+    const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
       setIsFocused(false)
       propOnBlur?.(e)
     }
 
+    const isClearButtonVisible =
+      !!value && isFocused && !secureTextEntry && !error
+
     return (
       <View style={[styles.container, style]}>
         {label && <Text style={styles.label}>{label}</Text>}
-        <View>
+        <View
+          style={[
+            styles.inputContainer,
+            isFocused && styles.focusedInput,
+            error && styles.errorInput,
+          ]}
+        >
           <TextInput
             ref={inputRef}
-            style={[styles.input, error && styles.errorInput]}
+            style={styles.input}
             placeholder={placeholder}
             value={value}
             onChangeText={onChangeText}
             secureTextEntry={isSecure}
             keyboardType={keyboardType}
             placeholderTextColor={colors.placeholder}
-            onFocus={onFocusHandler}
-            onBlur={onBlurHandler}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             {...rest}
           />
-
           {secureTextEntry && (
             <TouchableOpacity
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               onPress={toggleVisibility}
               style={styles.rightIcon}
             >
               <Icon name={isSecure ? "eyeClose" : "eyeOpen"} />
             </TouchableOpacity>
           )}
-          {error && isNotAPasswordInput && (
-            <Icon style={styles.rightIcon} name={"errorInput"} />
+          {isClearButtonVisible && (
+            <TouchableOpacity
+              onPress={() => onChangeText("")}
+              style={styles.rightIcon}
+            >
+              <Icon name="close" />
+            </TouchableOpacity>
+          )}
+          {error && !secureTextEntry && (
+            <Icon style={styles.rightIcon} name="errorInput" />
           )}
         </View>
-        {error && <Text style={styles.errorText}>{error}</Text>}
+        {error && typeof error === "string" && (
+          <Text style={styles.errorText}>{error}</Text>
+        )}
       </View>
     )
   }

@@ -4,97 +4,97 @@ import {
   FetchBaseQueryError,
   QueryReturnValue,
   fetchBaseQuery,
-} from '@reduxjs/toolkit/query';
+} from "@reduxjs/toolkit/query"
 
-import Config from 'react-native-config';
-import * as Keychain from 'react-native-keychain';
+import Config from "react-native-config"
+import * as Keychain from "react-native-keychain"
 // import { setIsLogged, setTokens } from '../features/Login/loginSlice';
-import {Mutex} from 'async-mutex';
+import { Mutex } from "async-mutex"
 // import store from '../redux/store';
-import {navigationRef} from '../navigation/RootNavigation';
+import { navigationRef } from "../navigation/RootNavigation"
 
-const baseURL = Config.BASE_API_URL;
-console.log(baseURL, 'baseURL');
+const baseURL = Config.BASE_API_URL
+console.log(baseURL, "baseURL")
 
-const mutex = new Mutex();
+const mutex = new Mutex()
 
 export const baseQuery = fetchBaseQuery({
   baseUrl: baseURL,
-  prepareHeaders: async headers => {
+  prepareHeaders: async (headers) => {
     const accessToken = await Keychain.getGenericPassword({
-      service: 'accessToken',
-    });
+      service: "accessToken",
+    })
     if (accessToken) {
-      headers.set('authorization', `Bearer ${accessToken.password}`);
+      headers.set("authorization", `Bearer ${accessToken.password}`)
     }
-    return headers;
+    return headers
   },
-  validateStatus: (response: {status: number}, result: {isError: any}) =>
+  validateStatus: (response: { status: number }) =>
     response.status === 201 ||
     response.status === 204 ||
-    (response.status === 200 && !result.isError),
-});
+    response.status === 200,
+})
 
 export const baseQueryWithReAuth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
 > = async (args: any, api: any, extraOptions: any) => {
-  await mutex.waitForUnlock();
-  let result;
-  result = await baseQuery(args, api, extraOptions);
+  await mutex.waitForUnlock()
+  let result
+  result = await baseQuery(args, api, extraOptions)
   if (result?.error && result?.error?.status === 401) {
     if (!mutex.isLocked()) {
-      const release = await mutex.acquire();
+      const release = await mutex.acquire()
       try {
         const refreshResult: any = await refreshTokenQuery(
-          'auth/refresh',
+          "auth/refresh",
           api,
-          extraOptions,
-        );
+          extraOptions
+        )
         if (refreshResult?.error?.data?.statusCode >= 400) {
           // store.dispatch(setIsLogged({ isLogged: false }));
-          await Keychain.resetGenericPassword({service: 'accessToken'});
-          await Keychain.resetGenericPassword({service: 'refreshToken'});
-          navigationRef.current?.navigate('Main');
-          return refreshResult;
+          await Keychain.resetGenericPassword({ service: "accessToken" })
+          await Keychain.resetGenericPassword({ service: "refreshToken" })
+          navigationRef.current?.navigate("Main")
+          return refreshResult
         }
         if (refreshResult) {
           await Keychain.setGenericPassword(
-            'accessToken',
+            "accessToken",
             refreshResult?.data?.accessToken,
-            {service: 'accessToken'},
-          );
+            { service: "accessToken" }
+          )
           // setTokens({ acessToken: refreshResult.data.accessToken });
           await Keychain.setGenericPassword(
-            'refreshToken',
+            "refreshToken",
             refreshResult.data.refreshToken,
             {
-              service: 'refreshToken',
-            },
-          );
-          result = await baseQuery(args, api, extraOptions);
+              service: "refreshToken",
+            }
+          )
+          result = await baseQuery(args, api, extraOptions)
         }
       } finally {
-        release();
+        release()
       }
     } else {
-      await mutex.waitForUnlock();
-      result = await baseQuery(args, api, extraOptions);
+      await mutex.waitForUnlock()
+      result = await baseQuery(args, api, extraOptions)
     }
   }
-  return result as QueryReturnValue<unknown, FetchBaseQueryError, {}>;
-};
+  return result as QueryReturnValue<unknown, FetchBaseQueryError, {}>
+}
 
 export const refreshTokenQuery = fetchBaseQuery({
   baseUrl: baseURL,
-  prepareHeaders: async headers => {
+  prepareHeaders: async (headers) => {
     const refreshToken = await Keychain.getGenericPassword({
-      service: 'refreshToken',
-    });
+      service: "refreshToken",
+    })
     if (refreshToken) {
-      headers.set('authorization', `Bearer ${refreshToken.password}`);
+      headers.set("authorization", `Bearer ${refreshToken.password}`)
     }
-    return headers;
+    return headers
   },
-});
+})
