@@ -19,6 +19,7 @@ interface CustomInputProps {
   value: string
   onChangeText: (text: string) => void
   secureTextEntry?: boolean
+  isSecureProps?: boolean
   keyboardType?: "default" | "email-address" | "numeric" | "phone-pad"
   error?: boolean | string
   onFocus?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
@@ -40,6 +41,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
       secureTextEntry,
       keyboardType,
       error,
+      isSecureProps = true,
       onFocus: propOnFocus,
       onBlur: propOnBlur,
       style,
@@ -50,7 +52,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
     const inputRef = useRef<TextInput>(null)
 
     const [isFocused, setIsFocused] = useState(false)
-    const [isSecure, setIsSecure] = useState(secureTextEntry)
+    const [isSecure, setIsSecure] = useState<boolean>(isSecureProps)
     const isNotAPasswordInput = !secureTextEntry
     useImperativeHandle(ref, () => ({
       focus: () => {

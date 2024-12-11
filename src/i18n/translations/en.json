@@ -17,9 +17,14 @@
     "Password": "Password",
     "EnterYourEmail": "Enter your e-mail",
     "EnterYourPassword": "Enter your password",
+    "ConfirmYourPassword": "Confirm your password",
     "emailAlreadyExists": "Email already exists",
     "VerifyYourEmail": "Verify your email",
     "WeSentAVerificationLinkToYourEmail": "We’ ve sent a verification link to your email",
     "PleaseCheckYourEmail": "Please check your email and click on the verification link to complete your registration. \nThe link will expire in 24 hours.",
-    "DontReceiveTheEmail": "Don’t receive the e-mail?  <resend>Resend</resend>"
+    "DontReceiveTheEmail": "Don’t receive the e-mail?  <resend>Resend</resend>",
+    "EmailVerified": "E-mail verified",
+    "CreateAPassword": "Сreate a password. \nUse a strong password to secure your account",
+    "CreatePassword": "Create Password",
+    "ConfirmPassword": "Confirm Password"
 }

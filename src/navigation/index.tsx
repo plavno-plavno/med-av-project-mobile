@@ -10,6 +10,7 @@ import LoginScreen from "../features/Auth/screens/LoginScreen"
 import BottomTabNavigator from "./BottomTabNavigator"
 import SignUpScreen from "src/features/Auth/screens/SignUpScreen"
 import VerifyEmailScreen from "src/features/Auth/screens/VerifyEmailScreen"
+import ResetPasswordScreen from "src/features/Auth/screens/ResetPasswordScreen"
 
 const Stack = createNativeStackNavigator()
 
@@ -46,6 +47,10 @@ const Navigation: React.FC = () => {
         />
         <Stack.Screen name={ScreensEnum.LOGIN} component={LoginScreen} />
         <Stack.Screen name={ScreensEnum.SIGN_UP} component={SignUpScreen} />
+        <Stack.Screen
+          name={ScreensEnum.RESET_PASSWORD}
+          component={ResetPasswordScreen}
+        />
         <Stack.Screen
           name={ScreensEnum.EMAIL_VERIFICATION}
           component={VerifyEmailScreen}
