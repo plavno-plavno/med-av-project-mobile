@@ -1,12 +1,12 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQuery } from '..';
-import { ILoginResponse, ILoginRequest, ISingUpResponse, ISingUpRequest, IResetPasswordResponse, IResetPasswordRequest, IForgotPasswordResponse, IForgotPasswordRequest, IResendEmailRequest, IResendEmailResponse } from './types';
+import { IEmailLoginResponse, ILoginRequest, ISingUpResponse, ISingUpRequest, IResetPasswordResponse, IResetPasswordRequest, IForgotPasswordResponse, IForgotPasswordRequest, IResendEmailRequest, IResendEmailResponse } from './types';
 
 export const authApi = createApi({
   baseQuery: baseQuery,
   reducerPath: 'authApi',
   endpoints: (builder) => ({
-    emailLogin: builder.mutation<ILoginResponse, ILoginRequest>({
+    emailLogin: builder.mutation<IEmailLoginResponse, ILoginRequest>({
       query: ({email, password}) => ({
         url: 'auth/email/login',
         method: 'POST',
