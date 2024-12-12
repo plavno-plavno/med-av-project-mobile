@@ -33,10 +33,10 @@ const VerifyScreen = () => {
     console.log(email, "EMAIL")
 
     try {
-      const res = await resendEmail({ email }).unwrap()
+      const res = await resendEmail({ email }).unwrap();
       console.log(res, "res login")
     } catch (error) {
-      console.log(error, "error login")
+      console.log(error, "error handleResendEmail")
     }
   }
 

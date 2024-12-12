@@ -14,6 +14,7 @@ interface Props {
   isCenterTitle?: boolean;
   children?: React.ReactNode;
   onboardingScreen?: boolean;
+  handleBackButtonPress?: () => void;
 }
 
 const ScreenWrapper: React.FC<Props> = memo(
@@ -23,6 +24,7 @@ const ScreenWrapper: React.FC<Props> = memo(
     isCenterTitle = false,
     title = '',
     onboardingScreen = false,
+    handleBackButtonPress,
   }: Props) => {
     const backgroundColor = onboardingScreen
       ? colors.pearlAqua
@@ -42,7 +44,7 @@ const ScreenWrapper: React.FC<Props> = memo(
 
         {isBackButton && (
           <View style={[styles.navigation_container, {backgroundColor}]}>
-            <BackButton />
+            <BackButton handleBackButtonPress={handleBackButtonPress} />
             <Text style={styles.title}>{title}</Text>
             {isCenterTitle && <View style={styles.empty_view} />}
           </View>

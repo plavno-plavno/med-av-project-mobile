@@ -13,13 +13,24 @@ import VerifyScreen from "src/features/Auth/screens/VerifyScreen"
 import CreatePasswordScreen from "src/features/Auth/screens/CreatePasswordScreen"
 import ForgotPasswordScreen from "src/features/Auth/screens/ForgotPasswordScreen"
 import ResetPasswordScreen from "src/features/Auth/screens/ResetPasswordScreen"
+import * as Keychain from "react-native-keychain"
 
 const Stack = createNativeStackNavigator()
 
 const Navigation: React.FC = () => {
   const getRoute = useCallback(async () => {
-    RootNavigation.navigate(ScreensEnum.ONBOARDING)
-    SplashScreen.hide()
+    const accessToken = await Keychain.getGenericPassword({
+      service: "accessToken",
+    })
+    if(accessToken){
+      RootNavigation.navigate(ScreensEnum.MAIN)
+    } else {
+      RootNavigation.navigate(ScreensEnum.ONBOARDING)
+    }
+
+    setTimeout(() => {
+      SplashScreen.hide()
+    }, 500)
   }, [])
 
   useEffect(() => {
@@ -33,7 +44,7 @@ const Navigation: React.FC = () => {
   }
 
   const linking = {
-    prefixes: ["https://your-domain.com"],
+    prefixes: ["https://av-hims.netlify.app"],
     config,
   }
 

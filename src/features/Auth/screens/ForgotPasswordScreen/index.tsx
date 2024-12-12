@@ -31,7 +31,7 @@ const ForgotPasswordScreen = () => {
       }
       console.log(res, "200 RESPONSE")
     } catch (error) {
-      console.log(error, "error login")
+      console.log(error, "error handleRequestPasswordReset")
     }
   }
 

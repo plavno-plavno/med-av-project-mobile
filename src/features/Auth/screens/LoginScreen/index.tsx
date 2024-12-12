@@ -43,7 +43,6 @@ const LoginScreen = () => {
         index: 0,
         routes: [{ name: ScreensEnum.MAIN }],
       })
-      console.log(res, "res login")
     } catch (error) {
       const { setErrors } = formikRef.current
       setErrors({ email: t("InvalidEmailOrPassword") })

@@ -4,7 +4,6 @@ apply plugin: "com.facebook.react"
 
 project.ext.envConfigFiles = [
    production: ".env.production",
-   staging: ".env.staging",
    development: ".env.development"
 ]
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
@@ -137,7 +136,7 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
-
+    implementation project(':react-native-splash-screen')
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {

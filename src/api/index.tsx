@@ -8,13 +8,10 @@ import {
 
 import Config from "react-native-config"
 import * as Keychain from "react-native-keychain"
-// import { setIsLogged, setTokens } from '../features/Login/loginSlice';
 import { Mutex } from "async-mutex"
-// import store from '../redux/store';
 import { navigationRef } from "../navigation/RootNavigation"
 
-const baseURL = Config.BASE_API_URL
-console.log(baseURL, "baseURL")
+const baseURL = Config.BASE_API_URL;
 
 const mutex = new Mutex()
 
@@ -53,7 +50,6 @@ export const baseQueryWithReAuth: BaseQueryFn<
           extraOptions
         )
         if (refreshResult?.error?.data?.statusCode >= 400) {
-          // store.dispatch(setIsLogged({ isLogged: false }));
           await Keychain.resetGenericPassword({ service: "accessToken" })
           await Keychain.resetGenericPassword({ service: "refreshToken" })
           navigationRef.current?.navigate("Main")
@@ -63,9 +59,8 @@ export const baseQueryWithReAuth: BaseQueryFn<
           await Keychain.setGenericPassword(
             "accessToken",
             refreshResult?.data?.accessToken,
-            { service: "accessToken" }
-          )
-          // setTokens({ acessToken: refreshResult.data.accessToken });
+            {service: 'accessToken'},
+          );
           await Keychain.setGenericPassword(
             "refreshToken",
             refreshResult.data.refreshToken,

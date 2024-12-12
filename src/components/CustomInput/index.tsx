@@ -100,6 +100,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
             placeholderTextColor={colors.placeholder}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            autoCorrect={false}
             {...rest}
           />
           {secureTextEntry && (

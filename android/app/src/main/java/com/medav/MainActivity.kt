@@ -4,7 +4,7 @@ import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
-import org.devio.rn.splashscreen.Splashscreen;
+import org.devio.rn.splashscreen.SplashScreen;
 
 class MainActivity : ReactActivity() {
 
@@ -19,7 +19,7 @@ class MainActivity : ReactActivity() {
       // Initialize the WebRTC module options.
       WebRTCModuleOptions options = WebRTCModuleOptions.getInstance();
       options.enableMediaProjectionService = true;
-      super.onCreate(savedInstanceState)
+      super.onCreate(null)
   }
 
   /**
