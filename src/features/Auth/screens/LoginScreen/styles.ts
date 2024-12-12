@@ -1,3 +1,4 @@
+import { screenHeight } from '@utils/screenResponsive';
 import { fontFamilies, fontWeights } from '@utils/theme';
 import { StyleSheet } from 'react-native';
 import colors from 'src/assets/colors';
@@ -25,4 +26,10 @@ export const styles = StyleSheet.create({
         ...fontWeights.fontWeight600,
         color: colors.lightAqua,
       },
+      buttonsContainer: {
+        position: "absolute",
+        top: screenHeight * 0.63,
+        width: '100%',
+        gap: 8,
+      }
 });

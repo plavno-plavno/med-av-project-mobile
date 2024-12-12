@@ -13,7 +13,7 @@ const SettingsScreen = () => {
 
   const handleLogout = async () => {
     try {
-      const res = await logout({}).unwrap()
+      // const res = await logout({}).unwrap()
       await Keychain.resetGenericPassword({ service: "accessToken" })
       await Keychain.resetGenericPassword({ service: "refreshToken" })
       navigation.reset({
