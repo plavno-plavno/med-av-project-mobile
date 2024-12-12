@@ -5,7 +5,7 @@ import { useForgotPasswordMutation } from "src/api/auth/authApi"
 import { CustomButton } from "@components"
 import { styles } from "./styles"
 import { View, Text } from "react-native"
-import { Formik } from "formik"
+import { Formik, FormikProps } from "formik"
 import CustomInput from "src/components/CustomInput"
 import { helpers } from "@utils/theme"
 import { validationEmailSchema } from "@utils/validationSchemas"
@@ -13,9 +13,14 @@ import { ScreensEnum } from "src/navigation/ScreensEnum"
 import { useNavigation } from "@react-navigation/native"
 import { ROUTES } from "src/navigation/RoutesTypes"
 
+interface FormValues {
+  email: string
+}
+
 const ForgotPasswordScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<ROUTES>()
+  const formikRef = React.useRef<FormikProps<FormValues>>(null as any)
 
   const [forgotPassword, { isLoading: isForgotPasswordLoading }] =
     useForgotPasswordMutation()
@@ -24,13 +29,17 @@ const ForgotPasswordScreen = () => {
     try {
       const res = await forgotPassword({ email }).unwrap()
       if (res === null) {
-        navigation.navigate(ScreensEnum.VERIFICATION, {
-          email,
-          type: "check",
-        })
+        navigation.navigate(ScreensEnum.RESET_PASSWORD)
+        // navigation.navigate(ScreensEnum.VERIFICATION, {
+        //   email,
+        //   type: "check",
+        // })
       }
       console.log(res, "200 RESPONSE")
     } catch (error) {
+      const { setErrors } = formikRef.current
+      const errorMsg = error?.data?.errors?.email
+      setErrors({ email: t(errorMsg) })
       console.log(error, "error handleRequestPasswordReset")
     }
   }
@@ -38,6 +47,7 @@ const ForgotPasswordScreen = () => {
   return (
     <ScreenWrapper isBackButton title={t("ForgotPassword")} isCenterTitle>
       <Formik
+        innerRef={formikRef}
         initialValues={{ email: "" }}
         validationSchema={validationEmailSchema}
         onSubmit={handleRequestPasswordReset}
@@ -45,6 +55,7 @@ const ForgotPasswordScreen = () => {
         {({
           handleChange,
           handleBlur,
+          setErrors,
           handleSubmit,
           values,
           errors,

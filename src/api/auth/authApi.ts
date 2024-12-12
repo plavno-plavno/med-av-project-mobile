@@ -16,6 +16,12 @@ export const authApi = createApi({
         },
       }),
     }),
+    logout: builder.mutation({
+      query: () => ({
+        url: 'auth/logout',
+        method: 'POST',
+      }),
+    }),
     emailSingUp: builder.mutation<ISingUpResponse, ISingUpRequest>({
       query: ({email}) => ({
         url: 'auth/email/register',
@@ -61,6 +67,7 @@ export const authApi = createApi({
 
 export const {
   useEmailLoginMutation,
+  useLogoutMutation,
   useEmailSingUpMutation,
   useResendEmailMutation,
   useForgotPasswordMutation,

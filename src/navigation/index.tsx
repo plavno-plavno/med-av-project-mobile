@@ -22,7 +22,7 @@ const Navigation: React.FC = () => {
     const accessToken = await Keychain.getGenericPassword({
       service: "accessToken",
     })
-    if(accessToken){
+    if (accessToken) {
       RootNavigation.navigate(ScreensEnum.MAIN)
     } else {
       RootNavigation.navigate(ScreensEnum.ONBOARDING)

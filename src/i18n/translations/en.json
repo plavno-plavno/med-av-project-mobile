@@ -42,5 +42,6 @@
     "OopsYouAreOffline": "Oops, you are offline",
     "YourInternetConnectionIsNotWorking": "Your internet connection is not working. Please check it or try again later.",
     "Refresh": "Refresh",
-    "PasswordChanged!": "Password Changed! Please Log In with a new password."
+    "PasswordChanged!": "Password Changed! Please Log In with a new password.",
+    "emailNotExists": "Email doesn't exist"
 }
