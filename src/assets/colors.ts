@@ -3,14 +3,17 @@ const colors = {
     aquaHaze: '#F1F4F6',
     lightAqua: '#4EB7BD',
     darkCyan: '#01878F',
+    brandColor: '#06AEB6',
     pearlAqua: '#83D8DD',
 
     charcoal: '#2E3946',
     midGrey: '#58616B',
     cadetGrey: '#9AA6B6',
-    
+    ghostWhite: "#F6F8FA",
+
     placeholder: '#9BA0A6',
     borderGrey: "#EAEEF2",
+    lavenderMist: "#E6EAED",
 
     backgroundGrey: "#F3FAFA",
     

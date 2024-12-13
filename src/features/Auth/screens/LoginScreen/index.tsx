@@ -37,9 +37,11 @@ const LoginScreen = () => {
       await Keychain.setGenericPassword("accessToken", res?.token, {
         service: "accessToken",
       })
+      console.log(res.token, "token")
       await Keychain.setGenericPassword("refreshToken", res.refreshToken, {
         service: "refreshToken",
       })
+
       navigation.reset({
         index: 0,
         routes: [{ name: ScreensEnum.MAIN }],
@@ -52,81 +54,87 @@ const LoginScreen = () => {
 
   return (
     <ScreenWrapper isBackButton title={t("LogIn")} isCenterTitle>
-      <KeyboardAwareScrollView style={helpers.flex1} bounces={false} enableOnAndroid enableAutomaticScroll showsVerticalScrollIndicator={false}>
-        <Formik
-          innerRef={formikRef}
-          initialValues={{ email: "", password: "" }}
-          validationSchema={validationLoginSchema}
-          onSubmit={handleLogin}
-        >
-          {({
-            handleChange,
-            handleBlur,
-            handleSubmit,
-            values,
-            errors,
-            touched,
-          }) => {
-            return (
-              <View style={styles.container}>
-                <View style={[helpers.gap24]}>
-                  <View style={[helpers.gap8]}>
-                    <Text style={styles.title}>{t("WelcomeBack")}</Text>
-                    <Text style={styles.subtitle}>
-                      {t("WeAreHappyToSeeYouBackPleaseLogInToContinue")}
-                    </Text>
-                  </View>
-
-                  <View style={[helpers.gap16]}>
-                    <CustomInput
-                      label={t("E-mail")}
-                      placeholder={t("EnterYourEmail")}
-                      keyboardType="email-address"
-                      onBlur={handleBlur("email")}
-                      onChangeText={handleChange("email")}
-                      value={values.email}
-                      error={touched.email && errors.email}
-                    />
-                    <CustomInput
-                      label={t("Password")}
-                      placeholder={t("EnterYourPassword")}
-                      secureTextEntry
-                      onChangeText={handleChange("password")}
-                      onBlur={handleBlur("password")}
-                      value={values.password}
-                      error={touched.password && errors.password}
-                    />
-                  </View>
-
-                  <Text
-                    onPress={() =>
-                      navigation.navigate(ScreensEnum.FORGOT_PASSWORD)
-                    }
-                    style={styles.forgotPassword}
-                  >
-                    {t("ForgotPassword?")}
+      {/* <KeyboardAwareScrollView
+        style={helpers.flex1}
+        bounces={false}
+        enableOnAndroid
+        enableAutomaticScroll
+        showsVerticalScrollIndicator={false}
+      > */}
+      <Formik
+        innerRef={formikRef}
+        initialValues={{ email: "", password: "" }}
+        validationSchema={validationLoginSchema}
+        onSubmit={handleLogin}
+      >
+        {({
+          handleChange,
+          handleBlur,
+          handleSubmit,
+          values,
+          errors,
+          touched,
+        }) => {
+          return (
+            <View style={styles.container}>
+              <View style={[helpers.gap24]}>
+                <View style={[helpers.gap8]}>
+                  <Text style={styles.title}>{t("WelcomeBack")}</Text>
+                  <Text style={styles.subtitle}>
+                    {t("WeAreHappyToSeeYouBackPleaseLogInToContinue")}
                   </Text>
                 </View>
 
-                <View style={styles.buttonsContainer}>
-                  <CustomButton
-                    type="primary"
-                    text={t("LogIn")}
-                    onPress={handleSubmit}
-                    isLoading={isEmailLoginLoading}
+                <View style={[helpers.gap16]}>
+                  <CustomInput
+                    label={t("E-mail")}
+                    placeholder={t("EnterYourEmail")}
+                    keyboardType="email-address"
+                    onBlur={handleBlur("email")}
+                    onChangeText={handleChange("email")}
+                    value={values.email}
+                    error={touched.email && errors.email}
                   />
-                  <CustomButton
-                    type="secondary"
-                    text={t("IDontHaveAnAccount")}
-                    onPress={() => navigation.navigate(ScreensEnum.SIGN_UP)}
-                    isLoading={false}
+                  <CustomInput
+                    label={t("Password")}
+                    placeholder={t("EnterYourPassword")}
+                    secureTextEntry
+                    onChangeText={handleChange("password")}
+                    onBlur={handleBlur("password")}
+                    value={values.password}
+                    error={touched.password && errors.password}
                   />
                 </View>
+
+                <Text
+                  onPress={() =>
+                    navigation.navigate(ScreensEnum.FORGOT_PASSWORD)
+                  }
+                  style={styles.forgotPassword}
+                >
+                  {t("ForgotPassword?")}
+                </Text>
               </View>
-            )
-          }}
-        </Formik>
-      </KeyboardAwareScrollView>
+
+              <View style={styles.buttonsContainer}>
+                <CustomButton
+                  type="primary"
+                  text={t("LogIn")}
+                  onPress={handleSubmit}
+                  isLoading={isEmailLoginLoading}
+                />
+                <CustomButton
+                  type="secondary"
+                  text={t("IDontHaveAnAccount")}
+                  onPress={() => navigation.navigate(ScreensEnum.SIGN_UP)}
+                  isLoading={false}
+                />
+              </View>
+            </View>
+          )
+        }}
+      </Formik>
+      {/* </KeyboardAwareScrollView> */}
     </ScreenWrapper>
   )
 }

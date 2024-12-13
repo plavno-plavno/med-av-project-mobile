@@ -5,9 +5,9 @@ import { StyleSheet, View } from "react-native"
 import { Icon } from "@components"
 import { fontFamilies, fontWeights } from "@utils/theme"
 import { ScreensEnum } from "./ScreensEnum"
-import CalendarScreen from "src/features/HomeScreens/CalendarScreen/CalendarScreen"
-import EventsScreen from "src/features/HomeScreens/EventsScreen/EventsScreen"
-import SettingsScreen from "src/features/HomeScreens/SettingsScreen/SettingsScreen"
+import CalendarScreen from "src/features/HomeScreens/CalendarScreen"
+import EventsScreen from "src/features/HomeScreens/EventsScreen"
+import SettingsScreen from "src/features/HomeScreens/SettingsScreen"
 import { moderateScale } from "react-native-size-matters"
 
 interface RouteTypes {
@@ -82,7 +82,7 @@ const BottomTabNavigator: React.FC = () => {
           marginTop: moderateScale(4),
         },
         tabBarStyle: {
-          paddingTop: moderateScale(15),
+          paddingTop: moderateScale(5),
           height: moderateScale(96),
           backgroundColor: colors.white,
           borderTopWidth: 0,

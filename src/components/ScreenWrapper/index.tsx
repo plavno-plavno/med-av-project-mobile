@@ -15,9 +15,11 @@ import { Icon } from "../Icon"
 import colors from "../../assets/colors"
 import { helpers } from "../../utils/theme"
 import { SafeAreaView } from "react-native-safe-area-context"
+import { useTranslation } from "react-i18next"
+import MonthsToggler from "../Calendar/MonthsToggler"
 
 interface Props {
-  styles?: ViewStyle | ViewStyle[]
+  childrenStyle?: ViewStyle | ViewStyle[]
   title?: string
   isBackButton?: boolean
   isCenterTitle?: boolean
@@ -25,6 +27,7 @@ interface Props {
   onboardingScreen?: boolean
   handleBackButtonPress?: () => void
   statusBarColor?: StatusBarProps["barStyle"]
+  isCalendarScreen?: boolean
 }
 
 const ScreenWrapper: React.FC<Props> = memo(
@@ -36,7 +39,10 @@ const ScreenWrapper: React.FC<Props> = memo(
     onboardingScreen = false,
     statusBarColor = "light-content",
     handleBackButtonPress,
+    childrenStyle,
+    isCalendarScreen,
   }: Props) => {
+    const { t } = useTranslation()
     const backgroundColor = onboardingScreen
       ? colors.pearlAqua
       : colors.darkCyan
@@ -65,7 +71,11 @@ const ScreenWrapper: React.FC<Props> = memo(
                 </View>
               )}
 
-              <View style={styles.childrenContainer}>{children}</View>
+              {isCalendarScreen && <MonthsToggler />}
+
+              <View style={[styles.childrenContainer, childrenStyle]}>
+                {children}
+              </View>
             </View>
           </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
