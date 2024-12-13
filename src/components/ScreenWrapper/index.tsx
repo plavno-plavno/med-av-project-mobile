@@ -1,20 +1,30 @@
-import React, { memo } from 'react';
-import { ViewStyle, View, Text, StatusBar, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { styles } from './styles';
-import BackButton from '../BackButton';
-import { Icon } from '../Icon';
-import colors from '../../assets/colors';
-import { helpers } from '../../utils/theme';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { memo } from "react"
+import {
+  ViewStyle,
+  View,
+  Text,
+  StatusBar,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  StatusBarProps,
+} from "react-native"
+import { styles } from "./styles"
+import BackButton from "../BackButton"
+import { Icon } from "../Icon"
+import colors from "../../assets/colors"
+import { helpers } from "../../utils/theme"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 interface Props {
-  styles?: ViewStyle | ViewStyle[];
-  title?: string;
-  isBackButton?: boolean;
-  isCenterTitle?: boolean;
-  children?: React.ReactNode;
-  onboardingScreen?: boolean;
-  handleBackButtonPress?: () => void;
+  styles?: ViewStyle | ViewStyle[]
+  title?: string
+  isBackButton?: boolean
+  isCenterTitle?: boolean
+  children?: React.ReactNode
+  onboardingScreen?: boolean
+  handleBackButtonPress?: () => void
+  statusBarColor?: StatusBarProps["barStyle"]
 }
 
 const ScreenWrapper: React.FC<Props> = memo(
@@ -22,21 +32,22 @@ const ScreenWrapper: React.FC<Props> = memo(
     children,
     isBackButton = false,
     isCenterTitle = false,
-    title = '',
+    title = "",
     onboardingScreen = false,
+    statusBarColor = "light-content",
     handleBackButtonPress,
   }: Props) => {
     const backgroundColor = onboardingScreen
       ? colors.pearlAqua
-      : colors.darkCyan;
+      : colors.darkCyan
 
     return (
       <>
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
           <KeyboardAvoidingView behavior="padding" style={helpers.flex1}>
-            <SafeAreaView style={{ backgroundColor }} edges={['top']} />
+            <SafeAreaView style={{ backgroundColor }} edges={["top"]} />
             <View style={[styles.container, { backgroundColor }]}>
-              <StatusBar barStyle="light-content" />
+              <StatusBar barStyle={statusBarColor} />
 
               {onboardingScreen && (
                 <View style={styles.onboarding_container}>
@@ -45,7 +56,9 @@ const ScreenWrapper: React.FC<Props> = memo(
               )}
 
               {isBackButton && (
-                <View style={[styles.navigation_container, { backgroundColor }]}>
+                <View
+                  style={[styles.navigation_container, { backgroundColor }]}
+                >
                   <BackButton handleBackButtonPress={handleBackButtonPress} />
                   <Text style={styles.title}>{title}</Text>
                   {isCenterTitle && <View style={styles.empty_view} />}
@@ -53,13 +66,12 @@ const ScreenWrapper: React.FC<Props> = memo(
               )}
 
               <View style={styles.childrenContainer}>{children}</View>
-
             </View>
           </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
       </>
-    );
-  },
-);
+    )
+  }
+)
 
-export default ScreenWrapper;
+export default ScreenWrapper

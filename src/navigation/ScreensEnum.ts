@@ -12,6 +12,6 @@ export enum ScreensEnum {
     // Bottom tab routes
     MAIN = 'MAIN',
     CALENDAR = 'Calendar',
-    EVENTS = 'Events',
+    NEW_MEETING = 'New Meeting',
     SETTINGS = 'Settings'
 }

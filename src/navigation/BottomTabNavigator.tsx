@@ -43,7 +43,7 @@ const screenOptions: React.FC<ScreenOptionsTypes> = ({ route, focused }) => {
           />
         </View>
       )
-    case ScreensEnum.EVENTS:
+    case ScreensEnum.NEW_MEETING:
       return (
         <View>
           {
@@ -95,7 +95,7 @@ const BottomTabNavigator: React.FC = () => {
       })}
     >
       <Tab.Screen name={ScreensEnum.CALENDAR} component={CalendarScreen} />
-      <Tab.Screen name={ScreensEnum.EVENTS} component={EventsScreen} />
+      <Tab.Screen name={ScreensEnum.NEW_MEETING} component={EventsScreen} />
       <Tab.Screen name={ScreensEnum.SETTINGS} component={SettingsScreen} />
     </Tab.Navigator>
   )
