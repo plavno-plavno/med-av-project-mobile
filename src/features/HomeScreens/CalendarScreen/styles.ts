@@ -21,5 +21,10 @@ export const styles = StyleSheet.create({
     },
     cellTextColor: {
         color: colors.alertRed
+    },
+    eventText: {
+        ...fontFamilies.interManropeSemiBold12,
+        ...fontWeights.fontWeight500,
+        color: colors.ghostWhite
     }
 });

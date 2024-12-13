@@ -1,10 +1,15 @@
 import React from "react"
-import { Calendar } from "react-native-big-calendar"
+import {
+  Calendar,
+  CalendarTouchableOpacityProps,
+  ICalendarEventBase,
+} from "react-native-big-calendar"
 import { styles } from "./styles"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import WeekDays from "src/components/Calendar/WeekDays"
 import colors from "src/assets/colors"
-import { Text } from "react-native"
+import { Text, TouchableOpacity } from "react-native"
+import { useAppSelector } from "src/hooks/redux"
 
 const CalendarScreen = () => {
   const events = [
@@ -12,15 +17,41 @@ const CalendarScreen = () => {
       title: "Meeting",
       start: new Date(2024, 11, 13, 16, 0),
       end: new Date(2024, 11, 13, 17, 30),
-      children: <Text style={{ fontSize: 32 }}>HELLO</Text>,
     },
     {
-      title: "Coffee break",
+      title: "Design Onboarding",
       start: new Date(2024, 11, 13, 14, 0),
       end: new Date(2024, 11, 13, 15, 0),
     },
+    {
+      title: "Coffee break",
+      start: new Date(2024, 11, 12, 14, 0),
+      end: new Date(2024, 11, 12, 15, 0),
+    },
   ]
-  const today = new Date()
+
+  const { selectedDay } = useAppSelector((state) => state.calendar)
+
+  const formatTime = (date: Date) => {
+    const hours = date.getHours()
+    const minutes = date.getMinutes()
+    const period = hours >= 12 ? "PM" : "AM"
+    const formattedHours = hours % 12 || 12
+
+    return `${formattedHours} ${minutes ? `${minutes} ${period}` : period}`
+  }
+
+  const renderEvent = <T extends ICalendarEventBase>(
+    event: T,
+    touchableOpacityProps: CalendarTouchableOpacityProps
+  ) => (
+    <TouchableOpacity {...touchableOpacityProps}>
+      <Text style={styles.eventText}>
+        {`${event.title}, ${formatTime(event.start)}– ${formatTime(event.end)}`}
+      </Text>
+    </TouchableOpacity>
+  )
+
   return (
     <ScreenWrapper childrenStyle={styles.container} isCalendarScreen>
       <Calendar
@@ -29,18 +60,17 @@ const CalendarScreen = () => {
         mode={"day"}
         onPressEvent={() => console.log("event")}
         minHour={8}
-        // headerContentStyle={{ backgroundColor: "gray" }}
-        // dayHeaderStyle={{ backgroundColor: "green" }}
-        // dayHeaderHighlightColor={"red"}
-        date={today}
+        maxHour={20}
         ampm
+        date={new Date(selectedDay)}
+        renderEvent={renderEvent}
         renderHeader={() => {
           return <WeekDays />
         }}
-        activeDate={new Date()}
         hourStyle={styles.hourStyle}
         eventCellTextColor={colors.ghostWhite}
         eventCellStyle={styles.cellStyle}
+        calendarCellTextStyle={styles.cellTextColor}
       />
     </ScreenWrapper>
   )

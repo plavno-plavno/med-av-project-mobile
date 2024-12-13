@@ -9,13 +9,14 @@
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* MedAVTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* MedAVTests.m */; };
 		0663C11C9BA84A9DA43C959A /* Manrope-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 90B416F6B9D9401DAAD130B0 /* Manrope-Light.ttf */; };
-		0C80B921A6F3F58F76C31292 /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+		0C80B921A6F3F58F76C31292 /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		3393C9CAFDC5AC02B635ACC2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		4696E111945D4D42A5C91180 /* Manrope-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 76E440BEAB8843B290A6193B /* Manrope-Regular.ttf */; };
 		561E4C1110F843EC960D7B4C /* Manrope-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E21F0A6D148D435CA2900724 /* Manrope-ExtraLight.ttf */; };
+		61D236FADC9E8CD685052287 /* libPods-MedAV-MedAVDevelopment.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B44D3FB197AF83A9ACE4AFE6 /* libPods-MedAV-MedAVDevelopment.a */; };
 		67831F513E834023BFE205ED /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B3E6149DFC814EFBBB4C63AB /* Manrope-Bold.ttf */; };
 		78A13DDE2D07602800858E82 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		78A13DDF2D07602800858E82 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
@@ -31,10 +32,9 @@
 		78A13DEC2D07602800858E82 /* Manrope-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B948F9715DC04F1CB6E19378 /* Manrope-SemiBold.ttf */; };
 		7F3140CE4F884CB783B56301 /* Manrope-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 284ED59C147947A7B48F277B /* Manrope-ExtraBold.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		88958869A58CAD5736407B98 /* libPods-MedAV.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DAA43ABEFA7A4BFD21028F2 /* libPods-MedAV.a */; };
+		8F97EF2429F950778A405822 /* libPods-MedAV-MedAVTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A9CE76721C566C7E2502047E /* libPods-MedAV-MedAVTests.a */; };
 		C110ADB4423B4C829B5007D3 /* Manrope-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FB28DFB60FE445CDBB52A789 /* Manrope-Medium.ttf */; };
-		C7E53D7B290B493EB60A5460 /* libPods-MedAV-MedAVTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BE62B6DC4A3E2CF8D8955F3 /* libPods-MedAV-MedAVTests.a */; };
-		E59256A4AC985359A30BD037 /* libPods-MedAV.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 056DE2304DC36219CE0A46D2 /* libPods-MedAV.a */; };
-		EB993B263EB67F6FEC02482C /* libPods-MedAV-MedAVDevelopment.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 53326EFDE317D1FBF0427FBB /* libPods-MedAV-MedAVDevelopment.a */; };
 		FBA16DA8C0A945C2ACB9A91C /* Manrope-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B948F9715DC04F1CB6E19378 /* Manrope-SemiBold.ttf */; };
 /* End PBXBuildFile section */
 
@@ -52,8 +52,6 @@
 		00E356EE1AD99517003FC87E /* MedAVTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MedAVTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* MedAVTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MedAVTests.m; sourceTree = "<group>"; };
-		056DE2304DC36219CE0A46D2 /* libPods-MedAV.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MedAV.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		0F76878E0F03B88D273A0531 /* Pods-MedAV-MedAVDevelopment.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MedAV-MedAVDevelopment.debug.xcconfig"; path = "Target Support Files/Pods-MedAV-MedAVDevelopment/Pods-MedAV-MedAVDevelopment.debug.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* MedAV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MedAV.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = MedAV/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = MedAV/AppDelegate.mm; sourceTree = "<group>"; };
@@ -61,11 +59,11 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = MedAV/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = MedAV/main.m; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = MedAV/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		153633A34A28775A28C8BEDD /* Pods-MedAV.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MedAV.release.xcconfig"; path = "Target Support Files/Pods-MedAV/Pods-MedAV.release.xcconfig"; sourceTree = "<group>"; };
+		1DAA43ABEFA7A4BFD21028F2 /* libPods-MedAV.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MedAV.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		231C3265B92AC524E36BBDB3 /* Pods-MedAV.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MedAV.debug.xcconfig"; path = "Target Support Files/Pods-MedAV/Pods-MedAV.debug.xcconfig"; sourceTree = "<group>"; };
 		284ED59C147947A7B48F277B /* Manrope-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-ExtraBold.ttf"; path = "../src/assets/fonts/Manrope-ExtraBold.ttf"; sourceTree = "<group>"; };
-		3B45E2C58D7E893327F7870E /* Pods-MedAV-MedAVTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MedAV-MedAVTests.release.xcconfig"; path = "Target Support Files/Pods-MedAV-MedAVTests/Pods-MedAV-MedAVTests.release.xcconfig"; sourceTree = "<group>"; };
-		53326EFDE317D1FBF0427FBB /* libPods-MedAV-MedAVDevelopment.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MedAV-MedAVDevelopment.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		5BE62B6DC4A3E2CF8D8955F3 /* libPods-MedAV-MedAVTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MedAV-MedAVTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		5F18794E9879045067AC390F /* Pods-MedAV.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MedAV.debug.xcconfig"; path = "Target Support Files/Pods-MedAV/Pods-MedAV.debug.xcconfig"; sourceTree = "<group>"; };
+		449DB931758B49DEE11E5C7D /* Pods-MedAV-MedAVTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MedAV-MedAVTests.release.xcconfig"; path = "Target Support Files/Pods-MedAV-MedAVTests/Pods-MedAV-MedAVTests.release.xcconfig"; sourceTree = "<group>"; };
 		76E440BEAB8843B290A6193B /* Manrope-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Regular.ttf"; path = "../src/assets/fonts/Manrope-Regular.ttf"; sourceTree = "<group>"; };
 		78A13DF32D07602800858E82 /* MedAVDevelopment.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MedAVDevelopment.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		78A13DF42D07602800858E82 /* MedAVDevelopment-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "MedAVDevelopment-Info.plist"; path = "/Users/igor/Desktop/med-av-project-mobile/ios/MedAVDevelopment-Info.plist"; sourceTree = "<absolute>"; };
@@ -73,13 +71,15 @@
 		78A13DF62D0C2ED900858E82 /* MedAV.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = MedAV.entitlements; path = MedAV/MedAV.entitlements; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = MedAV/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		90B416F6B9D9401DAAD130B0 /* Manrope-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Light.ttf"; path = "../src/assets/fonts/Manrope-Light.ttf"; sourceTree = "<group>"; };
-		A8D2FD15F14A7DCE9822FA1D /* Pods-MedAV-MedAVDevelopment.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MedAV-MedAVDevelopment.release.xcconfig"; path = "Target Support Files/Pods-MedAV-MedAVDevelopment/Pods-MedAV-MedAVDevelopment.release.xcconfig"; sourceTree = "<group>"; };
+		A053A48224052BB0F4557635 /* Pods-MedAV-MedAVDevelopment.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MedAV-MedAVDevelopment.release.xcconfig"; path = "Target Support Files/Pods-MedAV-MedAVDevelopment/Pods-MedAV-MedAVDevelopment.release.xcconfig"; sourceTree = "<group>"; };
+		A9CE76721C566C7E2502047E /* libPods-MedAV-MedAVTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MedAV-MedAVTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AED83B9BF985DFB280ACD315 /* Pods-MedAV-MedAVDevelopment.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MedAV-MedAVDevelopment.debug.xcconfig"; path = "Target Support Files/Pods-MedAV-MedAVDevelopment/Pods-MedAV-MedAVDevelopment.debug.xcconfig"; sourceTree = "<group>"; };
 		B3E6149DFC814EFBBB4C63AB /* Manrope-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Bold.ttf"; path = "../src/assets/fonts/Manrope-Bold.ttf"; sourceTree = "<group>"; };
+		B44D3FB197AF83A9ACE4AFE6 /* libPods-MedAV-MedAVDevelopment.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MedAV-MedAVDevelopment.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B948F9715DC04F1CB6E19378 /* Manrope-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-SemiBold.ttf"; path = "../src/assets/fonts/Manrope-SemiBold.ttf"; sourceTree = "<group>"; };
-		C2FEC99189971A728B5ECEBB /* Pods-MedAV-MedAVTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MedAV-MedAVTests.debug.xcconfig"; path = "Target Support Files/Pods-MedAV-MedAVTests/Pods-MedAV-MedAVTests.debug.xcconfig"; sourceTree = "<group>"; };
+		D1E77A16F7981015EA1F9549 /* Pods-MedAV-MedAVTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MedAV-MedAVTests.debug.xcconfig"; path = "Target Support Files/Pods-MedAV-MedAVTests/Pods-MedAV-MedAVTests.debug.xcconfig"; sourceTree = "<group>"; };
 		E21F0A6D148D435CA2900724 /* Manrope-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-ExtraLight.ttf"; path = "../src/assets/fonts/Manrope-ExtraLight.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F376CDD283F7BEC019E15F7E /* Pods-MedAV.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MedAV.release.xcconfig"; path = "Target Support Files/Pods-MedAV/Pods-MedAV.release.xcconfig"; sourceTree = "<group>"; };
 		FB28DFB60FE445CDBB52A789 /* Manrope-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Medium.ttf"; path = "../src/assets/fonts/Manrope-Medium.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -88,7 +88,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C7E53D7B290B493EB60A5460 /* libPods-MedAV-MedAVTests.a in Frameworks */,
+				8F97EF2429F950778A405822 /* libPods-MedAV-MedAVTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -96,8 +96,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0C80B921A6F3F58F76C31292 /* (null) in Frameworks */,
-				E59256A4AC985359A30BD037 /* libPods-MedAV.a in Frameworks */,
+				0C80B921A6F3F58F76C31292 /* BuildFile in Frameworks */,
+				88958869A58CAD5736407B98 /* libPods-MedAV.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -105,7 +105,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EB993B263EB67F6FEC02482C /* libPods-MedAV-MedAVDevelopment.a in Frameworks */,
+				61D236FADC9E8CD685052287 /* libPods-MedAV-MedAVDevelopment.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -148,9 +148,9 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				056DE2304DC36219CE0A46D2 /* libPods-MedAV.a */,
-				53326EFDE317D1FBF0427FBB /* libPods-MedAV-MedAVDevelopment.a */,
-				5BE62B6DC4A3E2CF8D8955F3 /* libPods-MedAV-MedAVTests.a */,
+				1DAA43ABEFA7A4BFD21028F2 /* libPods-MedAV.a */,
+				B44D3FB197AF83A9ACE4AFE6 /* libPods-MedAV-MedAVDevelopment.a */,
+				A9CE76721C566C7E2502047E /* libPods-MedAV-MedAVTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -207,12 +207,12 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				5F18794E9879045067AC390F /* Pods-MedAV.debug.xcconfig */,
-				F376CDD283F7BEC019E15F7E /* Pods-MedAV.release.xcconfig */,
-				0F76878E0F03B88D273A0531 /* Pods-MedAV-MedAVDevelopment.debug.xcconfig */,
-				A8D2FD15F14A7DCE9822FA1D /* Pods-MedAV-MedAVDevelopment.release.xcconfig */,
-				C2FEC99189971A728B5ECEBB /* Pods-MedAV-MedAVTests.debug.xcconfig */,
-				3B45E2C58D7E893327F7870E /* Pods-MedAV-MedAVTests.release.xcconfig */,
+				231C3265B92AC524E36BBDB3 /* Pods-MedAV.debug.xcconfig */,
+				153633A34A28775A28C8BEDD /* Pods-MedAV.release.xcconfig */,
+				AED83B9BF985DFB280ACD315 /* Pods-MedAV-MedAVDevelopment.debug.xcconfig */,
+				A053A48224052BB0F4557635 /* Pods-MedAV-MedAVDevelopment.release.xcconfig */,
+				D1E77A16F7981015EA1F9549 /* Pods-MedAV-MedAVTests.debug.xcconfig */,
+				449DB931758B49DEE11E5C7D /* Pods-MedAV-MedAVTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -224,12 +224,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "MedAVTests" */;
 			buildPhases = (
-				A42EA60E94C4367A05846C83 /* [CP] Check Pods Manifest.lock */,
+				1195B574CB2A5D74D30F3FF1 /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				601451AC06E64B755F62EC53 /* [CP] Embed Pods Frameworks */,
-				064EEB39B06BEFCE238DB3D5 /* [CP] Copy Pods Resources */,
+				E40A90E38155CE671425D003 /* [CP] Embed Pods Frameworks */,
+				C6442CF162F76A132946CB78 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -245,13 +245,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "MedAV" */;
 			buildPhases = (
-				769A94598CD30A29C5E0E2CF /* [CP] Check Pods Manifest.lock */,
+				93E4D46AF65086011356F199 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				CDB50BCB16C7388783B1C9EC /* [CP] Embed Pods Frameworks */,
-				B416C0326DA6543004D34D8F /* [CP] Copy Pods Resources */,
+				CDDDAB990D10F7AFBE28924A /* [CP] Embed Pods Frameworks */,
+				0B2BBD6BF8EB9BE68EB2D34B /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -266,13 +266,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 78A13DF02D07602800858E82 /* Build configuration list for PBXNativeTarget "MedAVDevelopment" */;
 			buildPhases = (
-				D35A07D2B393F52EF9EC3D17 /* [CP] Check Pods Manifest.lock */,
+				4F0D730DC3D807ADA499C35D /* [CP] Check Pods Manifest.lock */,
 				78A13DDD2D07602800858E82 /* Sources */,
 				78A13DE02D07602800858E82 /* Frameworks */,
 				78A13DE22D07602800858E82 /* Resources */,
 				78A13DED2D07602800858E82 /* Bundle React Native code and images */,
-				C26F0F6E4529C03AD3AF1A8E /* [CP] Embed Pods Frameworks */,
-				33A5E812EDF723508E94A233 /* [CP] Copy Pods Resources */,
+				C57D5437E9AD2C48839C44E1 /* [CP] Embed Pods Frameworks */,
+				FEB40C82AFA39ED1BC8E11EE /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -381,58 +381,24 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		064EEB39B06BEFCE238DB3D5 /* [CP] Copy Pods Resources */ = {
+		0B2BBD6BF8EB9BE68EB2D34B /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVTests/Pods-MedAV-MedAVTests-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-MedAV/Pods-MedAV-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVTests/Pods-MedAV-MedAVTests-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-MedAV/Pods-MedAV-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVTests/Pods-MedAV-MedAVTests-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MedAV/Pods-MedAV-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		33A5E812EDF723508E94A233 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVDevelopment/Pods-MedAV-MedAVDevelopment-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVDevelopment/Pods-MedAV-MedAVDevelopment-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVDevelopment/Pods-MedAV-MedAVDevelopment-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		601451AC06E64B755F62EC53 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVTests/Pods-MedAV-MedAVTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVTests/Pods-MedAV-MedAVTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVTests/Pods-MedAV-MedAVTests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		769A94598CD30A29C5E0E2CF /* [CP] Check Pods Manifest.lock */ = {
+		1195B574CB2A5D74D30F3FF1 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -447,7 +413,29 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-MedAV-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-MedAV-MedAVTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		4F0D730DC3D807ADA499C35D /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-MedAV-MedAVDevelopment-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -470,7 +458,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		A42EA60E94C4367A05846C83 /* [CP] Check Pods Manifest.lock */ = {
+		93E4D46AF65086011356F199 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -485,31 +473,14 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-MedAV-MedAVTests-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-MedAV-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		B416C0326DA6543004D34D8F /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-MedAV/Pods-MedAV-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-MedAV/Pods-MedAV-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MedAV/Pods-MedAV-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		C26F0F6E4529C03AD3AF1A8E /* [CP] Embed Pods Frameworks */ = {
+		C57D5437E9AD2C48839C44E1 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -526,7 +497,24 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVDevelopment/Pods-MedAV-MedAVDevelopment-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		CDB50BCB16C7388783B1C9EC /* [CP] Embed Pods Frameworks */ = {
+		C6442CF162F76A132946CB78 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVTests/Pods-MedAV-MedAVTests-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVTests/Pods-MedAV-MedAVTests-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVTests/Pods-MedAV-MedAVTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		CDDDAB990D10F7AFBE28924A /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -543,26 +531,38 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MedAV/Pods-MedAV-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		D35A07D2B393F52EF9EC3D17 /* [CP] Check Pods Manifest.lock */ = {
+		E40A90E38155CE671425D003 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVTests/Pods-MedAV-MedAVTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
+			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-MedAV-MedAVDevelopment-checkManifestLockResult.txt",
+				"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVTests/Pods-MedAV-MedAVTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVTests/Pods-MedAV-MedAVTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		FEB40C82AFA39ED1BC8E11EE /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVDevelopment/Pods-MedAV-MedAVDevelopment-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVDevelopment/Pods-MedAV-MedAVDevelopment-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MedAV-MedAVDevelopment/Pods-MedAV-MedAVDevelopment-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -607,7 +607,7 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C2FEC99189971A728B5ECEBB /* Pods-MedAV-MedAVTests.debug.xcconfig */;
+			baseConfigurationReference = D1E77A16F7981015EA1F9549 /* Pods-MedAV-MedAVTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -634,7 +634,7 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3B45E2C58D7E893327F7870E /* Pods-MedAV-MedAVTests.release.xcconfig */;
+			baseConfigurationReference = 449DB931758B49DEE11E5C7D /* Pods-MedAV-MedAVTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
@@ -658,7 +658,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5F18794E9879045067AC390F /* Pods-MedAV.debug.xcconfig */;
+			baseConfigurationReference = 231C3265B92AC524E36BBDB3 /* Pods-MedAV.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -688,7 +688,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F376CDD283F7BEC019E15F7E /* Pods-MedAV.release.xcconfig */;
+			baseConfigurationReference = 153633A34A28775A28C8BEDD /* Pods-MedAV.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -716,7 +716,7 @@
 		};
 		78A13DF12D07602800858E82 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0F76878E0F03B88D273A0531 /* Pods-MedAV-MedAVDevelopment.debug.xcconfig */;
+			baseConfigurationReference = AED83B9BF985DFB280ACD315 /* Pods-MedAV-MedAVDevelopment.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconDev;
 				CLANG_ENABLE_MODULES = YES;
@@ -747,7 +747,7 @@
 		};
 		78A13DF22D07602800858E82 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A8D2FD15F14A7DCE9822FA1D /* Pods-MedAV-MedAVDevelopment.release.xcconfig */;
+			baseConfigurationReference = A053A48224052BB0F4557635 /* Pods-MedAV-MedAVDevelopment.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconDev;
 				CLANG_ENABLE_MODULES = YES;
@@ -843,7 +843,10 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -912,7 +915,10 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;

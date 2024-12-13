@@ -1,13 +1,17 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { authApi } from '../api/auth/authApi';
 import { setupListeners } from '@reduxjs/toolkit/query';
+import calendarSlice from './slices/calendarSlice/calendarSlice';
 
 const store = configureStore({
   reducer: {
     [authApi.reducerPath]: authApi.reducer,
+    calendar: calendarSlice,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(authApi.middleware),
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }).concat(authApi.middleware),
 });
 
 setupListeners(store.dispatch);

@@ -1,22 +1,34 @@
 import { fontFamilies, fontWeights } from "@utils/theme"
+import moment from "moment"
 import { useTranslation } from "react-i18next"
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native"
-import { Pressable } from "react-native-gesture-handler"
 import { moderateScale } from "react-native-size-matters"
 import colors from "src/assets/colors"
 import { Icon } from "src/components/Icon"
+import { useAppDispatch, useAppSelector } from "src/hooks/redux"
+import { changeWeek } from "src/redux/slices/calendarSlice/calendarSlice"
 
 const MonthsToggler = () => {
+  const dispatch = useAppDispatch()
   const { t } = useTranslation()
+
+  const { currentDate } = useAppSelector((state) => state.calendar)
+
+  const handleChangeWeek = (direction: string) => {
+    dispatch(changeWeek(direction))
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{t("Calendar")}</Text>
       <View style={styles.monthsToggler}>
-        <Text style={styles.subtitle}>October, 2024</Text>
-        <TouchableOpacity onPress={() => {}}>
+        <Text style={styles.subtitle}>
+          {moment(currentDate).format("MMMM, YYYY")}
+        </Text>
+        <TouchableOpacity onPress={() => handleChangeWeek("prev")}>
           <Icon name="leftButton" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => {}}>
+        <TouchableOpacity onPress={() => handleChangeWeek("next")}>
           <Icon name="rightButton" />
         </TouchableOpacity>
       </View>

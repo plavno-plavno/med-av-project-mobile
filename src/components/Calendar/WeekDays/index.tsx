@@ -1,85 +1,74 @@
+import React from "react"
 import { fontFamilies, fontWeights } from "@utils/theme"
-import React, { useState } from "react"
-import { Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native"
+import { Text, StyleSheet, TouchableOpacity, FlatList } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import colors from "src/assets/colors"
+import { useAppDispatch, useAppSelector } from "src/hooks/redux"
+import { setSelectedDay } from "src/redux/slices/calendarSlice/calendarSlice"
 
 const WeekCards = () => {
-  const [selectedDay, setSelectedDay] = useState("TUE")
+  const dispatch = useAppDispatch()
 
-  const days = [
-    { day: "MON", date: "01" },
-    { day: "TUE", date: "02" },
-    { day: "WED", date: "03" },
-    { day: "THU", date: "04" },
-    { day: "FRI", date: "05" },
-    { day: "SAT", date: "06" },
-    { day: "SUN", date: "07" },
-    { day: "MON", date: "08" },
-    { day: "TUE", date: "09" },
-    { day: "WED", date: "10" },
-    { day: "THU", date: "11" },
-    { day: "FRI", date: "12" },
-    { day: "SAT", date: "13" },
-    { day: "SUN", date: "14" },
-    { day: "MON", date: "15" },
-    { day: "TUE", date: "16" },
-    { day: "WED", date: "17" },
-    { day: "THU", date: "18" },
-    { day: "FRI", date: "19" },
-    { day: "SAT", date: "20" },
-    { day: "SUN", date: "21" },
-    { day: "MON", date: "22" },
-    { day: "TUE", date: "23" },
-    { day: "WED", date: "24" },
-    { day: "THU", date: "25" },
-    { day: "FRI", date: "26" },
-    { day: "SAT", date: "27" },
-    { day: "SUN", date: "28" },
-    { day: "MON", date: "29" },
-    { day: "TUE", date: "30" },
-  ]
+  const { currentDate, selectedDay } = useAppSelector((state) => state.calendar)
 
+  const handleSelectedDay = (day: string) => {
+    dispatch(setSelectedDay(day))
+  }
+  const weekDays = Array.from({ length: 7 }, (_, index) => {
+    const date = currentDate.clone().startOf("week").add(index, "days")
+    return {
+      day: date.format("ddd"),
+      date: date.format("DD"),
+      displayDate: date.format("YYYY-MM-DD"),
+    }
+  })
   return (
-    <ScrollView
-      horizontal
-      style={styles.container}
-      contentContainerStyle={{
-        justifyContent: "space-between",
-        gap: moderateScale(4),
-      }}
-    >
-      {days.map(({ day, date }) => (
-        <TouchableOpacity
-          key={date}
-          style={[styles.card, selectedDay === day && styles.selectedCard]}
-          onPress={() => setSelectedDay(day)}
-        >
-          <Text
-            style={[
-              styles.dayText,
-              selectedDay === day && styles.selectedDayText,
-            ]}
-          >
-            {day}
-          </Text>
-          <Text
-            style={[
-              styles.dateText,
-              selectedDay === day && styles.selectedDateText,
-            ]}
-          >
-            {date}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
+    <>
+      <FlatList
+        pagingEnabled
+        horizontal
+        data={weekDays}
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+        keyExtractor={(item) => item.displayDate}
+        renderItem={({ item }) => {
+          const isSelectedDate = selectedDay == item.displayDate
+          return (
+            <TouchableOpacity
+              onPress={() => handleSelectedDay(item.displayDate)}
+              style={[styles.card, isSelectedDate && styles.selectedCard]}
+            >
+              <Text
+                style={[
+                  styles.dayText,
+                  isSelectedDate && styles.selectedDayText,
+                ]}
+              >
+                {item.day}
+              </Text>
+              <Text
+                style={[
+                  styles.dateText,
+                  isSelectedDate && styles.selectedDateText,
+                ]}
+              >
+                {item.date}
+              </Text>
+            </TouchableOpacity>
+          )
+        }}
+      />
+    </>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     maxWidth: "96%",
+  },
+  contentContainer: {
+    justifyContent: "space-between",
+    gap: moderateScale(4),
   },
   card: {
     alignItems: "center",
