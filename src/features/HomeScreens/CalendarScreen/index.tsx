@@ -17,16 +17,19 @@ const CalendarScreen = () => {
       title: "Meeting",
       start: new Date(2024, 11, 13, 16, 0),
       end: new Date(2024, 11, 13, 17, 30),
+      color: colors.lightAqua,
     },
     {
       title: "Design Onboarding",
       start: new Date(2024, 11, 13, 14, 0),
       end: new Date(2024, 11, 13, 15, 0),
+      color: colors.alertRed,
     },
     {
       title: "Coffee break",
       start: new Date(2024, 11, 12, 14, 0),
       end: new Date(2024, 11, 12, 15, 0),
+      color: colors.lightAqua,
     },
   ]
 
@@ -56,6 +59,7 @@ const CalendarScreen = () => {
     <ScreenWrapper childrenStyle={styles.container} isCalendarScreen>
       <Calendar
         events={events}
+        overlapOffset={40}
         height={100}
         mode={"day"}
         onPressEvent={() => console.log("event")}
@@ -69,7 +73,10 @@ const CalendarScreen = () => {
         }}
         hourStyle={styles.hourStyle}
         eventCellTextColor={colors.ghostWhite}
-        eventCellStyle={styles.cellStyle}
+        eventCellStyle={(event) => [
+          styles.cellStyle,
+          { backgroundColor: event.color },
+        ]}
         calendarCellTextStyle={styles.cellTextColor}
       />
     </ScreenWrapper>
