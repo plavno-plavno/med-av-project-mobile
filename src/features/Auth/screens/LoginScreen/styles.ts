@@ -7,6 +7,7 @@ export const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'space-between',
+        height: screenHeight * 0.8,
     },
     keyboard: {
         flexGrow: 1,
@@ -27,9 +28,6 @@ export const styles = StyleSheet.create({
         color: colors.lightAqua,
       },
       buttonsContainer: {
-        position: "absolute",
-        top: screenHeight * 0.63,
-        width: '100%',
         gap: 8,
       }
 });

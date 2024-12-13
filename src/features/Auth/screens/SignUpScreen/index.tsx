@@ -42,7 +42,7 @@ const SignUpScreen = () => {
   }
 
   return (
-    <ScreenWrapper isBackButton title={t("LogIn")} isCenterTitle>
+    <ScreenWrapper isBackButton title={t("SignUp")} isCenterTitle>
       <Formik
         innerRef={formikRef}
         initialValues={{ email: "" }}

@@ -23,7 +23,8 @@ export const styles = StyleSheet.create({
         width: moderateScale(69),
     },
     onboarding_container: {
-        height: '40%',
+        maxHeight: '40%',
+        flexShrink: 1,
         backgroundColor: colors.pearlAqua,
         alignItems: 'center',
         justifyContent: 'center',

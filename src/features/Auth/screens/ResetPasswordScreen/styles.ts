@@ -1,11 +1,13 @@
 import { fontFamilies, fontWeights } from '@utils/theme';
 import { StyleSheet } from 'react-native';
+import { moderateScale } from 'react-native-size-matters';
 import colors from 'src/assets/colors';
 
 export const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'space-between',
+        paddingBottom: moderateScale(20),
     },
       title: {
         ...fontFamilies.interManropeSemiBold32,

@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* MedAVTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* MedAVTests.m */; };
 		0663C11C9BA84A9DA43C959A /* Manrope-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 90B416F6B9D9401DAAD130B0 /* Manrope-Light.ttf */; };
-		0C80B921A6F3F58F76C31292 /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
+		0C80B921A6F3F58F76C31292 /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
@@ -69,6 +69,8 @@
 		76E440BEAB8843B290A6193B /* Manrope-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Regular.ttf"; path = "../src/assets/fonts/Manrope-Regular.ttf"; sourceTree = "<group>"; };
 		78A13DF32D07602800858E82 /* MedAVDevelopment.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MedAVDevelopment.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		78A13DF42D07602800858E82 /* MedAVDevelopment-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "MedAVDevelopment-Info.plist"; path = "/Users/igor/Desktop/med-av-project-mobile/ios/MedAVDevelopment-Info.plist"; sourceTree = "<absolute>"; };
+		78A13DF52D0C2EA200858E82 /* MedAVDevelopment.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MedAVDevelopment.entitlements; sourceTree = "<group>"; };
+		78A13DF62D0C2ED900858E82 /* MedAV.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = MedAV.entitlements; path = MedAV/MedAV.entitlements; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = MedAV/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		90B416F6B9D9401DAAD130B0 /* Manrope-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Light.ttf"; path = "../src/assets/fonts/Manrope-Light.ttf"; sourceTree = "<group>"; };
 		A8D2FD15F14A7DCE9822FA1D /* Pods-MedAV-MedAVDevelopment.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MedAV-MedAVDevelopment.release.xcconfig"; path = "Target Support Files/Pods-MedAV-MedAVDevelopment/Pods-MedAV-MedAVDevelopment.release.xcconfig"; sourceTree = "<group>"; };
@@ -94,7 +96,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0C80B921A6F3F58F76C31292 /* BuildFile in Frameworks */,
+				0C80B921A6F3F58F76C31292 /* (null) in Frameworks */,
 				E59256A4AC985359A30BD037 /* libPods-MedAV.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -130,6 +132,7 @@
 		13B07FAE1A68108700A75B9A /* MedAV */ = {
 			isa = PBXGroup;
 			children = (
+				78A13DF62D0C2ED900858E82 /* MedAV.entitlements */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
@@ -162,6 +165,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				78A13DF52D0C2EA200858E82 /* MedAVDevelopment.entitlements */,
 				13B07FAE1A68108700A75B9A /* MedAV */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* MedAVTests */,
@@ -658,6 +662,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = MedAV/MedAV.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5BP624HD4S;
 				ENABLE_BITCODE = NO;
@@ -687,6 +692,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = MedAV/MedAV.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5BP624HD4S;
 				INFOPLIST_FILE = MedAV/Info.plist;
@@ -714,6 +720,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconDev;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = MedAVDevelopment.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5BP624HD4S;
 				ENABLE_BITCODE = NO;
@@ -744,6 +751,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconDev;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = MedAVDevelopment.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5BP624HD4S;
 				INFOPLIST_FILE = "MedAVDevelopment-Info.plist";
@@ -835,10 +843,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -907,10 +912,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
