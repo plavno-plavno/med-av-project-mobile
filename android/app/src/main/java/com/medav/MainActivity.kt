@@ -1,10 +1,13 @@
 package com.MedAV
 
+import android.os.Bundle
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import org.devio.rn.splashscreen.SplashScreen;
+import android.content.Intent
+import android.net.Uri
 
 class MainActivity : ReactActivity() {
 
@@ -17,9 +20,11 @@ class MainActivity : ReactActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
       SplashScreen.show(this)
       // Initialize the WebRTC module options.
-      WebRTCModuleOptions options = WebRTCModuleOptions.getInstance();
-      options.enableMediaProjectionService = true;
       super.onCreate(null)
+      // ATTENTION: This was auto-generated to handle app links.
+      val appLinkIntent: Intent = intent
+      val appLinkAction: String? = appLinkIntent.action
+      val appLinkData: Uri? = appLinkIntent.data
   }
 
   /**
