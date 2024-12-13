@@ -16,18 +16,15 @@ export const authApi = createApi({
         },
       }),
     }),
-    logout: builder.mutation({
-      query: () => ({
-        url: 'auth/logout',
-        method: 'POST',
-      }),
-    }),
     emailSingUp: builder.mutation<ISingUpResponse, ISingUpRequest>({
       query: ({email}) => ({
         url: 'auth/email/register',
         method: 'POST',
         body: {
           email,
+        },
+        headers: {
+          'x-ismobile': 'true',
         },
       }),
     }),
@@ -37,6 +34,9 @@ export const authApi = createApi({
         method: 'POST',
         body: {
           email,
+        },
+        headers: {
+          'x-ismobile': 'true',
         },
       }),
     }),
@@ -57,6 +57,9 @@ export const authApi = createApi({
         body: {
           email,
         },
+        headers: {
+          'x-ismobile': 'true',
+        },
       }),
     }),
     refresh: builder.query<any, void>({
@@ -67,7 +70,6 @@ export const authApi = createApi({
 
 export const {
   useEmailLoginMutation,
-  useLogoutMutation,
   useEmailSingUpMutation,
   useResendEmailMutation,
   useForgotPasswordMutation,

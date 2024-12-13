@@ -25,6 +25,6 @@ export const styles = StyleSheet.create({
     eventText: {
         ...fontFamilies.interManropeSemiBold12,
         ...fontWeights.fontWeight500,
-        color: colors.ghostWhite
+        color: colors.ghostWhite,
     }
 });

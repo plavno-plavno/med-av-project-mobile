@@ -92,7 +92,7 @@ android {
         }
         development {
             minSdkVersion rootProject.ext.minSdkVersion
-            applicationId "com.MedAV.development"
+            applicationId "com.MedAVDevelopment"
             targetSdkVersion rootProject.ext.targetSdkVersion
         }
     }

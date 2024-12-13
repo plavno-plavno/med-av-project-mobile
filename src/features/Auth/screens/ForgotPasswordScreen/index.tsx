@@ -27,18 +27,15 @@ const ForgotPasswordScreen = () => {
 
   const handleRequestPasswordReset = async ({ email }: { email: string }) => {
     try {
-      const res = await forgotPassword({ email }).unwrap()
-      if (res === null) {
-        navigation.navigate(ScreensEnum.RESET_PASSWORD)
-        // navigation.navigate(ScreensEnum.VERIFICATION, {
-        //   email,
-        //   type: "check",
-        // })
-      }
-      console.log(res, "200 RESPONSE")
+      const res = await forgotPassword({ email }).unwrap();
+        navigation.navigate(ScreensEnum.VERIFICATION, {
+          email,
+          type: "check",
+        })
     } catch (error) {
+      const typedError: any = error as Error;
       const { setErrors } = formikRef.current
-      const errorMsg = error?.data?.errors?.email
+      const errorMsg = typedError?.data?.errors?.email
       setErrors({ email: t(errorMsg) })
       console.log(error, "error handleRequestPasswordReset")
     }
