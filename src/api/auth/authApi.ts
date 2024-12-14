@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQuery } from '..';
-import { IEmailLoginResponse, ILoginRequest, ISingUpResponse, ISingUpRequest, IResetPasswordResponse, IResetPasswordRequest, IForgotPasswordResponse, IForgotPasswordRequest, IResendEmailRequest, IResendEmailResponse } from './types';
+import { IEmailLoginResponse, ILoginRequest, ISingUpResponse, ISingUpRequest, IResetPasswordResponse, IResetPasswordRequest, IForgotPasswordResponse, IForgotPasswordRequest, IResendEmailRequest, IResendEmailResponse, IEmailConfirm } from './types';
 
 export const authApi = createApi({
   baseQuery: baseQuery,
@@ -16,7 +16,7 @@ export const authApi = createApi({
         },
       }),
     }),
-    emailSingUp: builder.mutation<ISingUpResponse, ISingUpRequest>({
+    emailSingUp: builder.mutation<void, ISingUpRequest>({
       query: ({email}) => ({
         url: 'auth/email/register',
         method: 'POST',
@@ -25,6 +25,16 @@ export const authApi = createApi({
         },
         headers: {
           'x-ismobile': 'true',
+        },
+      }),
+    }),
+    emailConfirm: builder.mutation<void, IEmailConfirm>({
+      query: ({hash, password}) => ({
+        url: 'auth/email/confirm',
+        method: 'POST',
+        body: {
+          hash,
+          password,
         },
       }),
     }),
@@ -73,4 +83,6 @@ export const {
   useEmailSingUpMutation,
   useResendEmailMutation,
   useForgotPasswordMutation,
+  useResetPasswordMutation,
+  useEmailConfirmMutation,
 } = authApi;

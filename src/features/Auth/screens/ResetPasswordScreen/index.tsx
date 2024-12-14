@@ -8,28 +8,58 @@ import CustomInput from "src/components/CustomInput"
 import { helpers } from "@utils/theme"
 import { validationResetPasswordSchema } from "@utils/validationSchemas"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
-import { useNavigation } from "@react-navigation/native"
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import { styles } from "./styles"
 import Toast from "react-native-toast-message"
+import { useResetPasswordMutation } from "src/api/auth/authApi"
+
+type ParamList = {
+  Detail: {
+    hash: string;
+  };
+};
 
 const ResetPasswordScreen = () => {
   const { t } = useTranslation()
-  const navigation = useNavigation<ROUTES>()
+  const navigation = useNavigation<ROUTES>();
+  const {
+    params: { hash },
+  } = useRoute<RouteProp<ParamList, 'Detail'>>();
 
-  // const onResetPassword = () => {
-  //   Toast.show({
-  //     type: "error",
-  //     text1: t("PasswordChanged!"),
-  //   })
-  //   navigation.navigate(ScreensEnum.LOGIN)
-  // }
+  const [resetPassword, {isLoading: isResetPasswordLoading}] = useResetPasswordMutation();
+  
+  const onResetPassword = async ({ confirmPassword }: { confirmPassword: string }) => {
+    try{
+      const res = await resetPassword({
+        password: confirmPassword,
+        hash,
+      }).unwrap();
+      console.log(res, 'res onResetPassword');
+      
+      Toast.show({
+        type: "success",
+        text1: t("PasswordChanged!"),
+      })
+      navigation.navigate(ScreensEnum.LOGIN)
+    } catch (error) {
+      console.log(error, 'error onResetPassword');
+      const typedError: any = error as Error;
+      if(typedError?.errors?.hash){
+        Toast.show({
+          type: "error",
+          text1: JSON.stringify(typedError?.errors?.hash),
+        })
+      }
+    }
+  }
+
   return (
     <ScreenWrapper isBackButton title={t("LogIn")} isCenterTitle>
       <Formik
         initialValues={{ password: "", confirmPassword: "" }}
         validationSchema={validationResetPasswordSchema}
-        onSubmit={() => {}}
+        onSubmit={onResetPassword}
       >
         {({
           handleChange,
@@ -73,7 +103,8 @@ const ResetPasswordScreen = () => {
               type="primary"
               text={t("ResetPassword")}
               onPress={handleSubmit}
-              isLoading={false}
+              isLoading={isResetPasswordLoading}
+              disabled={!values.password || !values.confirmPassword}
             />
           </View>
         )}

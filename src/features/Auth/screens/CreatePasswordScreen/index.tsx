@@ -8,20 +8,56 @@ import CustomInput from "src/components/CustomInput"
 import { helpers } from "@utils/theme"
 import { validationResetPasswordSchema } from "@utils/validationSchemas"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
-import { useNavigation } from "@react-navigation/native"
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import { styles } from "./styles"
+import { useEmailConfirmMutation } from "src/api/auth/authApi"
+import Toast from "react-native-toast-message"
+
+type ParamList = {
+  Detail: {
+    hash: string;
+  };
+};
 
 const CreatePasswordScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<ROUTES>()
+  const {
+    params: { hash },
+  } = useRoute<RouteProp<ParamList, 'Detail'>>();
+
+  const [emailConfirm, { isLoading: isEmailConfirmLoading }] = useEmailConfirmMutation();
+
+  const onSignUpPress = async ({ confirmPassword }: { confirmPassword: string }) => {
+    try {
+      const res = await emailConfirm({
+        hash,
+        password: confirmPassword,
+      }).unwrap();
+      console.log(res, 'res onSignUpPress');
+      Toast.show({
+        type: "success",
+        text1: t("Success"),
+      })
+    } catch (error) {
+      console.log(error, 'error onSignUpPress');
+      const typedError: any = error as Error;
+      if (typedError?.errors?.hash) {
+        Toast.show({
+          type: "error",
+          text1: JSON.stringify(typedError?.error),
+        })
+      }
+    }
+  }
 
   return (
-    <ScreenWrapper isBackButton title={t("LogIn")} isCenterTitle>
+    <ScreenWrapper isBackButton title={t("SignUp")} isCenterTitle>
       <Formik
         initialValues={{ password: "", confirmPassword: "" }}
         validationSchema={validationResetPasswordSchema}
-        onSubmit={() => {}}
+        onSubmit={onSignUpPress}
       >
         {({
           handleChange,
@@ -66,13 +102,12 @@ const CreatePasswordScreen = () => {
                 type="primary"
                 text={t("SignUp")}
                 onPress={handleSubmit}
-                isLoading={false}
+                isLoading={isEmailConfirmLoading}
               />
               <CustomButton
                 type="secondary"
                 text={t("IHaveAnAccount")}
                 onPress={() => navigation.navigate(ScreensEnum.LOGIN)}
-                isLoading={false}
               />
             </View>
           </View>

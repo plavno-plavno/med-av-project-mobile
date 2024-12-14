@@ -12,12 +12,12 @@ export const styles = StyleSheet.create({
       paddingHorizontal: moderateScale(16),
       paddingVertical: moderateScale(18),
       flexDirection: 'row',
-      justifyContent: 'center',
+      justifyContent: 'space-between',
       alignItems: 'center',
       gap: moderateScale(8),
       borderLeftWidth: moderateScale(3),
       borderColor: colors.successGreen,
-      boxShadow: '0px 4px 32px 0px #17393B29'
+      boxShadow: '0px 4px 32px 0px #17393B29',
     },
     toastText: {
         maxWidth: "80%",

@@ -45,6 +45,9 @@
 
                 <data android:scheme="https" />
                 <data android:host="med-app-av.plavno.io" />
+                 <data
+                    android:scheme="com.MedAVDevelopment"
+                    android:host="password-change" />
             </intent-filter>
         </activity>
     </application>

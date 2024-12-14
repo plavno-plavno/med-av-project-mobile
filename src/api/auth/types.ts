@@ -76,3 +76,8 @@ export interface IResetPasswordResponse {
 export interface IForgotPasswordRequest extends IEmailRequest {};
 export interface IForgotPasswordResponse {
 }
+
+export interface IEmailConfirm {
+    hash: string;
+    password: string;
+}

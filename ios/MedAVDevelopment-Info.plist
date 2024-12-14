@@ -37,6 +37,15 @@
 	<string>We need access to your microphone for video calls.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
+		<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.MedAVDevelopment</string>
+			</array>
+		</dict>
+	</array>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Manrope-Bold.ttf</string>
