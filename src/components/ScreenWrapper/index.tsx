@@ -61,11 +61,15 @@ const ScreenWrapper: React.FC<Props> = memo(
                 </View>
               )}
 
-              {isBackButton && (
+              {title && (
                 <View
                   style={[styles.navigation_container, { backgroundColor }]}
                 >
-                  <BackButton handleBackButtonPress={handleBackButtonPress} />
+                  {isBackButton ? (
+                    <BackButton handleBackButtonPress={handleBackButtonPress} />
+                  ) : (
+                    <View style={styles.empty_view} />
+                  )}
                   <Text style={styles.title}>{title}</Text>
                   {isCenterTitle && <View style={styles.empty_view} />}
                 </View>

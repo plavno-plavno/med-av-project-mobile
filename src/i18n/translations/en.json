@@ -44,5 +44,10 @@
     "Refresh": "Refresh",
     "PasswordChanged!": "Password Changed! Please Log In with a new password.",
     "emailNotExists": "Email doesn't exist",
-    "Success": "Success"
+    "Success": "Success",
+    "StartNewMeeting": "Start New Meeting",
+    "NewMeeting": "New meeting",
+    "StartAMeeting": "Start a meeting instantly or schedule a meeting in the calendar and invite participants",
+    "StartMeetingInstantly": "Start Meeting Instantly",
+    "ScheduleMeeting": "Schedule Meeting"
 }

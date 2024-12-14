@@ -6,9 +6,9 @@ import { Icon } from "@components"
 import { fontFamilies, fontWeights } from "@utils/theme"
 import { ScreensEnum } from "./ScreensEnum"
 import CalendarScreen from "src/features/HomeScreens/CalendarScreen"
-import EventsScreen from "src/features/HomeScreens/EventsScreen"
 import SettingsScreen from "src/features/HomeScreens/SettingsScreen"
 import { moderateScale } from "react-native-size-matters"
+import NewMeetingScreen from "src/features/HomeScreens/NewMeetingScreen"
 
 interface RouteTypes {
   key: string
@@ -95,7 +95,7 @@ const BottomTabNavigator: React.FC = () => {
       })}
     >
       <Tab.Screen name={ScreensEnum.CALENDAR} component={CalendarScreen} />
-      <Tab.Screen name={ScreensEnum.NEW_MEETING} component={EventsScreen} />
+      <Tab.Screen name={ScreensEnum.NEW_MEETING} component={NewMeetingScreen} />
       <Tab.Screen name={ScreensEnum.SETTINGS} component={SettingsScreen} />
     </Tab.Navigator>
   )
