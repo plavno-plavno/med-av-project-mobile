@@ -20,7 +20,7 @@ export const styles = StyleSheet.create({
         color: colors.white,
     },
     empty_view: {
-        width: moderateScale(69),
+        width: moderateScale(50),
     },
     onboarding_container: {
         maxHeight: '40%',

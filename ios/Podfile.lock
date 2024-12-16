@@ -1267,6 +1267,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-netinfo (11.4.1):
+    - React-Core
   - react-native-safe-area-context (5.0.0):
     - DoubleConversion
     - glog
@@ -1862,6 +1864,7 @@ DEPENDENCIES:
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-config (from `../node_modules/react-native-config`)
   - react-native-keyboard-controller (from `../node_modules/react-native-keyboard-controller`)
+  - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-splash-screen (from `../node_modules/react-native-splash-screen`)
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
@@ -1978,6 +1981,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-config"
   react-native-keyboard-controller:
     :path: "../node_modules/react-native-keyboard-controller"
+  react-native-netinfo:
+    :path: "../node_modules/@react-native-community/netinfo"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-splash-screen:
@@ -2087,6 +2092,7 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: 8e528efbba69994a8cb107b4698d028430e80f25
   react-native-config: 8f7283449bbb048902f4e764affbbf24504454af
   react-native-keyboard-controller: 69a854c840adc8f8d1c621b1d2b816346330383d
+  react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
   react-native-safe-area-context: d6406c2adbd41b2e09ab1c386781dc1c81a90919
   react-native-splash-screen: 4312f786b13a81b5169ef346d76d33bc0c6dc457
   React-nativeconfig: 2199ff468fce8b95d1776d9cea31d35076fe7e48

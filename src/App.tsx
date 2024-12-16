@@ -5,6 +5,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context"
 import Navigation from "./navigation"
 import "./i18n/i18next"
 import ToastMessage from "./components/ToastMessages"
+import NoConnectionScreen from "./components/NoConnetctionModal"
 
 const App = () => {
   return (
@@ -12,6 +13,7 @@ const App = () => {
       <Provider store={store}>
           <Navigation />
           <ToastMessage />
+          <NoConnectionScreen />
       </Provider>
     </SafeAreaProvider>
   )

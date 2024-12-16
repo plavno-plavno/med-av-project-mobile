@@ -1,13 +1,13 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithReAuth } from '..';
-import { IGetCalendarEventDetailsRequest, IGetCalendarEventDetailsResponse } from './types';
+import { IGetCalendarEventDetailsRequest, IGetCalendarEventDetailsResponse, IGetCalendarEventsResponse } from './types';
 // import { } from './types';
 
 export const calendarApi = createApi({
   baseQuery: baseQueryWithReAuth,
   reducerPath: 'calendarApi',
   endpoints: (builder) => ({
-    getCalendarEvents: builder.query<any, void>({
+    getCalendarEvents: builder.query<IGetCalendarEventsResponse, void>({
       query: () => ({
         url: 'calendar/events',
         method: 'GET',
