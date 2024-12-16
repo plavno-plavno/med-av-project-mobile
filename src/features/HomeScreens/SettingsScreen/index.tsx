@@ -8,12 +8,12 @@ import { CustomButton } from "@components"
 import { useLogoutMutation } from "src/api/userApi/userApi"
 
 const SettingsScreen = () => {
-  const [logout] = useLogoutMutation();
+  const [logout] = useLogoutMutation()
   const navigation = useNavigation<ROUTES>()
 
   const handleLogout = async () => {
     try {
-      await logout().unwrap();
+      await logout().unwrap()
       await Keychain.resetGenericPassword({ service: "accessToken" })
       await Keychain.resetGenericPassword({ service: "refreshToken" })
       navigation.reset({
