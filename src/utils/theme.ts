@@ -63,6 +63,11 @@ export const fontFamilies = StyleSheet.create({
     fontSize: moderateScale(18),
     lineHeight: moderateScale(24),
   },
+  interManropeSemiBold24: {
+    fontFamily: fonts.ManropeSemiBold,
+    fontSize: moderateScale(24),
+    lineHeight: moderateScale(30),
+  },
 
   interManropeSemiBold32: {
     fontFamily: fonts.ManropeSemiBold,

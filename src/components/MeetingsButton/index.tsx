@@ -4,9 +4,17 @@ import { moderateScale } from "react-native-size-matters"
 import colors from "src/assets/colors"
 import { fontFamilies, fontWeights } from "@utils/theme"
 
-const MeetingsButton = ({ icon, title }: { icon: IconName; title: string }) => {
+const MeetingsButton = ({
+  icon,
+  title,
+  onPress,
+}: {
+  icon: IconName
+  title: string
+  onPress?: () => void
+}) => {
   return (
-    <TouchableOpacity style={styles.container}>
+    <TouchableOpacity style={styles.container} onPress={onPress}>
       <Icon name={icon} />
       <Text style={styles.text}>{title}</Text>
     </TouchableOpacity>

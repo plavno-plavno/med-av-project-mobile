@@ -4,7 +4,7 @@ export { default as getStartedStar } from './getStartedStar.svg';
 export { default as onboardingLogo } from './onboardingLogo.svg';
 export { default as eyeOpen } from "./eyeOpen.svg";
 export { default as eyeClose } from "./eyeClose.svg";
-export { default as close } from "./close.svg";
+export { default as cross } from "./cross.svg";
 export { default as errorInput } from "./errorInput.svg";
 export { default as mail } from "./mail.svg";
 export { default as noConnection } from "./noConnection.svg"
@@ -13,6 +13,7 @@ export { default as toastSuccess } from "./toastSuccess.svg"
 export { default as toastError } from "./toastError.svg"
 export { default as closeButton } from "./closeButton.svg"
 export { default as calendar } from "./calendar.svg"
+export { default as calendarIcon } from "./calendarIcon.svg"
 export { default as newMeeting } from "./newMeeting.svg"
 export { default as settings } from "./settings.svg"
 export { default as leftButton } from "./leftButton.svg"

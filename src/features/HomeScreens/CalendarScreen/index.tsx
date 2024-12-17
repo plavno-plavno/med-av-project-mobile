@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import React, { useCallback, useId } from "react"
 import {
   Calendar,
   CalendarTouchableOpacityProps,
@@ -16,14 +16,13 @@ import { styles } from "./styles"
 
 const CalendarScreen = () => {
   const { selectedDay } = useAppSelector((state) => state.calendar)
+  const id = useId()
 
   const {
     data: calendarEventsData,
     refetch: calendarEventsRefetch,
     isLoading: isCalendarEventsLoading,
   } = useGetCalendarEventsQuery()
-
-  console.log(calendarEventsData, "calendarEventsData")
 
   const formatTime = (date: Date) => {
     const hours = date.getHours()
@@ -45,6 +44,8 @@ const CalendarScreen = () => {
       status: event.status,
       participants: event.participants,
     })) || []
+  console.log(transformedEvents, "transformedEvents")
+  console.log(calendarEventsData, "calendarEventsData")
 
   useFocusEffect(
     useCallback(() => {
@@ -55,7 +56,7 @@ const CalendarScreen = () => {
     event: T,
     touchableOpacityProps: CalendarTouchableOpacityProps
   ) => (
-    <TouchableOpacity {...touchableOpacityProps} key={event.id}>
+    <TouchableOpacity {...touchableOpacityProps} id={id}>
       <Text style={styles.eventText}>
         {`${event.title}, ${formatTime(event.start)}– ${formatTime(event.end)}`}
       </Text>

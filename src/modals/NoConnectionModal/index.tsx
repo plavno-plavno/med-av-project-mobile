@@ -4,23 +4,26 @@ import { Icon } from "../Icon"
 import { useTranslation } from "react-i18next"
 import { CustomButton } from "../CustomButton"
 import { helpers } from "@utils/theme"
-import NetInfo, { useNetInfoInstance } from "@react-native-community/netinfo";
+import NetInfo, { useNetInfoInstance } from "@react-native-community/netinfo"
 import { useEffect, useState } from "react"
 
 NetInfo.configure({
   reachabilityLongTimeout: 30 * 1000, // How often to check when app is in foreground
   reachabilityRequestTimeout: 1 * 1000, // How long to wait for each check
-});
+})
 
 const NoConnectionScreen = () => {
   const { t } = useTranslation()
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false)
 
-  const { netInfo: { isConnected }, refresh } = useNetInfoInstance();
+  const {
+    netInfo: { isConnected },
+    refresh,
+  } = useNetInfoInstance()
 
   useEffect(() => {
-    if(isConnected !== null){  
-      setIsModalVisible(!isConnected);
+    if (isConnected !== null) {
+      setIsModalVisible(!isConnected)
     }
   }, [isConnected])
 

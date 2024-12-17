@@ -7,9 +7,11 @@ import { fontFamilies, fontWeights, helpers } from "@utils/theme"
 import colors from "src/assets/colors"
 import MeetingsButton from "src/components/MeetingsButton"
 import { moderateScale } from "react-native-size-matters"
+import ScheduleMeetingModal from "src/components/ScheduleMeetingModal"
 
 const NewMeetingScreen = () => {
   const { t } = useTranslation()
+  const [isModalVisible, setIsModalVisible] = React.useState(false)
   return (
     <ScreenWrapper title={t("NewMeeting")} isCenterTitle>
       <View style={styles.container}>
@@ -20,9 +22,17 @@ const NewMeetingScreen = () => {
         </View>
         <View style={[helpers.gap8, helpers.width100Percent]}>
           <MeetingsButton icon="videoIcon" title={t("StartMeetingInstantly")} />
-          <MeetingsButton icon="scheduleMeeting" title={t("ScheduleMeeting")} />
+          <MeetingsButton
+            icon="scheduleMeeting"
+            title={t("ScheduleMeeting")}
+            onPress={() => setIsModalVisible(true)}
+          />
         </View>
       </View>
+      <ScheduleMeetingModal
+        isVisible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+      />
     </ScreenWrapper>
   )
 }

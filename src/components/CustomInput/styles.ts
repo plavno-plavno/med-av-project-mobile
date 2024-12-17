@@ -13,6 +13,9 @@ export const styles = StyleSheet.create({
     color: colors.charcoal,
     marginBottom: moderateScale(8),
   },
+  required: {
+    color: colors.alertRed,
+  },
   inputContainer: {
     borderWidth: 1,
     borderColor: colors.borderGrey,
@@ -20,8 +23,22 @@ export const styles = StyleSheet.create({
   },
   input: {
     height: moderateScale(48),
-    paddingHorizontal: moderateScale(8),
+    paddingHorizontal: moderateScale(12),
+    ...fontFamilies.interManropeRegular16,
+    ...fontWeights.fontWeight400,
+    color: colors.charcoal,
+  },
+  textInput: {
     maxWidth: '90%',
+  },
+  dropdownStyle: {
+    ...fontFamilies.interManropeRegular16,
+    ...fontWeights.fontWeight400,
+    color: colors.charcoal,
+  },
+  iconStyle: {
+    width: moderateScale(24),
+    height: moderateScale(24),
   },
   focusedInput: {
     borderColor: colors.lightAqua,
@@ -42,5 +59,18 @@ export const styles = StyleSheet.create({
     right: moderateScale(12),
     top: moderateScale(12),
   },
+  chip: {
+    flexDirection: "row",
+    backgroundColor: colors.borderGrey,
+    borderRadius: moderateScale(8),
+    paddingHorizontal: moderateScale(8),
+    paddingVertical: moderateScale(8),
+    marginLeft: moderateScale(6),
+  },
+  chipText: { 
+    ...fontFamilies.interManropeRegular14,
+    ...fontWeights.fontWeight400,
+    color: colors.midGrey,
+   },
 });
 
