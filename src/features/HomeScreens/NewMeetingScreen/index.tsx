@@ -7,33 +7,38 @@ import { fontFamilies, fontWeights, helpers } from "@utils/theme"
 import colors from "src/assets/colors"
 import MeetingsButton from "src/components/MeetingsButton"
 import { moderateScale } from "react-native-size-matters"
-import ScheduleMeetingModal from "src/components/ScheduleMeetingModal"
+import ScheduleMeetingModal from "src/modals/ScheduleMeetingModal"
 
 const NewMeetingScreen = () => {
   const { t } = useTranslation()
   const [isModalVisible, setIsModalVisible] = React.useState(false)
   return (
-    <ScreenWrapper title={t("NewMeeting")} isCenterTitle>
-      <View style={styles.container}>
-        <Icon name="meetingLogo" />
-        <View>
-          <Text style={styles.title}>{t("StartNewMeeting")}</Text>
-          <Text style={styles.subtitle}>{t("StartAMeeting")}</Text>
+    <>
+      <ScreenWrapper title={t("NewMeeting")} isCenterTitle>
+        <View style={styles.container}>
+          <Icon name="meetingLogo" width={"100%"} height="250" />
+          <View>
+            <Text style={styles.title}>{t("StartNewMeeting")}</Text>
+            <Text style={styles.subtitle}>{t("StartAMeeting")}</Text>
+          </View>
+          <View style={[helpers.gap8, helpers.width100Percent]}>
+            <MeetingsButton
+              icon="videoIcon"
+              title={t("StartMeetingInstantly")}
+            />
+            <MeetingsButton
+              icon="scheduleMeeting"
+              title={t("ScheduleMeeting")}
+              onPress={() => setIsModalVisible(true)}
+            />
+          </View>
         </View>
-        <View style={[helpers.gap8, helpers.width100Percent]}>
-          <MeetingsButton icon="videoIcon" title={t("StartMeetingInstantly")} />
-          <MeetingsButton
-            icon="scheduleMeeting"
-            title={t("ScheduleMeeting")}
-            onPress={() => setIsModalVisible(true)}
-          />
-        </View>
-      </View>
+      </ScreenWrapper>
       <ScheduleMeetingModal
         isVisible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
       />
-    </ScreenWrapper>
+    </>
   )
 }
 

@@ -51,5 +51,8 @@
     "ScheduleTheMeeting": "Schedule the meeting at a convenient \ntime and invite participants",
     "StartAMeeting": "Start a meeting instantly or schedule a meeting in the calendar and invite participants",
     "StartMeetingInstantly": "Start Meeting Instantly",
-    "ScheduleMeeting": "Schedule Meeting"
+    "ScheduleMeeting": "Schedule Meeting",
+    "PickAColor": "Pick a color to make your meeting stand out from the rest",
+    "EnterTheTitle": "Enter the title",
+    "SelectDate": "Select date"
 }

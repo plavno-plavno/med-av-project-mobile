@@ -5,7 +5,7 @@ import { fontFamilies, fontWeights } from '../../utils/theme';
 
 export const styles = StyleSheet.create({
   container: {
-    
+    flex: 1,
   },
   label: {
     ...fontFamilies.interManropeSemiBold16,
@@ -30,6 +30,15 @@ export const styles = StyleSheet.create({
   },
   textInput: {
     maxWidth: '90%',
+  },
+  chipContainer: {
+    flexWrap: 'wrap',
+    flexDirection: 'row',
+  },
+  textAreaInput: {
+    height: moderateScale(150),
+    paddingHorizontal: moderateScale(12),
+    paddingVertical: moderateScale(12),
   },
   dropdownStyle: {
     ...fontFamilies.interManropeRegular16,
@@ -60,17 +69,24 @@ export const styles = StyleSheet.create({
     top: moderateScale(12),
   },
   chip: {
-    flexDirection: "row",
+    marginLeft: moderateScale(6),
+    marginVertical: moderateScale(6),
+    alignItems: 'center',
+    flexDirection: 'row',
     backgroundColor: colors.borderGrey,
     borderRadius: moderateScale(8),
     paddingHorizontal: moderateScale(8),
     paddingVertical: moderateScale(8),
-    marginLeft: moderateScale(6),
   },
-  chipText: { 
+  chipText: {
     ...fontFamilies.interManropeRegular14,
     ...fontWeights.fontWeight400,
     color: colors.midGrey,
    },
+   subtitle: {
+    ...fontFamilies.interManropeRegular14,
+    ...fontWeights.fontWeight400,
+    color: colors.midGrey,
+   }
 });
 

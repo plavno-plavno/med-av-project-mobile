@@ -6,7 +6,6 @@ import colors from "src/assets/colors";
 export const styles = StyleSheet.create({
     container: {
         flex: 1,
-        width: '100%',
         marginTop: moderateScale(70),
         paddingHorizontal: moderateScale(20),
         paddingVertical: moderateScale(24),
@@ -15,7 +14,11 @@ export const styles = StyleSheet.create({
         borderTopLeftRadius: moderateScale(24),
         borderTopRightRadius: moderateScale(24),
         gap: moderateScale(24),
-        marginBottom: moderateScale(24),
+        paddingBottom: moderateScale(32),
+    },
+    modalContainer: {
+        flex: 1,
+        backgroundColor: colors.blackOpacity06
     },
     header: {
         justifyContent: 'space-between',

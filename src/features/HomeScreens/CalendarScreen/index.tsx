@@ -56,7 +56,7 @@ const CalendarScreen = () => {
     event: T,
     touchableOpacityProps: CalendarTouchableOpacityProps
   ) => (
-    <TouchableOpacity {...touchableOpacityProps} id={id}>
+    <TouchableOpacity {...touchableOpacityProps} key={id}>
       <Text style={styles.eventText}>
         {`${event.title}, ${formatTime(event.start)}– ${formatTime(event.end)}`}
       </Text>

@@ -34,6 +34,7 @@
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
     "react-native-keyboard-controller": "^1.14.5",
     "react-native-keychain": "^9.2.2",
+    "react-native-neat-date-picker": "^1.4.12",
     "react-native-reanimated": "^3.16.4",
     "react-native-safe-area-context": "^5.0.0",
     "react-native-screens": "^4.3.0",

@@ -1,10 +1,4 @@
-import React, {
-  useImperativeHandle,
-  useRef,
-  useState,
-  forwardRef,
-  useCallback,
-} from "react"
+import React, { useImperativeHandle, useRef, useState, forwardRef } from "react"
 import {
   View,
   TextInput,
@@ -14,27 +8,29 @@ import {
   TextInputFocusEventData,
   ViewStyle,
   StyleProp,
-  ScrollView,
 } from "react-native"
 import { Icon } from "../Icon"
 import { Dropdown } from "react-native-element-dropdown"
 import { styles } from "./styles"
 import CustomTextInput from "../CustomTextInput"
 import { helpers } from "@utils/theme"
+import ColorPicker from "../ColorPicker"
 
 interface CustomInputProps {
   label?: string
   placeholder?: string
+  subtitle?: string
   value: string[] | string
   onChangeText: (text: string | string[]) => void
   secureTextEntry?: boolean
   isHidePassword?: boolean
-  inputType?: "dropdown" | "text" | "chip"
+  inputType?: "dropdown" | "text" | "chip" | "colorPicker" | "textArea"
   keyboardType?: "default" | "email-address" | "numeric" | "phone-pad"
   error?: boolean | string
   dropdownData?: { label: string; value: string }[]
   required?: boolean
   editable?: boolean
+  inputContainerProps?: StyleProp<ViewStyle>
   rightIconProps?: {
     name: IconName
     onPress?: () => void
@@ -55,11 +51,13 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
       placeholder,
       value,
       onChangeText,
+      subtitle,
       secureTextEntry = false,
       isHidePassword = true,
       keyboardType = "default",
       error,
       dropdownData,
+      inputContainerProps,
       required,
       inputType = "text",
       editable = true,
@@ -102,12 +100,12 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
               style={styles.input}
               placeholderStyle={styles.dropdownStyle}
               selectedTextStyle={styles.dropdownStyle}
+              containerStyle={[helpers.rounded12]}
               iconStyle={styles.iconStyle}
               data={dropdownData || []}
               maxHeight={300}
               labelField="label"
               valueField="value"
-              placeholder={!isFocused ? "Select item" : "..."}
               value={value}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
@@ -120,7 +118,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
         case "chip": {
           const [chipsInputValue, setChipsInputValue] = useState("")
 
-          const handleAddChip = useCallback(() => {
+          const handleAddChip = () => {
             if (
               chipsInputValue.trim() &&
               !value.includes(chipsInputValue.trim())
@@ -129,38 +127,35 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
               setChipsInputValue("")
               onChangeText(newChips)
             }
-          }, [chipsInputValue, onChangeText])
+          }
 
-          const handleRemoveChip = useCallback(
-            (chipToRemove: string) => {
-              if (Array.isArray(value)) {
-                const newChips = value.filter((chip) => chip !== chipToRemove)
-                onChangeText(newChips)
-              }
-            },
-            [value, onChangeText]
-          )
+          const handleRemoveChip = (chipToRemove: string) => {
+            if (Array.isArray(value)) {
+              const newChips = value.filter((chip) => chip !== chipToRemove)
+              onChangeText(newChips)
+            }
+          }
           return (
-            <ScrollView
-              horizontal
-              contentContainerStyle={[helpers.alignItemsCenter]}
-            >
-              {Array.isArray(value) &&
-                value.map((chip, index) => (
-                  <View key={index} style={styles.chip}>
-                    <Text style={styles.chipText}>{chip}</Text>
-                    <TouchableOpacity onPress={() => handleRemoveChip(chip)}>
-                      <Icon name="cross" />
-                    </TouchableOpacity>
-                  </View>
-                ))}
+            <>
+              <View style={styles.chipContainer}>
+                {Array.isArray(value) &&
+                  value.map((chip, index) => (
+                    <View key={index} style={styles.chip}>
+                      <Text style={styles.chipText}>{chip}</Text>
+                      <Icon
+                        name="cross"
+                        onPress={() => handleRemoveChip(chip)}
+                      />
+                    </View>
+                  ))}
+              </View>
               <CustomTextInput
-                styles={[styles.input]}
+                styles={styles.input}
                 value={chipsInputValue}
-                onChangeText={(text) => setChipsInputValue(text)}
+                onChangeText={setChipsInputValue}
                 onSubmitEditing={handleAddChip}
                 label={label}
-                placeholder={placeholder}
+                placeholder={value.length ? "Invite Participants" : placeholder}
                 secureTextEntry={isSecure}
                 editable={editable}
                 handleFocus={handleFocus}
@@ -168,7 +163,33 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
                 keyboardType={keyboardType}
                 {...rest}
               />
-            </ScrollView>
+            </>
+          )
+        }
+        case "colorPicker": {
+          return (
+            <View style={[helpers.gap8]}>
+              <Text style={styles.subtitle}>{subtitle}</Text>
+              <ColorPicker onChange={onChangeText} />
+            </View>
+          )
+        }
+        case "textArea": {
+          return (
+            <CustomTextInput
+              label={label}
+              multiline
+              placeholder={placeholder}
+              value={value}
+              onChangeText={onChangeText}
+              secureTextEntry={isSecure}
+              editable={editable}
+              handleFocus={handleFocus}
+              handleBlur={handleBlur}
+              keyboardType={keyboardType}
+              styles={[styles.input, styles.textAreaInput]}
+              {...rest}
+            />
           )
         }
         default:
@@ -213,7 +234,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
         )}
         <View
           style={[
-            styles.inputContainer,
+            inputContainerProps || styles.inputContainer,
             isFocused && styles.focusedInput,
             error && styles.errorInput,
           ]}

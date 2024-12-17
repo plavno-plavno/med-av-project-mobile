@@ -11,6 +11,7 @@ interface ICustomInputProps {
   label?: string
   placeholder?: string
   value: any
+  multiline?: boolean
   onChangeText: (text: string) => void
   secureTextEntry?: boolean
   isHidePassword?: boolean
@@ -35,6 +36,7 @@ const CustomTextInput = ({
   label = "",
   placeholder,
   value,
+  multiline,
   onChangeText,
   secureTextEntry: isSecure,
   editable,
@@ -50,6 +52,7 @@ const CustomTextInput = ({
     <TextInput
       editable={editable}
       ref={ref}
+      multiline={multiline}
       style={styles}
       placeholder={placeholder}
       value={value}

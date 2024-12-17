@@ -105,6 +105,12 @@ export const helpers = StyleSheet.create({
     position: 'absolute',
     bottom: 10,
   },
+  rounded8: {
+    borderRadius: moderateScale(8),
+  },
+  rounded12: {
+    borderRadius: moderateScale(12),
+  },
   hitSlop: {
     top: moderateScale(20),
     left: moderateScale(20),

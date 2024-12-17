@@ -1,18 +1,18 @@
 import { View, Text, Modal, StatusBar } from "react-native"
 import { styles } from "./styles"
-import { Icon } from "../Icon"
 import { useTranslation } from "react-i18next"
-import { CustomButton } from "../CustomButton"
+
 import { helpers } from "@utils/theme"
 import NetInfo, { useNetInfoInstance } from "@react-native-community/netinfo"
 import { useEffect, useState } from "react"
+import { Icon, CustomButton } from "@components"
 
 NetInfo.configure({
   reachabilityLongTimeout: 30 * 1000, // How often to check when app is in foreground
   reachabilityRequestTimeout: 1 * 1000, // How long to wait for each check
 })
 
-const NoConnectionScreen = () => {
+const NoConnectionModal = () => {
   const { t } = useTranslation()
   const [isModalVisible, setIsModalVisible] = useState(false)
 
@@ -52,4 +52,4 @@ const NoConnectionScreen = () => {
   )
 }
 
-export default NoConnectionScreen
+export default NoConnectionModal
