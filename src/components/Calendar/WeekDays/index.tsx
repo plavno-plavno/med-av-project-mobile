@@ -31,6 +31,7 @@ const WeekCards = () => {
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
         keyExtractor={(item) => item.displayDate}
+        showsHorizontalScrollIndicator={false}
         renderItem={({ item }) => {
           const isSelectedDate = selectedDay == item.displayDate
           return (
@@ -64,7 +65,7 @@ const WeekCards = () => {
 
 const styles = StyleSheet.create({
   container: {
-    maxWidth: "96%",
+    width: '100%',
   },
   contentContainer: {
     justifyContent: "space-between",

@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MedAVDevelopment</string>
+    <string name="asset_statements" translatable="false">[{ \"include\": \"https://med-app-av.plavno.io/.well-known/assetlinks.json\" }]</string>
+</resources>

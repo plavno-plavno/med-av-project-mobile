@@ -10,6 +10,7 @@ import Config from "react-native-config"
 import * as Keychain from "react-native-keychain"
 import { Mutex } from "async-mutex"
 import { navigationRef } from "../navigation/RootNavigation"
+import { ScreensEnum } from "src/navigation/ScreensEnum"
 
 const baseURL = Config.BASE_API_URL;
 
@@ -52,7 +53,7 @@ export const baseQueryWithReAuth: BaseQueryFn<
         if (refreshResult?.error?.data?.statusCode >= 400) {
           await Keychain.resetGenericPassword({ service: "accessToken" })
           await Keychain.resetGenericPassword({ service: "refreshToken" })
-          navigationRef.current?.navigate("Main")
+          navigationRef.current?.navigate(ScreensEnum.MAIN)
           return refreshResult
         }
         if (refreshResult) {

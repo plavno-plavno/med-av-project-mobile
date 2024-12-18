@@ -30,6 +30,7 @@ export const styles = StyleSheet.create({
   },
   textInput: {
     maxWidth: '90%',
+    color: colors.midGrey,
   },
   chipContainer: {
     flexWrap: 'wrap',

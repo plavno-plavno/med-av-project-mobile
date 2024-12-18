@@ -9,6 +9,7 @@ import CalendarScreen from "src/features/HomeScreens/CalendarScreen"
 import SettingsScreen from "src/features/HomeScreens/SettingsScreen"
 import { moderateScale } from "react-native-size-matters"
 import NewMeetingScreen from "src/features/HomeScreens/NewMeetingScreen"
+import { isIOS } from "@utils/platformChecker"
 
 interface RouteTypes {
   key: string
@@ -83,7 +84,7 @@ const BottomTabNavigator: React.FC = () => {
         },
         tabBarStyle: {
           paddingTop: moderateScale(5),
-          height: moderateScale(96),
+          height: isIOS() ? moderateScale(96) : moderateScale(70),
           backgroundColor: colors.white,
           borderTopWidth: 0,
           elevation: 0,

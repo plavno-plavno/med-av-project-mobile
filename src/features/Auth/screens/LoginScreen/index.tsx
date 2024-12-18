@@ -14,6 +14,7 @@ import { useNavigation } from "@react-navigation/native"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import * as Keychain from "react-native-keychain"
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
+import { isIOS } from "@utils/platformChecker"
 
 interface FormValues {
   email: string
@@ -53,7 +54,7 @@ const LoginScreen = () => {
   }
 
   return (
-    <ScreenWrapper isBackButton title={t("LogIn")} isCenterTitle>
+    <ScreenWrapper isBackButton title={t("LogIn")} isCenterTitle keyboardVerticalOffset={isIOS() ? -50 : undefined}>
       <KeyboardAwareScrollView
         style={helpers.flex1}
         bounces={false}

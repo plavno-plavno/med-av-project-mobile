@@ -14,7 +14,8 @@ NetInfo.configure({
 
 const NoConnectionModal = () => {
   const { t } = useTranslation()
-  const [isModalVisible, setIsModalVisible] = useState(false)
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     netInfo: { isConnected },
@@ -23,9 +24,22 @@ const NoConnectionModal = () => {
 
   useEffect(() => {
     if (isConnected !== null) {
-      setIsModalVisible(!isConnected)
+      setIsModalVisible(!isConnected);
     }
   }, [isConnected])
+
+  const onRefreshPress = async () => {
+    try {
+      setIsLoading(true);
+      await refresh();
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
+    } catch (error) {
+      console.log(error, 'error onRefreshPress');
+
+    }
+  }
 
   return (
     <Modal transparent={true} animationType="slide" visible={isModalVisible}>
@@ -45,8 +59,9 @@ const NoConnectionModal = () => {
         style={styles.refreshButton}
         type="primary"
         text={t("Refresh")}
-        onPress={refresh}
+        onPress={onRefreshPress}
         rightIcon="refresh"
+        isLoading={isLoading}
       />
     </Modal>
   )
