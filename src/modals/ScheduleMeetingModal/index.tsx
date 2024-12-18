@@ -1,30 +1,20 @@
-import React, { useRef, useState } from "react"
-import { View, Text, ScrollView } from "react-native"
+import React, { useState } from "react"
+import { View, Text, ScrollView, TouchableOpacity } from "react-native"
 import { useTranslation } from "react-i18next"
 import { helpers } from "@utils/theme"
 import { Formik, FormikProps } from "formik"
 import CustomInput from "src/components/CustomInput"
 import moment from "moment-timezone"
 import { Icon, CustomButton } from "@components"
-import DatePicker from "react-native-neat-date-picker"
 
 import { styles } from "./styles"
 import { useAppSelector } from "src/hooks/redux"
 import { validationCreateEventSchema } from "@utils/validationSchemas"
 import { screenHeight } from "@utils/screenResponsive"
 import BottomSheet from "@devvie/bottom-sheet"
+import DateTimePickerModal from "react-native-modal-datetime-picker"
 import colors from "src/assets/colors"
 
-const mockTimeRange = [
-  {
-    label: "4:00 AM",
-    value: "4:00 AM",
-  },
-  {
-    label: "4:30 AM",
-    value: "4:30 AM",
-  },
-]
 interface IFormValues {
   date: string
   title: string
@@ -36,36 +26,57 @@ interface IFormValues {
   description: string
 }
 
-const ScheduleMeetingModal = ({ isVisible, onClose, sheetRef }: any) => {
+const ScheduleMeetingModal = ({ onClose, sheetRef }: any) => {
   const { t } = useTranslation()
   const { currentDate } = useAppSelector((state) => state.calendar)
+
   const formikRef = React.useRef<FormikProps<IFormValues>>(null as any)
 
-  const [showDatePickerSingle, setShowDatePickerSingle] = useState(false)
+  const [datePickerState, setDatePickerState] = useState({
+    field: "",
+    mode: "date" as "date" | "time",
+    isVisible: false,
+  })
 
-  const openDatePickerSingle = () => setShowDatePickerSingle(true)
-
-  const onCancelSingle = () => {
-    setShowDatePickerSingle(false)
-  }
-
-  const onConfirmSingle = (output: any) => {
-    const { setFieldValue } = formikRef.current
-    setShowDatePickerSingle(false)
-    setFieldValue("date", output.dateString)
-  }
-
-  const timezones = moment.tz
-    .names()
-    .map((timezone) => {
-      const offset = moment.tz(timezone).format("Z") // Get the timezone offset
-      return {
-        label: `(${offset}) ${timezone.replace("_", " ")}`,
-        value: timezone,
-        offset, // Adding offset for filtering
-      }
+  const showDatePicker = ({
+    mode,
+    field,
+  }: {
+    mode: "date" | "time"
+    field: string
+  }) => {
+    setDatePickerState({
+      field,
+      mode,
+      isVisible: true,
     })
-    .filter((tz) => tz.label.includes("GMT")) // Filter only GMT zones
+  }
+
+  const hideDatePicker = () => {
+    setDatePickerState((prev) => ({
+      ...prev,
+      isVisible: false,
+    }))
+  }
+
+  const handleConfirm = (date: Date) => {
+    const { setFieldValue } = formikRef.current as FormikProps<any>
+
+    const fieldFormatMap: Record<(typeof datePickerState)["field"], string> = {
+      date: "YYYY-MM-DD",
+      timeStart: "HH:mm",
+      timeEnd: "HH:mm",
+    }
+
+    const format = fieldFormatMap[datePickerState.field]
+    if (format) {
+      setFieldValue(datePickerState.field, moment(date).format(format))
+    } else {
+      console.warn(`Invalid field: "${datePickerState.field}"`)
+    }
+
+    hideDatePicker()
+  }
 
   return (
     <>
@@ -149,7 +160,8 @@ const ScheduleMeetingModal = ({ isVisible, onClose, sheetRef }: any) => {
                       }
                       rightIconProps={{
                         name: "calendarIcon",
-                        onPress: openDatePickerSingle,
+                        onPress: () =>
+                          showDatePicker({ mode: "date", field: "date" }),
                       }}
                       error={touched.date && errors.date}
                     />
@@ -158,38 +170,58 @@ const ScheduleMeetingModal = ({ isVisible, onClose, sheetRef }: any) => {
                       inputType="dropdown"
                       required
                       label="Timezone"
-                      editable={false}
                       value={values.timezone}
                       onChangeText={(val) =>
                         handleChange("timezone")(val as string)
                       }
-                      dropdownData={timezones}
+                      dropdownData={[
+                        {
+                          value: "(GMT+2:00) Warsaw",
+                          label: "(GMT+2:00) Warsaw",
+                        },
+                      ]}
                       error={touched.timezone && errors.timezone}
                     />
-                    <CustomInput
-                      label="Time Start"
-                      inputType="dropdown"
-                      required
-                      editable={false}
-                      value={values.timeStart}
-                      onChangeText={(val) =>
-                        handleChange("timeStart")(val as string)
+                    <TouchableOpacity
+                      onPress={() =>
+                        showDatePicker({ mode: "time", field: "timeStart" })
                       }
-                      dropdownData={mockTimeRange}
-                      error={touched.timeStart && errors.timeStart}
-                    />
-                    <CustomInput
-                      label="Time End"
-                      inputType="dropdown"
-                      required
-                      editable={false}
-                      value={values.timeEnd}
-                      onChangeText={(val) =>
-                        handleChange("timeEnd")(val as string)
+                    >
+                      <View pointerEvents="none">
+                        <CustomInput
+                          label="Time Start"
+                          placeholder="Select start time"
+                          required
+                          value={values.timeStart}
+                          onChangeText={() => {}}
+                          rightIconProps={{
+                            name: "downArrow",
+                          }}
+                          error={touched.timeStart && errors.timeStart}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() =>
+                        showDatePicker({ mode: "time", field: "timeEnd" })
                       }
-                      dropdownData={mockTimeRange}
-                      error={touched.timeEnd && errors.timeEnd}
-                    />
+                    >
+                      <View pointerEvents="none">
+                        <CustomInput
+                          label="Time End"
+                          placeholder="Select end time"
+                          required
+                          editable={false}
+                          value={values.timeEnd}
+                          onChangeText={() => {}}
+                          rightIconProps={{
+                            name: "downArrow",
+                          }}
+                          error={touched.timeEnd && errors.timeEnd}
+                        />
+                      </View>
+                    </TouchableOpacity>
+
                     <CustomInput
                       inputType="chip"
                       label="Invite Participants"
@@ -242,11 +274,19 @@ const ScheduleMeetingModal = ({ isVisible, onClose, sheetRef }: any) => {
           </Formik>
         </View>
       </BottomSheet>
-      <DatePicker
-        isVisible={showDatePickerSingle}
-        mode={"single"}
-        onCancel={onCancelSingle}
-        onConfirm={onConfirmSingle}
+
+      <DateTimePickerModal
+        pickerStyleIOS={{
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+        isVisible={datePickerState.isVisible}
+        mode={datePickerState.mode}
+        onConfirm={handleConfirm}
+        onCancel={hideDatePicker}
+        display={datePickerState.mode === "date" ? "inline" : undefined}
+        is24Hour={false}
+        minuteInterval={10}
       />
     </>
   )

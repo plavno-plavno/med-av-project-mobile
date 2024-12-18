@@ -15,6 +15,7 @@ import { styles } from "./styles"
 import CustomTextInput from "../CustomTextInput"
 import { helpers } from "@utils/theme"
 import ColorPicker from "../ColorPicker"
+import colors from "src/assets/colors"
 
 interface CustomInputProps {
   label?: string
@@ -94,11 +95,14 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
               {...rest}
             />
           )
-        case "dropdown":
+        case "dropdown": {
+          console.log(value, "VALUES")
+
           return (
             <Dropdown
+              iconColor={colors.cadetGrey}
               style={styles.input}
-              placeholderStyle={styles.dropdownStyle}
+              placeholderStyle={styles.placeholderStyle}
               selectedTextStyle={styles.dropdownStyle}
               containerStyle={[helpers.rounded12]}
               iconStyle={styles.iconStyle}
@@ -115,6 +119,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
               }}
             />
           )
+        }
         case "chip": {
           const [chipsInputValue, setChipsInputValue] = useState("")
 

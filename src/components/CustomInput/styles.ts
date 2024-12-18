@@ -43,7 +43,12 @@ export const styles = StyleSheet.create({
   dropdownStyle: {
     ...fontFamilies.interManropeRegular16,
     ...fontWeights.fontWeight400,
-    color: colors.charcoal,
+    color: colors.midGrey,
+  },
+  placeholderStyle: {
+    ...fontFamilies.interManropeRegular16,
+    ...fontWeights.fontWeight400,
+    color: colors.placeholder,
   },
   iconStyle: {
     width: moderateScale(24),
