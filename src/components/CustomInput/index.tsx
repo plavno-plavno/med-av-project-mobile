@@ -225,6 +225,11 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
       inputType !== "dropdown" &&
       inputType !== "chip"
 
+    const isErrorIconVisible =
+      !secureTextEntry &&
+      inputType !== "dropdown" &&
+      inputType !== "colorPicker"
+
     return (
       <View style={[styles.container, style]}>
         {label && (
@@ -264,7 +269,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
               <Icon name="cross" />
             </TouchableOpacity>
           )}
-          {error && !secureTextEntry && (
+          {error && isErrorIconVisible && (
             <Icon style={styles.rightIcon} name="errorInput" />
           )}
         </View>

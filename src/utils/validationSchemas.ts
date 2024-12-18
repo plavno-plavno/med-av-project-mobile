@@ -1,3 +1,4 @@
+import moment from "moment"
 import * as Yup from "yup"
 
 export const validationLoginSchema = Yup.object().shape({
@@ -35,3 +36,45 @@ export const validationResetPasswordSchema = Yup.object().shape({
     .oneOf([Yup.ref("password")], "Passwords must match")
     .required("Confirm Password is required"),
 })
+
+export const validationCreateEventSchema = Yup.object().shape({
+  title: Yup.string()
+    .required("Title is required")
+    .max(100, "Title must be at most 100 characters"),
+  
+  date: Yup.date()
+    .required("Date is required")
+    .typeError("Invalid date format"),
+
+  timezone: Yup.string()
+    .required("Timezone is required"),
+
+  timeStart: Yup.string()
+    .required("Start time is required"),
+
+  timeEnd: Yup.string()
+    .required("End time is required")
+    .test(
+      "is-greater",
+      "End time must be after start time",
+      function (value) {
+        const { timeStart } = this.parent;
+        if (!timeStart || !value) return true;
+        return moment(value, "HH:mm").isAfter(moment(timeStart, "HH:mm"));
+      }
+    ),
+
+  inviteParticipants: Yup.array()
+    .of(
+      Yup.string()
+        .email("Must be a valid email address")
+        .required("Participant email is required")
+    )
+    .min(1, "At least one participant must be invited"),
+
+  color: Yup.string()
+    .required("Color is required"),
+
+  description: Yup.string()
+    .max(120, "Description must be at most 120 characters"),
+});

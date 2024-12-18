@@ -10,6 +10,7 @@ import DatePicker from "react-native-neat-date-picker"
 
 import { styles } from "./styles"
 import { useAppSelector } from "src/hooks/redux"
+import { validationCreateEventSchema } from "@utils/validationSchemas"
 
 const mockTimeRange = [
   {
@@ -96,15 +97,17 @@ const ScheduleMeetingModal = ({ isVisible, onClose }: any) => {
               initialValues={{
                 title: "",
                 date: currentDate.format("YYYY-MM-DD"),
-                timezone: timezones[0].value,
+                timezone: "",
                 timeStart: "",
                 timeEnd: "",
-                inviteParticipants: ["valery@gmail.com"],
+                inviteParticipants: [],
                 color: "",
                 description: "",
               }}
-              // validationSchema={validationResetPasswordSchema}
-              onSubmit={() => {}}
+              validationSchema={validationCreateEventSchema}
+              onSubmit={(values) => {
+                console.log(values, "values123")
+              }}
             >
               {({
                 handleChange,
@@ -131,6 +134,7 @@ const ScheduleMeetingModal = ({ isVisible, onClose }: any) => {
                         onChangeText={(val) =>
                           handleChange("title")(val as string)
                         }
+                        error={touched.title && errors.title}
                       />
                       <CustomInput
                         required
@@ -145,6 +149,7 @@ const ScheduleMeetingModal = ({ isVisible, onClose }: any) => {
                           name: "calendarIcon",
                           onPress: openDatePickerSingle,
                         }}
+                        error={touched.date && errors.date}
                       />
 
                       <CustomInput
@@ -157,6 +162,7 @@ const ScheduleMeetingModal = ({ isVisible, onClose }: any) => {
                           handleChange("timezone")(val as string)
                         }
                         dropdownData={timezones}
+                        error={touched.timezone && errors.timezone}
                       />
                       <CustomInput
                         label="Time Start"
@@ -168,6 +174,7 @@ const ScheduleMeetingModal = ({ isVisible, onClose }: any) => {
                           handleChange("timeStart")(val as string)
                         }
                         dropdownData={mockTimeRange}
+                        error={touched.timeStart && errors.timeStart}
                       />
                       <CustomInput
                         label="Time End"
@@ -179,6 +186,7 @@ const ScheduleMeetingModal = ({ isVisible, onClose }: any) => {
                           handleChange("timeEnd")(val as string)
                         }
                         dropdownData={mockTimeRange}
+                        error={touched.timeEnd && errors.timeEnd}
                       />
                       <CustomInput
                         inputType="chip"
@@ -188,6 +196,10 @@ const ScheduleMeetingModal = ({ isVisible, onClose }: any) => {
                         value={values.inviteParticipants}
                         onChangeText={(val) =>
                           setFieldValue("inviteParticipants", val)
+                        }
+                        error={
+                          touched.inviteParticipants &&
+                          errors.inviteParticipants
                         }
                       />
                       <CustomInput
@@ -200,6 +212,7 @@ const ScheduleMeetingModal = ({ isVisible, onClose }: any) => {
                         onChangeText={(val) =>
                           handleChange("color")(val as string)
                         }
+                        error={touched.color && errors.color}
                       />
                       <CustomInput
                         inputType="textArea"
@@ -209,19 +222,19 @@ const ScheduleMeetingModal = ({ isVisible, onClose }: any) => {
                         onChangeText={(val) =>
                           handleChange("description")(val as string)
                         }
+                        error={touched.description && errors.description}
+                      />
+                      <CustomButton
+                        type="primary"
+                        text={t("Schedule")}
+                        onPress={handleSubmit}
+                        style={helpers.width100Percent}
                       />
                     </View>
                   </ScrollView>
                 )
               }}
             </Formik>
-
-            <CustomButton
-              type="primary"
-              text={t("Schedule")}
-              onPress={() => {}}
-              style={helpers.width100Percent}
-            />
           </View>
         </View>
       </Modal>
