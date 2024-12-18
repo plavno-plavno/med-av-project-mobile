@@ -68,7 +68,7 @@ export const validationCreateEventSchema = Yup.object().shape({
     .of(
       Yup.string()
         .email("Must be a valid email address")
-        .required("Participant email is required")
+        // .required("Participant email is required")
     )
     .min(1, "At least one participant must be invited"),
 

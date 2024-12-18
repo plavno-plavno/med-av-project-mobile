@@ -200,6 +200,10 @@ const ScheduleMeetingModal = ({ isVisible, onClose }: any) => {
                         error={
                           touched.inviteParticipants &&
                           errors.inviteParticipants
+                            ? Array.isArray(errors.inviteParticipants)
+                              ? errors.inviteParticipants.join(", ")
+                              : String(errors.inviteParticipants)
+                            : undefined
                         }
                       />
                       <CustomInput
