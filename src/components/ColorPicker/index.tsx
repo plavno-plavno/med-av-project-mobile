@@ -40,7 +40,10 @@ const ColorPicker = ({ onChange }: { onChange: (value: string) => void }) => {
       {colorsArr.map((item) => (
         <TouchableOpacity
           key={item.color}
-          style={styles.colorContainer}
+          style={[
+            styles.colorContainer,
+            { borderColor: item.checked ? item.color : colors.borderGrey },
+          ]}
           onPress={() => {
             setColorsArr((prevColors) =>
               prevColors.map((color) => ({
@@ -78,7 +81,6 @@ const styles = StyleSheet.create({
   colorContainer: {
     borderRadius: moderateScale(8),
     borderWidth: 1,
-    borderColor: colors.borderGrey,
     paddingVertical: moderateScale(6),
     paddingHorizontal: moderateScale(6),
   },
