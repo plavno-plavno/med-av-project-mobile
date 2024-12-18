@@ -16,36 +16,41 @@ import { useResetPasswordMutation } from "src/api/auth/authApi"
 
 type ParamList = {
   Detail: {
-    hash: string;
-  };
-};
+    hash: string
+  }
+}
 
 const ResetPasswordScreen = () => {
   const { t } = useTranslation()
-  const navigation = useNavigation<ROUTES>();
+  const navigation = useNavigation<ROUTES>()
   const {
     params: { hash },
-  } = useRoute<RouteProp<ParamList, 'Detail'>>();
+  } = useRoute<RouteProp<ParamList, "Detail">>()
 
-  const [resetPassword, {isLoading: isResetPasswordLoading}] = useResetPasswordMutation();
-  
-  const onResetPassword = async ({ confirmPassword }: { confirmPassword: string }) => {
-    try{
+  const [resetPassword, { isLoading: isResetPasswordLoading }] =
+    useResetPasswordMutation()
+
+  const onResetPassword = async ({
+    confirmPassword,
+  }: {
+    confirmPassword: string
+  }) => {
+    try {
       const res = await resetPassword({
         password: confirmPassword,
         hash,
-      }).unwrap();
-      console.log(res, 'res onResetPassword');
-      
+      }).unwrap()
+      console.log(res, "res onResetPassword")
+
       Toast.show({
         type: "success",
         text1: t("PasswordChanged!"),
       })
       navigation.navigate(ScreensEnum.LOGIN)
     } catch (error) {
-      console.log(error, 'error onResetPassword');
-      const typedError: any = error as Error;
-      if(typedError?.errors?.hash){
+      console.log(error, "error onResetPassword")
+      const typedError: any = error as Error
+      if (typedError?.errors?.hash) {
         Toast.show({
           type: "error",
           text1: JSON.stringify(typedError?.errors?.hash),
@@ -81,7 +86,9 @@ const ResetPasswordScreen = () => {
                   label={t("NewPassword")}
                   placeholder={t("EnterYourPassword")}
                   onBlur={handleBlur("password")}
-                  onChangeText={handleChange("password")}
+                  onChangeText={(val) =>
+                    handleChange("password")(val as string)
+                  }
                   secureTextEntry
                   isHidePassword={false}
                   value={values.password}
@@ -91,7 +98,9 @@ const ResetPasswordScreen = () => {
                   label={t("ConfirmPassword")}
                   placeholder={t("ConfirmYourPassword")}
                   secureTextEntry
-                  onChangeText={handleChange("confirmPassword")}
+                  onChangeText={(val) =>
+                    handleChange("confirmPassword")(val as string)
+                  }
                   onBlur={handleBlur("confirmPassword")}
                   value={values.confirmPassword}
                   error={touched.confirmPassword && errors.confirmPassword}

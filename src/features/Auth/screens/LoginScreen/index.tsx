@@ -54,7 +54,12 @@ const LoginScreen = () => {
   }
 
   return (
-    <ScreenWrapper isBackButton title={t("LogIn")} isCenterTitle keyboardVerticalOffset={isIOS() ? -50 : undefined}>
+    <ScreenWrapper
+      isBackButton
+      title={t("LogIn")}
+      isCenterTitle
+      keyboardVerticalOffset={isIOS() ? -50 : undefined}
+    >
       <KeyboardAwareScrollView
         style={helpers.flex1}
         bounces={false}
@@ -92,7 +97,9 @@ const LoginScreen = () => {
                       placeholder={t("EnterYourEmail")}
                       keyboardType="email-address"
                       onBlur={handleBlur("email")}
-                      onChangeText={handleChange("email")}
+                      onChangeText={(val) =>
+                        handleChange("email")(val as string)
+                      }
                       value={values.email}
                       error={touched.email && errors.email}
                     />
@@ -100,7 +107,9 @@ const LoginScreen = () => {
                       label={t("Password")}
                       placeholder={t("EnterYourPassword")}
                       secureTextEntry
-                      onChangeText={handleChange("password")}
+                      onChangeText={(val) =>
+                        handleChange("password")(val as string)
+                      }
                       onBlur={handleBlur("password")}
                       value={values.password}
                       error={touched.password && errors.password}

@@ -26,8 +26,20 @@ const SettingsScreen = () => {
   }
 
   return (
-    <View style={{ flex: 1, alignContent: "center", justifyContent: "center" }}>
-      <CustomButton type="primary" text="Logout" onPress={handleLogout} />
+    <View
+      style={{
+        flex: 1,
+        alignContent: "center",
+        justifyContent: "flex-end",
+        paddingHorizontal: 20,
+      }}
+    >
+      <CustomButton
+        type="primary"
+        text="Logout"
+        onPress={handleLogout}
+        style={{ marginBottom: 20 }}
+      />
     </View>
   )
 }

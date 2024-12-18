@@ -16,33 +16,38 @@ import Toast from "react-native-toast-message"
 
 type ParamList = {
   Detail: {
-    hash: string;
-  };
-};
+    hash: string
+  }
+}
 
 const CreatePasswordScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<ROUTES>()
   const {
     params: { hash },
-  } = useRoute<RouteProp<ParamList, 'Detail'>>();
+  } = useRoute<RouteProp<ParamList, "Detail">>()
 
-  const [emailConfirm, { isLoading: isEmailConfirmLoading }] = useEmailConfirmMutation();
+  const [emailConfirm, { isLoading: isEmailConfirmLoading }] =
+    useEmailConfirmMutation()
 
-  const onSignUpPress = async ({ confirmPassword }: { confirmPassword: string }) => {
+  const onSignUpPress = async ({
+    confirmPassword,
+  }: {
+    confirmPassword: string
+  }) => {
     try {
       const res = await emailConfirm({
         hash,
         password: confirmPassword,
-      }).unwrap();
-      console.log(res, 'res onSignUpPress');
+      }).unwrap()
+      console.log(res, "res onSignUpPress")
       Toast.show({
         type: "success",
         text1: t("Success"),
       })
     } catch (error) {
-      console.log(error, 'error onSignUpPress');
-      const typedError: any = error as Error;
+      console.log(error, "error onSignUpPress")
+      const typedError: any = error as Error
       if (typedError?.errors?.hash) {
         Toast.show({
           type: "error",
@@ -79,7 +84,9 @@ const CreatePasswordScreen = () => {
                   label={t("CreatePassword")}
                   placeholder={t("EnterYourPassword")}
                   onBlur={handleBlur("password")}
-                  onChangeText={handleChange("password")}
+                  onChangeText={(val) =>
+                    handleChange("password")(val as string)
+                  }
                   secureTextEntry
                   isHidePassword={false}
                   value={values.password}
@@ -89,7 +96,9 @@ const CreatePasswordScreen = () => {
                   label={t("ConfirmPassword")}
                   placeholder={t("ConfirmYourPassword")}
                   secureTextEntry
-                  onChangeText={handleChange("confirmPassword")}
+                  onChangeText={(val) =>
+                    handleChange("confirmPassword")(val as string)
+                  }
                   onBlur={handleBlur("confirmPassword")}
                   value={values.confirmPassword}
                   error={touched.confirmPassword && errors.confirmPassword}
