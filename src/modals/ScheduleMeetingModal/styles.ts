@@ -5,16 +5,15 @@ import colors from "src/assets/colors";
 
 export const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        marginTop: moderateScale(70),
+        flexGrow: 1,
         paddingHorizontal: moderateScale(20),
-        paddingVertical: moderateScale(24),
         backgroundColor: colors.white,
         alignItems: 'center',
-        borderTopLeftRadius: moderateScale(24),
-        borderTopRightRadius: moderateScale(24),
         gap: moderateScale(24),
-        paddingBottom: moderateScale(32),
+    },
+    bottomSheet: {
+        backgroundColor: colors.white,
+        paddingBottom: moderateScale(265)
     },
     modalContainer: {
         flex: 1,

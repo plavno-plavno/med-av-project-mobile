@@ -28,7 +28,7 @@ interface Props {
   handleBackButtonPress?: () => void
   statusBarColor?: StatusBarProps["barStyle"]
   isCalendarScreen?: boolean
-  keyboardVerticalOffset?: number;
+  keyboardVerticalOffset?: number
 }
 
 const ScreenWrapper: React.FC<Props> = memo(
@@ -52,7 +52,11 @@ const ScreenWrapper: React.FC<Props> = memo(
     return (
       <>
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-          <KeyboardAvoidingView behavior="padding" style={helpers.flex1} keyboardVerticalOffset={keyboardVerticalOffset}>
+          <KeyboardAvoidingView
+            behavior="padding"
+            style={helpers.flex1}
+            keyboardVerticalOffset={keyboardVerticalOffset}
+          >
             <SafeAreaView style={{ backgroundColor }} edges={["top"]} />
             <View style={[styles.container, { backgroundColor }]}>
               <StatusBar barStyle={statusBarColor} />

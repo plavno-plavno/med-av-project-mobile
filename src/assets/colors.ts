@@ -17,6 +17,7 @@ const colors = {
 
 
     blackOpacity06: 'rgba(0, 0, 0, 0.6)',
+    blackOpacity08: '#192027E0',
 
     placeholder: '#9BA0A6',
     borderGrey: "#EAEEF2",

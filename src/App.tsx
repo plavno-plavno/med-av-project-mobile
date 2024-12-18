@@ -6,12 +6,15 @@ import Navigation from "./navigation"
 import "./i18n/i18next"
 import ToastMessage from "./components/ToastMessages"
 import NoConnectionModal from "./modals/NoConnectionModal"
+import { Host } from "react-native-portalize"
 
 const App = () => {
   return (
     <SafeAreaProvider>
       <Provider store={store}>
-        <Navigation />
+        <Host>
+          <Navigation />
+        </Host>
         <ToastMessage />
         <NoConnectionModal />
       </Provider>

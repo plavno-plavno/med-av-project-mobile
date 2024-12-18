@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native"
-import React from "react"
+import React, { useRef } from "react"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { useTranslation } from "react-i18next"
 import { Icon } from "@components"
@@ -8,10 +8,12 @@ import colors from "src/assets/colors"
 import MeetingsButton from "src/components/MeetingsButton"
 import { moderateScale } from "react-native-size-matters"
 import ScheduleMeetingModal from "src/modals/ScheduleMeetingModal"
+import { BottomSheetMethods } from "@devvie/bottom-sheet"
+import { Portal } from "react-native-portalize"
 
 const NewMeetingScreen = () => {
   const { t } = useTranslation()
-  const [isModalVisible, setIsModalVisible] = React.useState(false)
+  const sheetRef = useRef<BottomSheetMethods>(null)
   return (
     <>
       <ScreenWrapper title={t("NewMeeting")} isCenterTitle>
@@ -29,15 +31,20 @@ const NewMeetingScreen = () => {
             <MeetingsButton
               icon="scheduleMeeting"
               title={t("ScheduleMeeting")}
-              onPress={() => setIsModalVisible(true)}
+              onPress={() => {
+                sheetRef.current?.open()
+              }}
             />
           </View>
         </View>
       </ScreenWrapper>
-      <ScheduleMeetingModal
-        isVisible={isModalVisible}
-        onClose={() => setIsModalVisible(false)}
-      />
+      <Portal>
+        <ScheduleMeetingModal
+          isVisible={() => sheetRef.current?.open()}
+          onClose={() => sheetRef.current?.close()}
+          sheetRef={sheetRef}
+        />
+      </Portal>
     </>
   )
 }
