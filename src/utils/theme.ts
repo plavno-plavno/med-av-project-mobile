@@ -554,6 +554,9 @@ export const helpers = StyleSheet.create({
   gap8: {
     gap: moderateScale(8),
   },
+  gap12: {
+    gap: moderateScale(12),
+  },
   gap16: {
     gap: moderateScale(16),
   },

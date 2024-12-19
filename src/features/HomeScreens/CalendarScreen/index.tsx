@@ -1,4 +1,4 @@
-import React, { useCallback, useId } from "react"
+import React, { useCallback, useRef } from "react"
 import {
   Calendar,
   CalendarTouchableOpacityProps,
@@ -13,10 +13,13 @@ import { useGetCalendarEventsQuery } from "src/api/calendarApi/calendarApi"
 import { useFocusEffect } from "@react-navigation/native"
 import { screenWidth } from "@utils/screenResponsive"
 import { styles } from "./styles"
+import DetailsEventModal from "src/modals/DetailsEventModal"
+import { BottomSheetMethods } from "@devvie/bottom-sheet"
 
 const CalendarScreen = () => {
   const { selectedDay } = useAppSelector((state) => state.calendar)
-  const id = useId()
+  const sheetRef = useRef<BottomSheetMethods>(null)
+  const [eventId, setEventId] = React.useState(0)
 
   const {
     data: calendarEventsData,
@@ -33,6 +36,15 @@ const CalendarScreen = () => {
     return `${formattedHours} ${minutes ? `${minutes} ${period}` : period}`
   }
 
+  const handleOpenDetailsModal = (eventId: number) => {
+    setEventId(eventId)
+    sheetRef.current?.open()
+  }
+
+  const handleCloseDetailsModal = () => {
+    sheetRef.current?.close()
+  }
+
   const transformedEvents =
     calendarEventsData?.data?.map((event: any) => ({
       id: event.id,
@@ -44,51 +56,64 @@ const CalendarScreen = () => {
       status: event.status,
       participants: event.participants,
     })) || []
-  console.log(transformedEvents, "transformedEvents")
-  console.log(calendarEventsData, "calendarEventsData")
+  // console.log(calendarEventsData, "calendarEventsData")
+  // console.log(transformedEvents, "transformedEvents")
 
-  useFocusEffect(
-    useCallback(() => {
-      calendarEventsRefetch()
-    }, [])
-  )
   const renderEvent = <T extends ICalendarEventBase>(
-    event: T,
+    event: T | any,
     touchableOpacityProps: CalendarTouchableOpacityProps
   ) => (
-    <TouchableOpacity {...touchableOpacityProps} key={id}>
+    <TouchableOpacity
+      {...touchableOpacityProps}
+      key={event?.id}
+      onPress={() => handleOpenDetailsModal(event?.id)}
+    >
       <Text style={styles.eventText}>
         {`${event.title}, ${formatTime(event.start)}– ${formatTime(event.end)}`}
       </Text>
     </TouchableOpacity>
   )
 
+  useFocusEffect(
+    useCallback(() => {
+      calendarEventsRefetch()
+    }, [])
+  )
+
   if (isCalendarEventsLoading) {
     return <ActivityIndicator size={"large"} style={{ top: "50%" }} />
   }
   return (
-    <ScreenWrapper childrenStyle={styles.container} isCalendarScreen>
-      <Calendar
-        events={transformedEvents}
-        height={100}
-        mode={"day"}
-        onPressEvent={() => console.log("event")}
-        ampm
-        overlapOffset={screenWidth * 0.4}
-        date={new Date(selectedDay)}
-        renderEvent={renderEvent}
-        renderHeader={() => {
-          return <WeekDays />
-        }}
-        hourStyle={styles.hourStyle}
-        eventCellTextColor={colors.ghostWhite}
-        eventCellStyle={(event) => [
-          styles.cellStyle,
-          { backgroundColor: event.color },
-        ]}
-        calendarCellTextStyle={styles.cellTextColor}
+    <>
+      <ScreenWrapper childrenStyle={styles.container} isCalendarScreen>
+        <Calendar
+          events={transformedEvents}
+          height={100}
+          mode={"day"}
+          onPressEvent={() => console.log("event")}
+          ampm
+          overlapOffset={screenWidth * 0.4}
+          date={new Date(selectedDay)}
+          renderEvent={renderEvent}
+          renderHeader={() => {
+            return <WeekDays />
+          }}
+          hourStyle={styles.hourStyle}
+          eventCellTextColor={colors.ghostWhite}
+          eventCellStyle={(event) => [
+            styles.cellStyle,
+            { backgroundColor: event.color },
+          ]}
+          calendarCellTextStyle={styles.cellTextColor}
+        />
+      </ScreenWrapper>
+      <DetailsEventModal
+        eventId={eventId}
+        sheetRef={sheetRef}
+        onClose={handleCloseDetailsModal}
+        isVisible={false}
       />
-    </ScreenWrapper>
+    </>
   )
 }
 

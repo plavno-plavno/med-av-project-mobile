@@ -3,7 +3,13 @@ export interface IGetCalendarEventDetailsRequest {
 }
 
 export interface IGetCalendarEventDetailsResponse {
-    
+    id: number
+    startDate: string
+    endDate: string;
+    title: string;
+    description: string;
+    color: string;
+    participants: string[]
 }
 
 export interface IRole {
@@ -75,6 +81,7 @@ export interface IParticipants{
     updatedAt: string;
     user: IUser;
 }
+
 
 export interface IGetCalendarEvents {
     __entity: string;

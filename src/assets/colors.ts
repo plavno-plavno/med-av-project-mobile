@@ -26,6 +26,7 @@ const colors = {
     backgroundGrey: "#F3FAFA",
     
     alertRed: "#E44E58",
+    errorLight: "#FCEDEE",
     alertWarning: "#DFAA21",
     successGreen: "#5EC18E"
 };

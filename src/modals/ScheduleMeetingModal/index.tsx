@@ -18,6 +18,7 @@ import { useCreateEventMutation } from "src/api/calendarApi/calendarApi"
 import Toast from "react-native-toast-message"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 import { navigate } from "src/navigation/RootNavigation"
+import { Portal } from "react-native-portalize"
 
 interface IFormValues {
   date: string
@@ -55,6 +56,7 @@ const ScheduleMeetingModal = ({
   const { t } = useTranslation()
 
   const { currentDate } = useAppSelector((state) => state.calendar)
+  console.log(currentDate, "currentDate")
 
   const formikRef = React.useRef<FormikProps<IFormValues>>(null as any)
 
@@ -118,7 +120,7 @@ const ScheduleMeetingModal = ({
   }
 
   return (
-    <>
+    <Portal>
       <BottomSheet
         ref={sheetRef}
         height={screenHeight * 0.92}
@@ -341,7 +343,7 @@ const ScheduleMeetingModal = ({
         is24Hour={false}
         minuteInterval={10}
       />
-    </>
+    </Portal>
   )
 }
 
