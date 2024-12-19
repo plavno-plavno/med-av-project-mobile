@@ -49,22 +49,22 @@ export const validationCreateEventSchema = Yup.object().shape({
   timezone: Yup.string()
     .required("Timezone is required"),
 
-  timeStart: Yup.string()
+  startDate: Yup.string()
     .required("Start time is required"),
 
-  timeEnd: Yup.string()
+  endDate: Yup.string()
     .required("End time is required")
     .test(
       "is-greater",
       "End time must be after start time",
       function (value) {
-        const { timeStart } = this.parent;
-        if (!timeStart || !value) return true;
-        return moment(value, "HH:mm").isAfter(moment(timeStart, "HH:mm"));
+        const { startDate } = this.parent;
+        if (!startDate || !value) return true;
+        return moment(value, "HH:mm").isAfter(moment(startDate, "HH:mm"));
       }
     ),
 
-  inviteParticipants: Yup.array()
+  participants: Yup.array()
     .of(
       Yup.string()
         .email("Must be a valid email address")

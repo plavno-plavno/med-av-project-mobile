@@ -96,8 +96,6 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
             />
           )
         case "dropdown": {
-          console.log(value, "VALUES")
-
           return (
             <Dropdown
               iconColor={colors.cadetGrey}

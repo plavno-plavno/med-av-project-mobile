@@ -1,7 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithReAuth } from '..';
-import { IGetCalendarEventDetailsRequest, IGetCalendarEventDetailsResponse, IGetCalendarEventsResponse } from './types';
-// import { } from './types';
+import { IGetCalendarEventDetailsRequest, IGetCalendarEventDetailsResponse, IGetCalendarEventsResponse, IPostCalendarEventsRequest, IPostCalendarEventsResponse } from './types';
 
 export const calendarApi = createApi({
   baseQuery: baseQueryWithReAuth,
@@ -11,6 +10,21 @@ export const calendarApi = createApi({
       query: () => ({
         url: 'calendar/events',
         method: 'GET',
+      }),
+    }),  
+    createEvent: builder.mutation<IPostCalendarEventsResponse, IPostCalendarEventsRequest>({
+      query: ({color, description, startDate, endDate, title, participants, gmtDelta}) => ({
+        url: 'calendar/events',
+        method: 'POST',
+        body: {
+          title,
+          startDate,
+          endDate,
+          participants,
+          color,
+          description,
+          gmtDelta,
+        },
       }),
     }),
     getCalendarEventDetails: builder.query<IGetCalendarEventDetailsResponse, IGetCalendarEventDetailsRequest>({
@@ -27,6 +41,7 @@ export const calendarApi = createApi({
 });
 
 export const {
+  useCreateEventMutation,
   useGetCalendarEventsQuery,
   useGetCalendarEventDetailsQuery,
 } = calendarApi;

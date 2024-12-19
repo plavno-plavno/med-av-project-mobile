@@ -95,3 +95,17 @@ export interface IGetCalendarEvents {
 export interface IGetCalendarEventsResponse {
     data: IGetCalendarEvents[];
 }
+
+export interface IPostCalendarEventsRequest {
+    color: string;
+    description: string;
+    endDate: string;
+    startDate: string;
+    title: string;
+    participants: string [];
+    gmtDelta: number;
+}
+
+export interface IPostCalendarEventsResponse {
+    
+}

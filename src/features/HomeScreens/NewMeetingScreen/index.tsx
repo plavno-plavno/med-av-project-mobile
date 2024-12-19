@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native"
-import React, { useRef } from "react"
+import React, { useEffect, useRef } from "react"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { useTranslation } from "react-i18next"
 import { Icon } from "@components"
@@ -14,6 +14,20 @@ import { Portal } from "react-native-portalize"
 const NewMeetingScreen = () => {
   const { t } = useTranslation()
   const sheetRef = useRef<BottomSheetMethods>(null)
+
+  const [isModalVisible, setIsModalVisible] = React.useState(false)
+  console.log(isModalVisible, "isModalVisible")
+
+  const onClose = () => {
+    sheetRef.current?.close()
+    setIsModalVisible(false)
+  }
+
+  const onOpen = () => {
+    sheetRef.current?.open()
+    setIsModalVisible(true)
+  }
+
   return (
     <>
       <ScreenWrapper title={t("NewMeeting")} isCenterTitle>
@@ -31,18 +45,17 @@ const NewMeetingScreen = () => {
             <MeetingsButton
               icon="scheduleMeeting"
               title={t("ScheduleMeeting")}
-              onPress={() => {
-                sheetRef.current?.open()
-              }}
+              onPress={onOpen}
             />
           </View>
         </View>
       </ScreenWrapper>
+
       <Portal>
         <ScheduleMeetingModal
-          isVisible={() => sheetRef.current?.open()}
-          onClose={() => sheetRef.current?.close()}
+          onClose={onClose}
           sheetRef={sheetRef}
+          isVisible={isModalVisible}
         />
       </Portal>
     </>

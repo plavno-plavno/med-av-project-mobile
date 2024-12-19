@@ -54,5 +54,6 @@
     "ScheduleMeeting": "Schedule Meeting",
     "PickAColor": "Pick a color to make your meeting stand out from the rest",
     "EnterTheTitle": "Enter the title",
-    "SelectDate": "Select date"
+    "SelectDate": "Select date",
+    "MeetingScheduled!": "Meeting Scheduled!"
 }
