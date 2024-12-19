@@ -16,6 +16,7 @@ import moment from "moment"
 import Participants from "src/components/Participants"
 import Toast from "react-native-toast-message"
 import { ActivityIndicator } from "react-native-paper"
+import { formatTime } from "@utils/utils"
 
 const DetailsEventModal = ({
   eventId,
@@ -49,18 +50,6 @@ const DetailsEventModal = ({
 
   const transformDate = (dateString: string) => {
     return moment(dateString).format("dddd, MMMM D")
-  }
-  console.log(eventDetailsData, "eventDetailsData")
-
-  const formatTime = (date: string | undefined) => {
-    if (date) {
-      const hours = new Date(date)?.getHours()
-      const minutes = new Date(date)?.getMinutes()
-      const period = hours >= 12 ? "PM" : "AM"
-      const formattedHours = hours % 12 || 12
-
-      return `${formattedHours}:${minutes ? `${minutes} ${period}` : period}`
-    }
   }
 
   return (

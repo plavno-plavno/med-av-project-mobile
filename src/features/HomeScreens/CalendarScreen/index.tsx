@@ -15,6 +15,7 @@ import { screenWidth } from "@utils/screenResponsive"
 import { styles } from "./styles"
 import DetailsEventModal from "src/modals/DetailsEventModal"
 import { BottomSheetMethods } from "@devvie/bottom-sheet"
+import { formatTime } from "@utils/utils"
 
 const CalendarScreen = () => {
   const { selectedDay } = useAppSelector((state) => state.calendar)
@@ -26,15 +27,6 @@ const CalendarScreen = () => {
     refetch: calendarEventsRefetch,
     isLoading: isCalendarEventsLoading,
   } = useGetCalendarEventsQuery()
-
-  const formatTime = (date: Date) => {
-    const hours = date.getHours()
-    const minutes = date.getMinutes()
-    const period = hours >= 12 ? "PM" : "AM"
-    const formattedHours = hours % 12 || 12
-
-    return `${formattedHours} ${minutes ? `${minutes} ${period}` : period}`
-  }
 
   const handleOpenDetailsModal = (eventId: number) => {
     setEventId(eventId)
