@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react"
-import { View, Text, ScrollView, TouchableOpacity } from "react-native"
+import React, { useState } from "react"
+import { View, Text, ScrollView, TouchableOpacity, Keyboard, TouchableWithoutFeedback, KeyboardAvoidingView } from "react-native"
 import { useTranslation } from "react-i18next"
 import { helpers } from "@utils/theme"
 import { Formik, FormikProps } from "formik"
@@ -19,6 +19,7 @@ import Toast from "react-native-toast-message"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 import { navigate } from "src/navigation/RootNavigation"
 import { Portal } from "react-native-portalize"
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 
 interface IFormValues {
   date: string
@@ -56,7 +57,6 @@ const ScheduleMeetingModal = ({
   const { t } = useTranslation()
 
   const { currentDate } = useAppSelector((state) => state.calendar)
-  console.log(currentDate, "currentDate")
 
   const formikRef = React.useRef<FormikProps<IFormValues>>(null as any)
 
@@ -127,211 +127,219 @@ const ScheduleMeetingModal = ({
         backdropMaskColor={colors.blackOpacity08}
         style={styles.bottomSheet}
         disableBodyPanning
+        disableKeyboardHandling
       >
         {isVisible && (
-          <View style={styles.container}>
-            <View style={styles.header}>
-              <View style={styles.titleContainer}>
-                <View
-                  style={[
-                    helpers.flexRow,
-                    helpers.alignItemsCenter,
-                    helpers.gap8,
-                  ]}
-                >
-                  <Icon name={"backArrow"} onPress={onClose} />
-                  <Text style={styles.title}>{t("ScheduleMeeting")}</Text>
-                </View>
-                <Icon name={"closeButton"} onPress={onClose} />
-              </View>
-              <Text style={styles.subtitle}>{t("ScheduleTheMeeting")}</Text>
-            </View>
-
-            <Formik
-              innerRef={formikRef}
-              initialValues={{
-                title: "",
-                date: currentDate.format("YYYY-MM-DD"),
-                timezone: "",
-                startDate: "",
-                endDate: "",
-                participants: [],
-                color: "",
-                description: "",
-              }}
-              validationSchema={validationCreateEventSchema}
-              onSubmit={async (values) => {
-                try {
-                  const res = await createEvent({
-                    startDate: values.date + " " + values.startDate,
-                    endDate: values.date + " " + values.endDate,
-                    color: values.color,
-                    title: values.title,
-                    description: values.description,
-                    participants: values.participants,
-                    gmtDelta: +values.timezone,
-                  }).unwrap()
-
-                  if (res) {
-                    Toast.show({
-                      type: "success",
-                      text1: t("MeetingScheduled!"),
-                    })
-                    onClose()
-                    navigate(ScreensEnum.CALENDAR)
-                  }
-                } catch (error) {
-                  console.log(error, "createEventError")
-                }
-              }}
-            >
-              {({
-                handleChange,
-                handleSubmit,
-                setFieldValue,
-                values,
-                errors,
-                touched,
-              }) => {
-                return (
-                  <ScrollView
-                    style={(helpers.flex1, helpers.width100Percent)}
-                    showsVerticalScrollIndicator={false}
+          <KeyboardAwareScrollView
+            style={[helpers.flexGrow1]}
+            bounces={false}
+            enableOnAndroid
+            enableAutomaticScroll
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.container}>
+              <View style={styles.header}>
+                <View style={styles.titleContainer}>
+                  <View
+                    style={[
+                      helpers.flexRow,
+                      helpers.alignItemsCenter,
+                      helpers.gap8,
+                    ]}
                   >
-                    <View style={styles.formContainer}>
-                      <CustomInput
-                        required
-                        label="Title"
-                        placeholder={t("EnterTheTitle")}
-                        value={values.title}
-                        onChangeText={(val) =>
-                          handleChange("title")(val as string)
-                        }
-                        error={touched.title && errors.title}
-                      />
-                      <CustomInput
-                        required
-                        label="Date"
-                        placeholder={t("Select date")}
-                        value={values.date}
-                        editable={false}
-                        onChangeText={(val) =>
-                          handleChange("date")(val as string)
-                        }
-                        rightIconProps={{
-                          name: "calendarIcon",
-                          onPress: () =>
-                            showDatePicker({ mode: "date", field: "date" }),
-                        }}
-                        error={touched.date && errors.date}
-                      />
+                    {/* <Icon name={"backArrow"} onPress={onClose} /> */}
+                    <Text style={styles.title}>{t("ScheduleMeeting")}</Text>
+                  </View>
+                  <Icon name={"closeButton"} onPress={onClose} />
+                </View>
+                <Text style={styles.subtitle}>{t("ScheduleTheMeeting")}</Text>
+              </View>
 
-                      <CustomInput
-                        inputType="dropdown"
-                        required
-                        label="Timezone"
-                        value={values.timezone}
-                        onChangeText={(val) =>
-                          handleChange("timezone")(val as string)
-                        }
-                        dropdownData={mockTimeZones}
-                        error={touched.timezone && errors.timezone}
-                      />
-                      <TouchableOpacity
-                        onPress={() =>
-                          showDatePicker({ mode: "time", field: "startDate" })
-                        }
-                      >
-                        <View pointerEvents="none">
-                          <CustomInput
-                            label="Time Start"
-                            placeholder="Select start time"
-                            required
-                            value={values.startDate}
-                            onChangeText={() => {}}
-                            rightIconProps={{
-                              name: "downArrow",
-                            }}
-                            error={touched.startDate && errors.startDate}
-                          />
-                        </View>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() =>
-                          showDatePicker({ mode: "time", field: "endDate" })
-                        }
-                      >
-                        <View pointerEvents="none">
-                          <CustomInput
-                            label="Time End"
-                            placeholder="Select end time"
-                            required
-                            editable={false}
-                            value={values.endDate}
-                            onChangeText={() => {}}
-                            rightIconProps={{
-                              name: "downArrow",
-                            }}
-                            error={touched.endDate && errors.endDate}
-                          />
-                        </View>
-                      </TouchableOpacity>
+              <Formik
+                innerRef={formikRef}
+                initialValues={{
+                  title: "",
+                  date: currentDate.format("YYYY-MM-DD"),
+                  timezone: "",
+                  startDate: "",
+                  endDate: "",
+                  participants: [],
+                  color: "",
+                  description: "",
+                }}
+                validationSchema={validationCreateEventSchema}
+                onSubmit={async (values) => {
+                  try {
+                    const res = await createEvent({
+                      startDate: values.date + " " + values.startDate,
+                      endDate: values.date + " " + values.endDate,
+                      color: values.color,
+                      title: values.title,
+                      description: values.description,
+                      participants: values.participants,
+                      gmtDelta: +values.timezone,
+                    }).unwrap()
 
-                      <CustomInput
-                        inputType="chip"
-                        label="Invite Participants"
-                        required
-                        placeholder="Invite participants"
-                        value={values.participants}
-                        onChangeText={(val) =>
-                          setFieldValue("participants", val)
-                        }
-                        error={
-                          touched.participants && errors.participants
-                            ? Array.isArray(errors.participants)
-                              ? errors.participants.join(", ")
-                              : String(errors.participants)
-                            : undefined
-                        }
-                      />
-                      <CustomInput
-                        inputType="colorPicker"
-                        label="Color"
-                        required
-                        value={values.color}
-                        subtitle={t("PickAColor")}
-                        inputContainerProps={{ borderWidth: 0 }}
-                        onChangeText={(val) =>
-                          handleChange("color")(val as string)
-                        }
-                        error={touched.color && errors.color}
-                      />
-                      <CustomInput
-                        inputType="textArea"
-                        label="Description"
-                        placeholder="Will discuss updates"
-                        value={values.description}
-                        onChangeText={(val) =>
-                          handleChange("description")(val as string)
-                        }
-                        error={touched.description && errors.description}
-                      />
-                      <CustomButton
-                        type="primary"
-                        text={t("Schedule")}
-                        isLoading={isCreateEventLoading}
-                        onPress={handleSubmit}
-                        style={[helpers.width100Percent, helpers.mb24]}
-                      />
-                    </View>
-                  </ScrollView>
-                )
-              }}
-            </Formik>
-          </View>
+                    if (res) {
+                      Toast.show({
+                        type: "success",
+                        text1: t("MeetingScheduled!"),
+                      })
+                      onClose()
+                      navigate(ScreensEnum.CALENDAR)
+                    }
+                  } catch (error) {
+                    console.log(error, "createEventError")
+                  }
+                }}
+              >
+                {({
+                  handleChange,
+                  handleSubmit,
+                  setFieldValue,
+                  values,
+                  errors,
+                  touched,
+                }) => {
+                  return (
+                    <ScrollView
+                      style={(helpers.flex1, helpers.width100Percent)}
+                      showsVerticalScrollIndicator={false}
+                    >
+                      <View style={styles.formContainer}>
+                        <CustomInput
+                          required
+                          label="Title"
+                          placeholder={t("EnterTheTitle")}
+                          value={values.title}
+                          onChangeText={(val) =>
+                            handleChange("title")(val as string)
+                          }
+                          error={touched.title && errors.title}
+                        />
+                        <CustomInput
+                          required
+                          label="Date"
+                          placeholder={t("Select date")}
+                          value={values.date}
+                          editable={false}
+                          onChangeText={(val) =>
+                            handleChange("date")(val as string)
+                          }
+                          rightIconProps={{
+                            name: "calendarIcon",
+                            onPress: () =>
+                              showDatePicker({ mode: "date", field: "date" }),
+                          }}
+                          error={touched.date && errors.date}
+                        />
+
+                        <CustomInput
+                          inputType="dropdown"
+                          required
+                          label="Timezone"
+                          value={values.timezone}
+                          onChangeText={(val) =>
+                            handleChange("timezone")(val as string)
+                          }
+                          dropdownData={mockTimeZones}
+                          error={touched.timezone && errors.timezone}
+                        />
+                        <TouchableOpacity
+                          onPress={() =>
+                            showDatePicker({ mode: "time", field: "startDate" })
+                          }
+                        >
+                          <View pointerEvents="none">
+                            <CustomInput
+                              label="Time Start"
+                              placeholder="Select start time"
+                              required
+                              value={values.startDate}
+                              onChangeText={() => { }}
+                              rightIconProps={{
+                                name: "downArrow",
+                              }}
+                              error={touched.startDate && errors.startDate}
+                            />
+                          </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() =>
+                            showDatePicker({ mode: "time", field: "endDate" })
+                          }
+                        >
+                          <View pointerEvents="none">
+                            <CustomInput
+                              label="Time End"
+                              placeholder="Select end time"
+                              required
+                              editable={false}
+                              value={values.endDate}
+                              onChangeText={() => { }}
+                              rightIconProps={{
+                                name: "downArrow",
+                              }}
+                              error={touched.endDate && errors.endDate}
+                            />
+                          </View>
+                        </TouchableOpacity>
+
+                        <CustomInput
+                          inputType="chip"
+                          label="Invite Participants"
+                          required
+                          placeholder="Invite participants"
+                          value={values.participants}
+                          onChangeText={(val) =>
+                            setFieldValue("participants", val)
+                          }
+                          error={
+                            touched.participants && errors.participants
+                              ? Array.isArray(errors.participants)
+                                ? errors.participants.join(", ")
+                                : String(errors.participants)
+                              : undefined
+                          }
+                        />
+                        <CustomInput
+                          inputType="colorPicker"
+                          label="Color"
+                          required
+                          value={values.color}
+                          subtitle={t("PickAColor")}
+                          inputContainerProps={{ borderWidth: 0 }}
+                          onChangeText={(val) =>
+                            handleChange("color")(val as string)
+                          }
+                          error={touched.color && errors.color}
+                        />
+                        <CustomInput
+                          inputType="textArea"
+                          label="Description"
+                          placeholder="Will discuss updates"
+                          value={values.description}
+                          onChangeText={(val) =>
+                            handleChange("description")(val as string)
+                          }
+                          error={touched.description && errors.description}
+                        />
+                        <CustomButton
+                          type="primary"
+                          text={t("Schedule")}
+                          isLoading={isCreateEventLoading}
+                          onPress={handleSubmit}
+                          style={[helpers.width100Percent, helpers.mb24]}
+                        />
+                      </View>
+                    </ScrollView>
+                  )
+                }}
+              </Formik>
+            </View>
+          </KeyboardAwareScrollView>
         )}
       </BottomSheet>
-
       <DateTimePickerModal
         pickerStyleIOS={helpers.flexCenter}
         date={defaultTime()}
@@ -342,6 +350,7 @@ const ScheduleMeetingModal = ({
         display={datePickerState.mode === "date" ? "inline" : undefined}
         is24Hour={false}
         minuteInterval={10}
+        minimumDate={datePickerState.mode === "date" ? moment().toDate() : undefined}
       />
     </Portal>
   )

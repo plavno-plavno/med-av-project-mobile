@@ -13,7 +13,7 @@ export const styles = StyleSheet.create({
     },
     bottomSheet: {
         backgroundColor: colors.white,
-        paddingBottom: moderateScale(249)
+        paddingBottom: moderateScale(50)
     },
     modalContainer: {
         flex: 1,

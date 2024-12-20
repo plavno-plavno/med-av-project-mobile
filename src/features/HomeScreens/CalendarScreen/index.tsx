@@ -48,8 +48,6 @@ const CalendarScreen = () => {
       status: event.status,
       participants: event.participants,
     })) || []
-  // console.log(calendarEventsData, "calendarEventsData")
-  // console.log(transformedEvents, "transformedEvents")
 
   const renderEvent = <T extends ICalendarEventBase>(
     event: T | any,
@@ -84,7 +82,7 @@ const CalendarScreen = () => {
           mode={"day"}
           onPressEvent={() => console.log("event")}
           ampm
-          overlapOffset={screenWidth * 0.4}
+          overlapOffset={screenWidth * 0.1}
           date={new Date(selectedDay)}
           renderEvent={renderEvent}
           renderHeader={() => {

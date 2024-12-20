@@ -155,6 +155,11 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
               <CustomTextInput
                 styles={styles.input}
                 value={chipsInputValue}
+                // onKeyPress={e => {
+                //   if(e.nativeEvent.key === ' ') {
+                //     handleAddChip()
+                //   }
+                // }}
                 onChangeText={setChipsInputValue}
                 onSubmitEditing={handleAddChip}
                 label={label}

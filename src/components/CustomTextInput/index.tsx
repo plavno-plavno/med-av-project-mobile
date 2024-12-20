@@ -4,6 +4,7 @@ import {
   StyleProp,
   ViewStyle,
   TextInput,
+  TextInputKeyPressEventData,
 } from "react-native"
 import colors from "src/assets/colors"
 
@@ -30,6 +31,7 @@ interface ICustomInputProps {
   handleFocus?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
   handleBlur?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
   styles?: StyleProp<ViewStyle>
+  onKeyPress? : (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => void;
 }
 
 const CustomTextInput = ({
@@ -46,6 +48,7 @@ const CustomTextInput = ({
   ref,
   onSubmitEditing,
   styles,
+  onKeyPress,
   ...rest
 }: ICustomInputProps) => {
   return (
@@ -63,6 +66,7 @@ const CustomTextInput = ({
       placeholderTextColor={colors.placeholder}
       onFocus={handleFocus}
       onBlur={handleBlur}
+      onKeyPress={onKeyPress}
       autoCorrect={false}
       {...rest}
     />

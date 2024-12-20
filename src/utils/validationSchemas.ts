@@ -76,5 +76,5 @@ export const validationCreateEventSchema = Yup.object().shape({
     .required("Color is required"),
 
   description: Yup.string()
-    .max(120, "Description must be at most 120 characters"),
+    .max(240, "Description must be at most 240 characters"),
 });

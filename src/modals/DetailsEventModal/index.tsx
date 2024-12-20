@@ -1,3 +1,4 @@
+import React from "react"
 import { screenHeight } from "@utils/screenResponsive"
 import { Text, View } from "react-native"
 import colors from "src/assets/colors"
@@ -39,7 +40,7 @@ const DetailsEventModal = ({
     useDeleteEventMutation()
 
   const handleDeleteEvent = async () => {
-    await deleteEvent({ id: eventId })
+    await deleteEvent({ id: eventId }).unwrap();
     calendarEventsRefetch()
     Toast.show({
       type: "success",
@@ -135,7 +136,7 @@ const DetailsEventModal = ({
                   <View style={[helpers.flexRow, helpers.gap8]}>
                     <Icon name="info" />
                     <Text style={[styles.text, { color: colors.midGrey }]}>
-                      {t("DiscusProgress")}
+                      {eventDetailsData?.description}
                     </Text>
                   </View>
                 </View>

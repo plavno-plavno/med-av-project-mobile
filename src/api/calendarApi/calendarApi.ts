@@ -27,7 +27,7 @@ export const calendarApi = createApi({
         },
       }),
     }),
-    deleteEvent: builder.mutation<any, any>({
+    deleteEvent: builder.mutation<void, {id: number}>({
       query: ({id}) => ({
         url: `calendar/events/${id}`,
         method: 'DELETE',
