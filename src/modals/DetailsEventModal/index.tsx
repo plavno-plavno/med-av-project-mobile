@@ -4,7 +4,6 @@ import { Text, View } from "react-native"
 import colors from "src/assets/colors"
 import BottomSheet, { type BottomSheetMethods } from "@devvie/bottom-sheet"
 import { styles } from "./styles"
-import { Portal } from "react-native-portalize"
 import { CustomButton, Icon } from "@components"
 import { helpers } from "@utils/theme"
 import { useTranslation } from "react-i18next"
@@ -20,14 +19,15 @@ import { ActivityIndicator } from "react-native-paper"
 import { formatTime } from "@utils/utils"
 
 const DetailsEventModal = ({
+  handleOpenScheduleModal,
   eventId,
   sheetRef,
   onClose,
 }: {
+  handleOpenScheduleModal: (val: number) => void
   eventId: number
   sheetRef: React.RefObject<BottomSheetMethods>
   onClose: () => void
-  isVisible: boolean
 }) => {
   const { t } = useTranslation()
 
@@ -40,7 +40,7 @@ const DetailsEventModal = ({
     useDeleteEventMutation()
 
   const handleDeleteEvent = async () => {
-    await deleteEvent({ id: eventId }).unwrap();
+    await deleteEvent({ id: eventId }).unwrap()
     calendarEventsRefetch()
     Toast.show({
       type: "success",
@@ -54,7 +54,7 @@ const DetailsEventModal = ({
   }
 
   return (
-    <Portal>
+    <>
       <BottomSheet
         ref={sheetRef}
         height={screenHeight * 0.87}
@@ -133,12 +133,14 @@ const DetailsEventModal = ({
                       )}
                     </View>
                   </View>
-                  <View style={[helpers.flexRow, helpers.gap8]}>
-                    <Icon name="info" />
-                    <Text style={[styles.text, { color: colors.midGrey }]}>
-                      {eventDetailsData?.description}
-                    </Text>
-                  </View>
+                  {eventDetailsData?.description && (
+                    <View style={[helpers.flexRow, helpers.gap8]}>
+                      <Icon name="info" />
+                      <Text style={[styles.text, { color: colors.midGrey }]}>
+                        {eventDetailsData?.description}
+                      </Text>
+                    </View>
+                  )}
                 </View>
               </View>
               <View
@@ -163,13 +165,19 @@ const DetailsEventModal = ({
                     },
                   ]}
                 />
-                <CustomButton text={t("EditDetails")} />
+                <CustomButton
+                  text={t("EditDetails")}
+                  onPress={() => {
+                    onClose()
+                    handleOpenScheduleModal(eventId)
+                  }}
+                />
               </View>
             </>
           )}
         </View>
       </BottomSheet>
-    </Portal>
+    </>
   )
 }
 

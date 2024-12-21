@@ -53,6 +53,8 @@
     "StartMeetingInstantly": "Start Meeting Instantly",
     "ScheduleMeeting": "Schedule Meeting",
     "DeleteMeeting": "Delete Meeting",
+    "EditMeeting": "Edit Meeting",
+    "Edit": "Edit",
     "EditDetails": "Edit Details",
     "PickAColor": "Pick a color to make your meeting stand out from the rest",
     "EnterTheTitle": "Enter the title",
@@ -63,5 +65,6 @@
     "JoinMeeting": "Join Meeting",
     "CopyLink": "Copy Link",
     "DiscusProgress": "Discus progress on project X \nReview feedback from client meeting Assigned tasks for team members \nSet deadline for project completion",
-    "EventDeleted": "Event successfully deleted"
+    "EventDeleted": "Event successfully deleted",
+    "DetailsUpdated!": "Details updated!"
 }

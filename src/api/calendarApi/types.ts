@@ -7,9 +7,10 @@ export interface IGetCalendarEventDetailsResponse {
     startDate: string
     endDate: string;
     title: string;
+    gmtDelta: number;
     description: string;
     color: string;
-    participants: string[]
+    participants: IParticipants[]
 }
 
 export interface IRole {
@@ -80,6 +81,7 @@ export interface IParticipants{
     status: string;
     updatedAt: string;
     user: IUser;
+    email: string
 }
 
 
@@ -113,6 +115,10 @@ export interface IPostCalendarEventsRequest {
     gmtDelta: number;
 }
 
-export interface IPostCalendarEventsResponse {
-    
+export interface IPostCalendarEventsResponse {   
 }
+export interface IPutCalendarEventsRequest extends IPostCalendarEventsRequest{
+    id: number
+}
+
+export interface IPutCalendarEventsResponse {}

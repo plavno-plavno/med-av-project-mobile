@@ -178,7 +178,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
           return (
             <View style={[helpers.gap8]}>
               <Text style={styles.subtitle}>{subtitle}</Text>
-              <ColorPicker onChange={onChangeText} />
+              <ColorPicker onChange={onChangeText} color={value.toString()} />
             </View>
           )
         }

@@ -9,6 +9,7 @@ import MeetingsButton from "src/components/MeetingsButton"
 import { moderateScale } from "react-native-size-matters"
 import ScheduleMeetingModal from "src/modals/ScheduleMeetingModal"
 import { BottomSheetMethods } from "@devvie/bottom-sheet"
+import { Portal } from "react-native-portalize"
 
 const NewMeetingScreen = () => {
   const { t } = useTranslation()
@@ -49,12 +50,13 @@ const NewMeetingScreen = () => {
           </View>
         </View>
       </ScreenWrapper>
-
-      <ScheduleMeetingModal
-        onClose={onClose}
-        sheetRef={sheetRef}
-        isVisible={isModalVisible}
-      />
+      <Portal>
+        <ScheduleMeetingModal
+          onClose={onClose}
+          sheetRef={sheetRef}
+          eventId={0}
+        />
+      </Portal>
     </>
   )
 }

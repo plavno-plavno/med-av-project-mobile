@@ -16,10 +16,14 @@ import { styles } from "./styles"
 import DetailsEventModal from "src/modals/DetailsEventModal"
 import { BottomSheetMethods } from "@devvie/bottom-sheet"
 import { formatTime } from "@utils/utils"
+import ScheduleMeetingModal from "src/modals/ScheduleMeetingModal"
+import { Portal } from "react-native-portalize"
 
 const CalendarScreen = () => {
   const { selectedDay } = useAppSelector((state) => state.calendar)
-  const sheetRef = useRef<BottomSheetMethods>(null)
+  const sheetDetailsRef = useRef<BottomSheetMethods>(null)
+  const sheetScheduleRef = useRef<BottomSheetMethods>(null)
+
   const [eventId, setEventId] = React.useState(0)
 
   const {
@@ -30,11 +34,23 @@ const CalendarScreen = () => {
 
   const handleOpenDetailsModal = (eventId: number) => {
     setEventId(eventId)
-    sheetRef.current?.open()
+    sheetDetailsRef.current?.open()
   }
 
   const handleCloseDetailsModal = () => {
-    sheetRef.current?.close()
+    sheetDetailsRef.current?.close()
+  }
+
+  const handleOpenScheduleModal = () => {
+    sheetScheduleRef.current?.open()
+  }
+
+  const handleCloseScheduleModal = () => {
+    sheetScheduleRef.current?.close()
+  }
+  const handleGoModalBack = () => {
+    sheetScheduleRef.current?.close()
+    sheetDetailsRef.current?.open()
   }
 
   const transformedEvents =
@@ -61,6 +77,7 @@ const CalendarScreen = () => {
       <Text style={styles.eventText}>
         {`${event.title}, ${formatTime(event.start)}– ${formatTime(event.end)}`}
       </Text>
+      <Text style={styles.eventText}>{event.description}</Text>
     </TouchableOpacity>
   )
 
@@ -97,12 +114,20 @@ const CalendarScreen = () => {
           calendarCellTextStyle={styles.cellTextColor}
         />
       </ScreenWrapper>
-      <DetailsEventModal
-        eventId={eventId}
-        sheetRef={sheetRef}
-        onClose={handleCloseDetailsModal}
-        isVisible={false}
-      />
+      <Portal>
+        <DetailsEventModal
+          handleOpenScheduleModal={handleOpenScheduleModal}
+          onClose={handleCloseDetailsModal}
+          eventId={eventId}
+          sheetRef={sheetDetailsRef}
+        />
+        <ScheduleMeetingModal
+          handleGoModalBack={handleGoModalBack}
+          onClose={handleCloseScheduleModal}
+          sheetRef={sheetScheduleRef}
+          eventId={eventId}
+        />
+      </Portal>
     </>
   )
 }

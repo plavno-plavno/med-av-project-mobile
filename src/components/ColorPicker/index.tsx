@@ -1,40 +1,47 @@
+import React, { useState, useEffect } from "react"
 import { StyleSheet, TouchableOpacity, View } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import colors from "src/assets/colors"
 import { Icon } from "../Icon"
-import React from "react"
 
-const ColorPicker = ({ onChange }: { onChange: (value: string) => void }) => {
-  const [colorsArr, setColorsArr] = React.useState([
-    {
-      color: colors.lightAqua,
-      checked: false,
-    },
-    {
-      color: colors.defaultBlue,
-      checked: false,
-    },
-    {
-      color: colors.violet,
-      checked: false,
-    },
-    {
-      color: colors.rose,
-      checked: false,
-    },
-    {
-      color: colors.alertRed,
-      checked: false,
-    },
-    {
-      color: colors.alertWarning,
-      checked: false,
-    },
-    {
-      color: colors.successGreen,
-      checked: false,
-    },
-  ])
+const initialColors = [
+  { color: colors.lightAqua, checked: false },
+  { color: colors.defaultBlue, checked: false },
+  { color: colors.violet, checked: false },
+  { color: colors.rose, checked: false },
+  { color: colors.alertRed, checked: false },
+  { color: colors.alertWarning, checked: false },
+  { color: colors.successGreen, checked: false },
+]
+
+const ColorPicker = ({
+  onChange,
+  color,
+}: {
+  onChange: (value: string) => void
+  color: string
+}) => {
+  const [colorsArr, setColorsArr] = useState(initialColors)
+
+  useEffect(() => {
+    setColorsArr((prevColors) =>
+      prevColors.map((item) => ({
+        ...item,
+        checked: item.color === color,
+      }))
+    )
+  }, [color])
+
+  const handleColorPick = (selectedColor: string) => {
+    setColorsArr((prevColors) =>
+      prevColors.map((item) => ({
+        ...item,
+        checked: item.color === selectedColor,
+      }))
+    )
+    onChange(selectedColor)
+  }
+
   return (
     <View style={styles.container}>
       {colorsArr.map((item) => (
@@ -44,24 +51,9 @@ const ColorPicker = ({ onChange }: { onChange: (value: string) => void }) => {
             styles.colorContainer,
             { borderColor: item.checked ? item.color : colors.borderGrey },
           ]}
-          onPress={() => {
-            setColorsArr((prevColors) =>
-              prevColors.map((color) => ({
-                ...color,
-                checked: color.color === item.color ? !color.checked : false,
-              }))
-            )
-            onChange(item.color)
-          }}
+          onPress={() => handleColorPick(item.color)}
         >
-          <View
-            style={[
-              styles.color,
-              {
-                backgroundColor: item.color,
-              },
-            ]}
-          >
+          <View style={[styles.color, { backgroundColor: item.color }]}>
             {item.checked && <Icon name="check" />}
           </View>
         </TouchableOpacity>
