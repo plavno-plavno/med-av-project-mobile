@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { screenHeight } from "@utils/screenResponsive"
 import { Text, View } from "react-native"
 import colors from "src/assets/colors"
@@ -36,8 +36,11 @@ const DetailsEventModal = ({
   const [isAcceptEventLoading, setIsAcceptEventLoading] = useState(false)
   const [isDeclineEventLoading, setIsDeclineEventLoading] = useState(false)
 
-  const { data: eventDetailsData, isLoading: isEventDetailsLoading } =
-    useGetCalendarEventDetailsQuery({ id: eventId })
+  const {
+    data: eventDetailsData,
+    isLoading: isEventDetailsLoading,
+    refetch: eventDetailsRefetch,
+  } = useGetCalendarEventDetailsQuery({ id: eventId })
   const { data: authMeData } = useAuthMeQuery()
   const { refetch: calendarEventsRefetch } = useGetCalendarEventsQuery()
   const [updateEvent, { isLoading: isUpdateEventLoading }] =
@@ -68,8 +71,9 @@ const DetailsEventModal = ({
       }).unwrap()
       Toast.show({
         type: "success",
-        text1: t("EventAccepted"),
+        text1: status === "accept" ? t("EventAccepted") : t("EventDeclined"),
       })
+      eventDetailsRefetch()
       calendarEventsRefetch()
       onClose()
     } catch (error) {
