@@ -7,7 +7,7 @@ import {
 import ScreenWrapper from "src/components/ScreenWrapper"
 import WeekDays from "src/components/Calendar/WeekDays"
 import colors from "src/assets/colors"
-import { ActivityIndicator, Text, TouchableOpacity } from "react-native"
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native"
 import { useAppSelector } from "src/hooks/redux"
 import { useGetCalendarEventsQuery } from "src/api/calendarApi/calendarApi"
 import { useFocusEffect } from "@react-navigation/native"
@@ -18,12 +18,12 @@ import { BottomSheetMethods } from "@devvie/bottom-sheet"
 import { formatTime } from "@utils/utils"
 import ScheduleMeetingModal from "src/modals/ScheduleMeetingModal"
 import { Portal } from "react-native-portalize"
+import { useAuthMeQuery } from "src/api/auth/authApi"
 
 const CalendarScreen = () => {
   const { selectedDay } = useAppSelector((state) => state.calendar)
   const sheetDetailsRef = useRef<BottomSheetMethods>(null)
   const sheetScheduleRef = useRef<BottomSheetMethods>(null)
-
   const [eventId, setEventId] = React.useState(0)
 
   const {
@@ -31,7 +31,7 @@ const CalendarScreen = () => {
     refetch: calendarEventsRefetch,
     isLoading: isCalendarEventsLoading,
   } = useGetCalendarEventsQuery()
-
+  const { data: authMeData } = useAuthMeQuery()
   const handleOpenDetailsModal = (eventId: number) => {
     setEventId(eventId)
     sheetDetailsRef.current?.open()
@@ -65,21 +65,63 @@ const CalendarScreen = () => {
       participants: event.participants,
     })) || []
 
+  const findParticipantStatusByEmail = (email: string, event: any) => {
+    const participant = event.participants.find((p: any) => p.email === email)
+    return participant ? participant.status : null
+  }
+
   const renderEvent = <T extends ICalendarEventBase>(
     event: T | any,
     touchableOpacityProps: CalendarTouchableOpacityProps
-  ) => (
-    <TouchableOpacity
-      {...touchableOpacityProps}
-      key={event?.id}
-      onPress={() => handleOpenDetailsModal(event?.id)}
-    >
-      <Text style={styles.eventText}>
-        {`${event.title}, ${formatTime(event.start)}– ${formatTime(event.end)}`}
-      </Text>
-      <Text style={styles.eventText}>{event.description}</Text>
-    </TouchableOpacity>
-  )
+  ) => {
+    const participantStatus = findParticipantStatusByEmail(
+      authMeData?.email,
+      event
+    )
+
+    return (
+      <TouchableOpacity
+        {...touchableOpacityProps}
+        key={event?.id}
+        onPress={() => handleOpenDetailsModal(event?.id)}
+      >
+        <Text
+          style={[
+            styles.eventText,
+            {
+              textDecorationLine:
+                participantStatus === "decline" ? "line-through" : "none",
+              color:
+                participantStatus === "accept"
+                  ? colors.ghostWhite
+                  : participantStatus === "decline"
+                  ? colors.placeholder
+                  : event.color,
+            },
+          ]}
+        >
+          {`${event.title}, ${formatTime(event.start)}– ${formatTime(
+            event.end
+          )}`}
+        </Text>
+        <Text
+          style={[
+            styles.eventText,
+            {
+              color:
+                participantStatus === "accept"
+                  ? colors.ghostWhite
+                  : participantStatus === "decline"
+                  ? colors.placeholder
+                  : event.color,
+            },
+          ]}
+        >
+          {event.description}
+        </Text>
+      </TouchableOpacity>
+    )
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -107,11 +149,26 @@ const CalendarScreen = () => {
           }}
           hourStyle={styles.hourStyle}
           eventCellTextColor={colors.ghostWhite}
-          eventCellStyle={(event) => [
-            styles.cellStyle,
-            { backgroundColor: event.color },
-          ]}
-          calendarCellTextStyle={styles.cellTextColor}
+          eventCellStyle={(event) => {
+            const participantStatus = findParticipantStatusByEmail(
+              authMeData?.email,
+              event
+            )
+            return [
+              styles.cellStyle,
+              {
+                backgroundColor:
+                  participantStatus === "accept" ? event.color : colors.white,
+                borderWidth: 1,
+                borderColor:
+                  participantStatus === "accept"
+                    ? event.color
+                    : participantStatus === "decline"
+                    ? colors.placeholder
+                    : event.color,
+              },
+            ]
+          }}
         />
       </ScreenWrapper>
       <Portal>

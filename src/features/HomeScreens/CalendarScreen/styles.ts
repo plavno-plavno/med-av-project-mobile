@@ -19,9 +19,6 @@ export const styles = StyleSheet.create({
         borderRadius: moderateScale(6),
         maxWidth: '95%',
     },
-    cellTextColor: {
-        color: colors.alertRed
-    },
     eventText: {
         ...fontFamilies.interManropeSemiBold12,
         ...fontWeights.fontWeight500,

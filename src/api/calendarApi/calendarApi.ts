@@ -37,7 +37,7 @@ export const calendarApi = createApi({
       }),
     }),
     updateEvent: builder.mutation<IPutCalendarEventsResponse, IPutCalendarEventsRequest>({
-      query: ({id, color, description, endDate, gmtDelta, participants, startDate, title}) => ({
+      query: ({id, color, description, endDate, gmtDelta, participants, startDate, title, status}) => ({
         url: `calendar/events/${id}`,
         method: 'PATCH',
         body: {
@@ -48,6 +48,7 @@ export const calendarApi = createApi({
           color,
           description,
           gmtDelta,
+          status,
         },
       }),
     }),

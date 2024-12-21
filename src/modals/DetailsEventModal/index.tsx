@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useMemo, useState } from "react"
 import { screenHeight } from "@utils/screenResponsive"
 import { Text, View } from "react-native"
 import colors from "src/assets/colors"
@@ -11,12 +11,14 @@ import {
   useDeleteEventMutation,
   useGetCalendarEventDetailsQuery,
   useGetCalendarEventsQuery,
+  useUpdateEventMutation,
 } from "src/api/calendarApi/calendarApi"
 import moment from "moment"
 import Participants from "src/components/Participants"
 import Toast from "react-native-toast-message"
 import { ActivityIndicator } from "react-native-paper"
 import { formatTime } from "@utils/utils"
+import { useAuthMeQuery } from "src/api/auth/authApi"
 
 const DetailsEventModal = ({
   handleOpenScheduleModal,
@@ -31,13 +33,19 @@ const DetailsEventModal = ({
 }) => {
   const { t } = useTranslation()
 
+  const [isAcceptEventLoading, setIsAcceptEventLoading] = useState(false)
+  const [isDeclineEventLoading, setIsDeclineEventLoading] = useState(false)
+
   const { data: eventDetailsData, isLoading: isEventDetailsLoading } =
     useGetCalendarEventDetailsQuery({ id: eventId })
-
+  const { data: authMeData } = useAuthMeQuery()
   const { refetch: calendarEventsRefetch } = useGetCalendarEventsQuery()
-
+  const [updateEvent, { isLoading: isUpdateEventLoading }] =
+    useUpdateEventMutation()
   const [deleteEvent, { isLoading: isDeleteEventLoading }] =
     useDeleteEventMutation()
+
+  const isCreatorMode = authMeData?.email === eventDetailsData?.createdBy?.email
 
   const handleDeleteEvent = async () => {
     await deleteEvent({ id: eventId }).unwrap()
@@ -47,6 +55,29 @@ const DetailsEventModal = ({
       text1: t("EventDeleted"),
     })
     onClose()
+  }
+
+  const handleTogglerEvent = async ({ status }: { status: string }) => {
+    status === "accept"
+      ? setIsAcceptEventLoading(true)
+      : setIsDeclineEventLoading(true)
+    try {
+      await updateEvent({
+        id: eventId,
+        status: status,
+      }).unwrap()
+      Toast.show({
+        type: "success",
+        text1: t("EventAccepted"),
+      })
+      calendarEventsRefetch()
+      onClose()
+    } catch (error) {
+      console.log(error, "ERROR")
+    } finally {
+      setIsAcceptEventLoading(false)
+      setIsDeclineEventLoading(false)
+    }
   }
 
   const transformDate = (dateString: string) => {
@@ -155,9 +186,15 @@ const DetailsEventModal = ({
                 ]}
               >
                 <CustomButton
-                  isLoading={isDeleteEventLoading}
-                  onPress={handleDeleteEvent}
-                  text={t("DeleteMeeting")}
+                  isLoading={isDeleteEventLoading || isDeclineEventLoading}
+                  onPress={() => {
+                    if (isCreatorMode) {
+                      handleDeleteEvent()
+                    } else {
+                      handleTogglerEvent({ status: "decline" })
+                    }
+                  }}
+                  text={isCreatorMode ? t("DeleteMeeting") : t("Decline")}
                   textStyle={{ color: colors.alertRed }}
                   style={[
                     {
@@ -166,10 +203,15 @@ const DetailsEventModal = ({
                   ]}
                 />
                 <CustomButton
-                  text={t("EditDetails")}
+                  isLoading={isAcceptEventLoading}
+                  text={isCreatorMode ? t("EditDetails") : t("Accept")}
                   onPress={() => {
-                    onClose()
-                    handleOpenScheduleModal(eventId)
+                    if (isCreatorMode) {
+                      onClose()
+                      handleOpenScheduleModal(eventId)
+                    } else {
+                      handleTogglerEvent({ status: "accept" })
+                    }
                   }}
                 />
               </View>

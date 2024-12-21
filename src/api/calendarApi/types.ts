@@ -11,6 +11,7 @@ export interface IGetCalendarEventDetailsResponse {
     description: string;
     color: string;
     participants: IParticipants[]
+    createdBy: ICreatedBy
 }
 
 export interface IRole {
@@ -106,19 +107,20 @@ export interface IGetCalendarEventsResponse {
 }
 
 export interface IPostCalendarEventsRequest {
-    color: string;
-    description: string;
-    endDate: string;
-    startDate: string;
-    title: string;
-    participants: string [];
-    gmtDelta: number;
+    color?: string;
+    description?: string;
+    endDate?:string;
+    startDate?: string;
+    title?: string;
+    participants?: string [];
+    gmtDelta?: number;
+    status?: string
 }
 
 export interface IPostCalendarEventsResponse {   
 }
 export interface IPutCalendarEventsRequest extends IPostCalendarEventsRequest{
-    id: number
+    id: number;
 }
 
 export interface IPutCalendarEventsResponse {}

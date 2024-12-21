@@ -78,7 +78,6 @@ const ScheduleMeetingModal = ({
   const [updateEvent, { isLoading: isUpdateEventLoading }] =
     useUpdateEventMutation()
 
-  const { refetch: calendarEventsRefetch } = useGetCalendarEventsQuery()
   const [datePickerState, setDatePickerState] = useState({
     field: "",
     mode: "date" as "date" | "time",
@@ -157,7 +156,6 @@ const ScheduleMeetingModal = ({
           text1: t(isEditMode ? "DetailsUpdated!" : "MeetingScheduled!"),
         })
         onClose()
-        calendarEventsRefetch()
         navigate(ScreensEnum.CALENDAR)
       }
     } catch (error) {
