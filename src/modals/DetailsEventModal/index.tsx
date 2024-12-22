@@ -18,7 +18,7 @@ import Participants from "src/components/Participants"
 import Toast from "react-native-toast-message"
 import { ActivityIndicator } from "react-native-paper"
 import { formatTime } from "@utils/utils"
-import { useAuthMeQuery } from "src/api/auth/authApi"
+import { useAuthMeQuery } from "src/api/userApi/userApi"
 
 const DetailsEventModal = ({
   handleOpenScheduleModal,

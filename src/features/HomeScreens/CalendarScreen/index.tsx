@@ -18,7 +18,8 @@ import { BottomSheetMethods } from "@devvie/bottom-sheet"
 import { formatTime } from "@utils/utils"
 import ScheduleMeetingModal from "src/modals/ScheduleMeetingModal"
 import { Portal } from "react-native-portalize"
-import { useAuthMeQuery } from "src/api/auth/authApi"
+import { useAuthMeQuery } from "src/api/userApi/userApi"
+import moment from "moment"
 
 const CalendarScreen = () => {
   const { selectedDay } = useAppSelector((state) => state.calendar)
@@ -58,8 +59,8 @@ const CalendarScreen = () => {
       id: event.id,
       title: event.title,
       description: event.description,
-      start: new Date(event.startDate),
-      end: new Date(event.endDate),
+      start: moment(event.startDate).add(authMeData?.gmtDelta || 0, 'hours').toDate(),
+      end: moment(event.endDate).add(authMeData?.gmtDelta || 0, 'hours').toDate(),
       color: event.color || colors.lightAqua,
       status: event.status,
       participants: event.participants,
@@ -141,7 +142,8 @@ const CalendarScreen = () => {
           mode={"day"}
           onPressEvent={() => console.log("event")}
           ampm
-          overlapOffset={screenWidth * 0.1}
+          swipeEnabled={false}
+          overlapOffset={screenWidth * 0.005}
           date={new Date(selectedDay)}
           renderEvent={renderEvent}
           renderHeader={() => {
@@ -183,6 +185,7 @@ const CalendarScreen = () => {
           onClose={handleCloseScheduleModal}
           sheetRef={sheetScheduleRef}
           eventId={eventId}
+          refetch={calendarEventsRefetch}
         />
       </Portal>
     </>

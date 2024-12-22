@@ -72,12 +72,6 @@ export const authApi = createApi({
         },
       }),
     }),
-    refresh: builder.query<any, void>({
-      query: () => ({ url: 'auth/refresh', method: 'GET' }),
-    }),
-    authMe: builder.query<any, void>({
-      query: () => ({ url: 'auth/me', method: 'GET' }),
-    }),
   }),
 });
 
@@ -88,5 +82,4 @@ export const {
   useForgotPasswordMutation,
   useResetPasswordMutation,
   useEmailConfirmMutation,
-  useAuthMeQuery,
 } = authApi;

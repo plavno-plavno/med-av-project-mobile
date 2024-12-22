@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithReAuth } from '..';
-// import { } from './types';
+import { IAuthMeResponse } from './types';
 
 export const userApi = createApi({
   baseQuery: baseQueryWithReAuth,
@@ -13,12 +13,13 @@ export const userApi = createApi({
         body: {},
       }),
     }),
-    refresh: builder.query<any, void>({
-      query: () => ({ url: 'auth/refresh', method: 'GET' }),
+    authMe: builder.query<IAuthMeResponse, void>({
+      query: () => ({ url: 'auth/me', method: 'GET' }),
     }),
   }),
 });
 
 export const {
   useLogoutMutation,
+  useAuthMeQuery,
 } = userApi;

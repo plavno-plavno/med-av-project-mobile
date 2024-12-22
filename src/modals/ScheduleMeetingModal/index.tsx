@@ -15,7 +15,6 @@ import DateTimePickerModal from "react-native-modal-datetime-picker"
 import {
   useCreateEventMutation,
   useGetCalendarEventDetailsQuery,
-  useGetCalendarEventsQuery,
   useUpdateEventMutation,
 } from "src/api/calendarApi/calendarApi"
 import Toast from "react-native-toast-message"
@@ -51,7 +50,8 @@ interface IScheduleMeetingModal {
   onClose: () => void
   handleGoModalBack?: () => void
   sheetRef: React.RefObject<BottomSheetMethods>
-  eventId?: number
+  eventId?: number;
+  refetch?: () => void;
 }
 
 const ScheduleMeetingModal = ({
@@ -59,6 +59,7 @@ const ScheduleMeetingModal = ({
   sheetRef,
   eventId,
   handleGoModalBack,
+  refetch,
 }: IScheduleMeetingModal) => {
   const { t } = useTranslation()
   const { currentDate } = useAppSelector((state) => state.calendar)
@@ -69,11 +70,10 @@ const ScheduleMeetingModal = ({
   const [createEvent, { isLoading: isCreateEventLoading }] =
     useCreateEventMutation()
 
-  const { data: eventDetailsData } = useGetCalendarEventDetailsQuery(
+  const { data: eventDetailsData, refetch: eventDetailsRefetch} = useGetCalendarEventDetailsQuery(
     { id: eventId || 0 },
     { skip: !eventId }
   )
-  console.log(eventDetailsData, "eventDetailsData")
 
   const [updateEvent, { isLoading: isUpdateEventLoading }] =
     useUpdateEventMutation()
@@ -138,14 +138,19 @@ const ScheduleMeetingModal = ({
     try {
       const payload = {
         ...values,
-        startDate: `${values.date} ${values.startDate}`,
-        endDate: `${values.date} ${values.endDate}`,
-        gmtDelta: +values.timezone,
-      }
-
+        startDate: moment(`${values.date} ${values.startDate}`, "YYYY-MM-DD HH:mm")
+          .utcOffset(-values.timezone) // Adjust based on the timezone offset
+          .toISOString(),
+        endDate: moment(`${values.date} ${values.endDate}`, "YYYY-MM-DD HH:mm")
+          .utcOffset(-values.timezone) // Adjust based on the timezone offset
+          .toISOString(),
+        gmtDelta: Number(values.timezone),
+      };
+      
       let res
       if (isEditMode) {
         res = await updateEvent({ ...payload, id: eventId }).unwrap()
+        eventDetailsRefetch();
       } else {
         res = await createEvent(payload).unwrap()
       }
@@ -155,6 +160,8 @@ const ScheduleMeetingModal = ({
           type: "success",
           text1: t(isEditMode ? "DetailsUpdated!" : "MeetingScheduled!"),
         })
+        !!refetch && refetch();
+        formikRef.current?.resetForm();
         onClose()
         navigate(ScreensEnum.CALENDAR)
       }

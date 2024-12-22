@@ -58,10 +58,6 @@ export const calendarApi = createApi({
         method: 'GET',
       }),
     }),
-  
-    refresh: builder.query<any, void>({
-      query: () => ({ url: 'auth/refresh', method: 'GET' }),
-    }),
   }),
 });
 
