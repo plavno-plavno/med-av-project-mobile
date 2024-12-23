@@ -1247,6 +1247,27 @@ PODS:
     - react-native-config/App (= 1.5.3)
   - react-native-config/App (1.5.3):
     - React-Core
+  - react-native-document-picker (9.3.1):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-keyboard-controller (1.15.0):
     - DoubleConversion
     - glog
@@ -1888,6 +1909,7 @@ DEPENDENCIES:
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-config (from `../node_modules/react-native-config`)
+  - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - react-native-keyboard-controller (from `../node_modules/react-native-keyboard-controller`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
@@ -2007,6 +2029,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
   react-native-config:
     :path: "../node_modules/react-native-config"
+  react-native-document-picker:
+    :path: "../node_modules/react-native-document-picker"
   react-native-keyboard-controller:
     :path: "../node_modules/react-native-keyboard-controller"
   react-native-netinfo:
@@ -2124,6 +2148,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: e086ffb0c143c96e19fa114bef0ff27bab208dff
   React-microtasksnativemodule: 8e528efbba69994a8cb107b4698d028430e80f25
   react-native-config: 8f7283449bbb048902f4e764affbbf24504454af
+  react-native-document-picker: e9d83c149bdd72dc01cf8dcb8df0389c6bd5fddb
   react-native-keyboard-controller: 3428e4761623fd6a242d9bf3573112f8ebe92238
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
   react-native-safe-area-context: d6406c2adbd41b2e09ab1c386781dc1c81a90919
@@ -2167,4 +2192,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: c20282ccd0f455fa3b6888e4b684d782b88e7395
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.15.2

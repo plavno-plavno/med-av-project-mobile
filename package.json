@@ -31,6 +31,7 @@
     "react-native": "0.76.4",
     "react-native-big-calendar": "^4.16.1",
     "react-native-config": "^1.5.3",
+    "react-native-document-picker": "^9.3.1",
     "react-native-element-dropdown": "^2.12.2",
     "react-native-gesture-handler": "^2.21.2",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",

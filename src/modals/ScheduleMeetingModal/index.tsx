@@ -50,8 +50,8 @@ interface IScheduleMeetingModal {
   onClose: () => void
   handleGoModalBack?: () => void
   sheetRef: React.RefObject<BottomSheetMethods>
-  eventId?: number;
-  refetch?: () => void;
+  eventId?: number
+  refetch?: () => void
 }
 
 const ScheduleMeetingModal = ({
@@ -70,10 +70,8 @@ const ScheduleMeetingModal = ({
   const [createEvent, { isLoading: isCreateEventLoading }] =
     useCreateEventMutation()
 
-  const { data: eventDetailsData, refetch: eventDetailsRefetch} = useGetCalendarEventDetailsQuery(
-    { id: eventId || 0 },
-    { skip: !eventId }
-  )
+  const { data: eventDetailsData, refetch: eventDetailsRefetch } =
+    useGetCalendarEventDetailsQuery({ id: eventId || 0 }, { skip: !eventId })
 
   const [updateEvent, { isLoading: isUpdateEventLoading }] =
     useUpdateEventMutation()
@@ -138,19 +136,22 @@ const ScheduleMeetingModal = ({
     try {
       const payload = {
         ...values,
-        startDate: moment(`${values.date} ${values.startDate}`, "YYYY-MM-DD HH:mm")
+        startDate: moment(
+          `${values.date} ${values.startDate}`,
+          "YYYY-MM-DD HH:mm"
+        )
           .utcOffset(-values.timezone) // Adjust based on the timezone offset
           .toISOString(),
         endDate: moment(`${values.date} ${values.endDate}`, "YYYY-MM-DD HH:mm")
           .utcOffset(-values.timezone) // Adjust based on the timezone offset
           .toISOString(),
         gmtDelta: Number(values.timezone),
-      };
-      
+      }
+
       let res
       if (isEditMode) {
         res = await updateEvent({ ...payload, id: eventId }).unwrap()
-        eventDetailsRefetch();
+        eventDetailsRefetch()
       } else {
         res = await createEvent(payload).unwrap()
       }
@@ -160,8 +161,8 @@ const ScheduleMeetingModal = ({
           type: "success",
           text1: t(isEditMode ? "DetailsUpdated!" : "MeetingScheduled!"),
         })
-        !!refetch && refetch();
-        formikRef.current?.resetForm();
+        !!refetch && refetch()
+        formikRef.current?.resetForm()
         onClose()
         navigate(ScreensEnum.CALENDAR)
       }

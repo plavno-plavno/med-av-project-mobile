@@ -8,3 +8,21 @@ export const formatTime = (date: string | undefined) => {
       return `${formattedHours}:${minutes ? `${minutes} ${period}` : period}`
     }
   }
+
+  export const getCustomTimezoneDisplay = () => {
+    const now = new Date()
+
+    const currentTimezone = Intl.DateTimeFormat("en-US", {
+      timeZoneName: "short",
+    }).resolvedOptions().timeZone
+
+    const offsetMinutes = now.getTimezoneOffset()
+    const offsetHours = -(offsetMinutes / 60)
+    const gmtOffset = `GMT ${offsetHours >= 0 ? "+" : ""}${offsetHours
+      .toString()
+      .padStart(2, "0")}:00`
+
+    const cityName = currentTimezone
+
+    return `(${gmtOffset}) ${cityName}`
+  }

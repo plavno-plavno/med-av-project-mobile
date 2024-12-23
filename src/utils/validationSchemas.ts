@@ -78,3 +78,13 @@ export const validationCreateEventSchema = Yup.object().shape({
   description: Yup.string()
     .max(240, "Description must be at most 240 characters"),
 });
+
+export const validationSetupProfileSchema = Yup.object().shape({
+  firstName: Yup.string()
+    .required("First name is required"),
+  lastName: Yup.string()
+    .required("Last name is required"),
+  gmtDelta: Yup.string() || Yup.number()
+    .required("Timezone is required"),
+  photo: Yup.string().required("Photo is required"),
+});

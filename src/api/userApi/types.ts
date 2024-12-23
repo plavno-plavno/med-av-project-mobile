@@ -1,3 +1,5 @@
+import { IPostMediaResponse } from "../media/types";
+
 export interface IAuthMeResponse {
     __entity: "User";
     createdAt: string; // ISO date string
@@ -14,7 +16,7 @@ export interface IAuthMeResponse {
     lastName: string | null;
     newEmail: string | null;
     organization: string | null;
-    photo: string | null;
+    photo: IPostMediaResponse;
     provider: "email" | "google" | "facebook" | "twitter"; // Extendable provider type
     role: RoleEntity;
     socialId: string | null;
@@ -35,4 +37,11 @@ export interface Status {
     __entity: "Status";
     id: number;
     name: string;
+}
+
+export interface IUpdateAuthMeRequest {
+    photo?: string;
+    firstName?: string;
+    lastName?: string;
+    gmtDelta?: number | string;
 }

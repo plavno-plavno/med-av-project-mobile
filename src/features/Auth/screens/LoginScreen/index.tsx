@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useMemo } from "react"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { useTranslation } from "react-i18next"
 import { useEmailLoginMutation } from "src/api/auth/authApi"
@@ -15,6 +15,7 @@ import { ROUTES } from "src/navigation/RoutesTypes"
 import * as Keychain from "react-native-keychain"
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 import { isIOS } from "@utils/platformChecker"
+import { useAuthMeQuery } from "src/api/userApi/userApi"
 
 interface FormValues {
   email: string
@@ -25,6 +26,22 @@ const LoginScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<ROUTES>()
   const formikRef = React.useRef<FormikProps<FormValues>>(null as any)
+
+  const { data: authMeData } = useAuthMeQuery()
+
+  const initialCheck = useMemo(() => {
+    const checkProfileInfo =
+      authMeData?.firstName &&
+      authMeData?.lastName &&
+      authMeData?.gmtDelta &&
+      authMeData?.photo
+
+    if (!checkProfileInfo) {
+      return ScreensEnum.SETUP_PROFILE
+    } else {
+      return ScreensEnum.MAIN
+    }
+  }, [authMeData])
 
   const [emailLogin, { isLoading: isEmailLoginLoading }] =
     useEmailLoginMutation()
@@ -47,7 +64,7 @@ const LoginScreen = () => {
 
       navigation.reset({
         index: 0,
-        routes: [{ name: ScreensEnum.MAIN }],
+        routes: [{ name: initialCheck }],
       })
     } catch (error) {
       const { setErrors } = formikRef.current

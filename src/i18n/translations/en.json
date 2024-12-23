@@ -69,5 +69,15 @@
     "Decline": "Decline",
     "DetailsUpdated!": "Details updated!",
     "EventAccepted": "Event accepted",
-    "EventDeclined": "Event declined"
+    "EventDeclined": "Event declined",
+    "PersonalInformation": "Personal Information",
+    "FirstName": "First Name",
+    "LastName": "Last Name",
+    "Timezone": "Timezone",
+    "Upload": "Upload",
+    "EnterYourFirstName": "Enter your first name",
+    "EnterYourLastName": "Enter your last name",
+    "EnterYourTimezone": "Enter your timezone",
+    "ProfileUpdated": "Profile updated",
+    "SetupProfile": "Setup Profile"
 }

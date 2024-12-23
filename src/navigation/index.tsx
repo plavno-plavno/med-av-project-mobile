@@ -15,7 +15,8 @@ import ForgotPasswordScreen from "src/features/Auth/screens/ForgotPasswordScreen
 import ResetPasswordScreen from "src/features/Auth/screens/ResetPasswordScreen"
 import * as Keychain from "react-native-keychain"
 import { Linking } from "react-native"
-import queryString from 'query-string';
+import queryString from "query-string"
+import SetupProfileScreen from "src/features/Auth/screens/SetupProfileScreen"
 
 const Stack = createNativeStackNavigator()
 
@@ -41,39 +42,42 @@ const Navigation: React.FC = () => {
 
   useEffect(() => {
     const handleDeepLink = (event: { url: string }) => {
-      const { url } = event;
+      const { url } = event
       if (url) {
-          console.log('Received URL:', url);
-          const parsed = queryString.parseUrl(url);
-          const { query } = parsed;
+        console.log("Received URL:", url)
+        const parsed = queryString.parseUrl(url)
+        const { query } = parsed
 
-          const pathMatch = url.match(/^.*:\/\/([^?]*)/);
-          const pathname = pathMatch ? `/${pathMatch[1]}` : undefined;
+        const pathMatch = url.match(/^.*:\/\/([^?]*)/)
+        const pathname = pathMatch ? `/${pathMatch[1]}` : undefined
 
-          const hash = query.hash;
+        const hash = query.hash
 
-          if (hash) {
-              if (pathname === '/password-change') {
-                  console.log('Navigating to ResetPasswordScreen');
-                  navigationRef?.current?.navigate(ScreensEnum.RESET_PASSWORD, { hash });
-              } else if (pathname === '/auth/setPassword') {
-                  console.log('Navigating to CreatePasswordScreen');
-                  navigationRef?.current?.navigate(ScreensEnum.CREATE_PASSWORD, { hash });
-              } else {
-                  console.log('Unknown Path:', pathname);
-              }
+        if (hash) {
+          if (pathname === "/password-change") {
+            console.log("Navigating to ResetPasswordScreen")
+            navigationRef?.current?.navigate(ScreensEnum.RESET_PASSWORD, {
+              hash,
+            })
+          } else if (pathname === "/auth/setPassword") {
+            console.log("Navigating to CreatePasswordScreen")
+            navigationRef?.current?.navigate(ScreensEnum.CREATE_PASSWORD, {
+              hash,
+            })
           } else {
-              console.log('Hash is missing in the URL.');
+            console.log("Unknown Path:", pathname)
           }
+        } else {
+          console.log("Hash is missing in the URL.")
+        }
       }
-  };
+    }
 
-    Linking.addEventListener('url', handleDeepLink);
+    Linking.addEventListener("url", handleDeepLink)
     Linking.getInitialURL().then((url) => {
-        if (url) handleDeepLink({ url });
-    });
-}, []);
-
+      if (url) handleDeepLink({ url })
+    })
+  }, [])
 
   const config = {
     screens: {
@@ -83,7 +87,7 @@ const Navigation: React.FC = () => {
   }
 
   const linking = {
-    prefixes: ["https://av-hims.netlify.app", 'https://med-app-av.plavno.io'],
+    prefixes: ["https://av-hims.netlify.app", "https://med-app-av.plavno.io"],
     config,
   }
 
@@ -114,6 +118,10 @@ const Navigation: React.FC = () => {
         <Stack.Screen
           name={ScreensEnum.RESET_PASSWORD}
           component={ResetPasswordScreen}
+        />
+        <Stack.Screen
+          name={ScreensEnum.SETUP_PROFILE}
+          component={SetupProfileScreen}
         />
 
         <Stack.Screen name={ScreensEnum.MAIN} component={BottomTabNavigator} />
