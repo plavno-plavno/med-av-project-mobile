@@ -1,11 +1,10 @@
-import { configureStore } from '@reduxjs/toolkit';
-import { authApi } from '../api/auth/authApi';
-import { setupListeners } from '@reduxjs/toolkit/query';
-import calendarSlice from './slices/calendarSlice/calendarSlice';
-import { userApi } from 'src/api/userApi/userApi';
-import { calendarApi } from 'src/api/calendarApi/calendarApi';
-import { mediaApi } from 'src/api/media/mediaApi';
-
+import { configureStore } from "@reduxjs/toolkit"
+import { authApi } from "../api/auth/authApi"
+import { setupListeners } from "@reduxjs/toolkit/query"
+import calendarSlice from "./slices/calendarSlice/calendarSlice"
+import { userApi } from "src/api/userApi/userApi"
+import { calendarApi } from "src/api/calendarApi/calendarApi"
+import { mediaApi } from "src/api/mediaApi/mediaApi"
 
 const store = configureStore({
   reducer: {
@@ -24,11 +23,11 @@ const store = configureStore({
       calendarApi.middleware,
       mediaApi.middleware
     ),
-});
+})
 
-setupListeners(store.dispatch);
+setupListeners(store.dispatch)
 
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+export type RootState = ReturnType<typeof store.getState>
+export type AppDispatch = typeof store.dispatch
 
-export default store;
+export default store
