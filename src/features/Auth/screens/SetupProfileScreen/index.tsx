@@ -125,34 +125,32 @@ const SetupProfileScreen = () => {
           >
             {({ handleChange, handleBlur, values, errors, touched }) => (
               <View style={styles.container}>
-                {!authMeData?.photo && (
-                  <View style={styles.photoContainer}>
-                    {selectedFile ? (
-                      <Image
-                        source={{ uri: selectedFile?.uri }}
-                        style={{ width: 80, height: 80, borderRadius: 40 }}
-                      />
-                    ) : (
-                      <Icon name="avatarEmpty" />
-                    )}
-                    <View
-                      style={[helpers.flex1, helpers.gap8, helpers.flexRow]}
-                    >
-                      <CustomButton
-                        isLoading={isUploadPhotoLoading}
-                        text={t("Upload")}
-                        type="secondary"
-                        onPress={handleFilePicker}
-                        style={helpers.width60Percent}
-                      />
-                      <CustomButton
-                        text={t("Delete")}
-                        style={helpers.width35Percent}
-                        onPress={() => setSelectedFile(null)}
-                      />
-                    </View>
+                <View style={styles.photoContainer}>
+                  {selectedFile ? (
+                    <Image
+                      source={{ uri: selectedFile?.uri }}
+                      style={{ width: 80, height: 80, borderRadius: 40 }}
+                    />
+                  ) : (
+                    <Icon name="avatarEmpty" />
+                  )}
+                  <View
+                    style={[helpers.flex1, helpers.gap8, helpers.flexRow]}
+                  >
+                    <CustomButton
+                      isLoading={isUploadPhotoLoading}
+                      text={t("Upload")}
+                      type="secondary"
+                      onPress={handleFilePicker}
+                      style={helpers.width60Percent}
+                    />
+                    {!!authMeData?.photo && <CustomButton
+                      text={t("Delete")}
+                      style={helpers.width35Percent}
+                      onPress={() => setSelectedFile(null)}
+                    />}
                   </View>
-                )}
+                </View>
                 {!authMeData?.firstName && (
                   <CustomInput
                     label={t("FirstName")}

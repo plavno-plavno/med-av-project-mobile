@@ -53,7 +53,6 @@ export const baseQueryWithReAuth: BaseQueryFn<
         if (refreshResult?.error?.data?.statusCode >= 400) {
           await Keychain.resetGenericPassword({ service: "accessToken" })
           await Keychain.resetGenericPassword({ service: "refreshToken" })
-          navigationRef.current?.navigate(ScreensEnum.MAIN)
           return refreshResult
         }
         if (refreshResult) {
