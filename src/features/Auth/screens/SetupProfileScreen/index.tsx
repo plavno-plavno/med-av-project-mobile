@@ -84,7 +84,7 @@ const SetupProfileScreen = () => {
       lastName: values.lastName,
       gmtDelta: values.gmtDelta,
       photo: values.photo,
-    })
+    }).unwrap()
 
     if (res) {
       Toast.show({
@@ -134,9 +134,7 @@ const SetupProfileScreen = () => {
                   ) : (
                     <Icon name="avatarEmpty" />
                   )}
-                  <View
-                    style={[helpers.flex1, helpers.gap8, helpers.flexRow]}
-                  >
+                  <View style={[helpers.flex1, helpers.gap8, helpers.flexRow]}>
                     <CustomButton
                       isLoading={isUploadPhotoLoading}
                       text={t("Upload")}
@@ -144,11 +142,13 @@ const SetupProfileScreen = () => {
                       onPress={handleFilePicker}
                       style={helpers.width60Percent}
                     />
-                    {!!authMeData?.photo && <CustomButton
-                      text={t("Delete")}
-                      style={helpers.width35Percent}
-                      onPress={() => setSelectedFile(null)}
-                    />}
+                    {authMeData?.photo && selectedFile && (
+                      <CustomButton
+                        text={t("Delete")}
+                        style={helpers.width35Percent}
+                        onPress={() => setSelectedFile(null)}
+                      />
+                    )}
                   </View>
                 </View>
                 {!authMeData?.firstName && (
