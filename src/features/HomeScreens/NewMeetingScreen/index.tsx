@@ -10,22 +10,30 @@ import { moderateScale } from "react-native-size-matters"
 import ScheduleMeetingModal from "src/modals/ScheduleMeetingModal"
 import { BottomSheetMethods } from "@devvie/bottom-sheet"
 import { Portal } from "react-native-portalize"
+import { useNavigation } from "@react-navigation/native"
+import { ScreensEnum } from "src/navigation/ScreensEnum"
+import { ROUTES } from "src/navigation/RoutesTypes"
+import Toast from "react-native-toast-message"
 
 const NewMeetingScreen = () => {
   const { t } = useTranslation()
+  const naviqation = useNavigation<ROUTES>()
   const sheetRef = useRef<BottomSheetMethods>(null)
-
-  const [isModalVisible, setIsModalVisible] = React.useState(false)
-  console.log(isModalVisible, "isModalVisible")
 
   const onClose = () => {
     sheetRef.current?.close()
-    setIsModalVisible(false)
   }
 
   const onOpen = () => {
     sheetRef.current?.open()
-    setIsModalVisible(true)
+  }
+
+  const handleNavigateNewMeeting = () => {
+    naviqation.navigate(ScreensEnum.MEETING_DETAILS, {})
+    Toast.show({
+      type: "success",
+      text1: t("LinkCopied!"),
+    })
   }
 
   return (
@@ -41,6 +49,7 @@ const NewMeetingScreen = () => {
             <MeetingsButton
               icon="videoIcon"
               title={t("StartMeetingInstantly")}
+              onPress={handleNavigateNewMeeting}
             />
             <MeetingsButton
               icon="scheduleMeeting"

@@ -39,7 +39,6 @@ const SetupProfileScreen = () => {
   const formikRef = React.useRef<FormikProps<IFormValues>>(null)
   const [selectedFile, setSelectedFile] = useState<IFile | null>(null)
   const [isUploadPhotoLoading, setIsUploadPhotoLoading] = useState(false)
-  console.log(selectedFile, "selectedFile")
 
   const { data: authMeData } = useAuthMeQuery()
   const [mediaUpload] = useMediaUploadMutation()
@@ -79,6 +78,8 @@ const SetupProfileScreen = () => {
   }
   // TODO: FIX GMT DELTA
   const handleUpdateProfile = async (values: IFormValues) => {
+    console.log("HELLO")
+
     const res = await updateAuthMe({
       firstName: values.firstName,
       lastName: values.lastName,

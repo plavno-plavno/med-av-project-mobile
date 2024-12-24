@@ -17,6 +17,7 @@ import * as Keychain from "react-native-keychain"
 import { Linking } from "react-native"
 import queryString from "query-string"
 import SetupProfileScreen from "src/features/Auth/screens/SetupProfileScreen"
+import MeetingDetailsScreen from "src/features/MeetingScreens/MeetingDetailsScreen"
 
 const Stack = createNativeStackNavigator()
 
@@ -122,6 +123,10 @@ const Navigation: React.FC = () => {
         <Stack.Screen
           name={ScreensEnum.SETUP_PROFILE}
           component={SetupProfileScreen}
+        />
+        <Stack.Screen
+          name={ScreensEnum.MEETING_DETAILS}
+          component={MeetingDetailsScreen}
         />
 
         <Stack.Screen name={ScreensEnum.MAIN} component={BottomTabNavigator} />
