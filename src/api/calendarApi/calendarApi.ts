@@ -1,21 +1,40 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { baseQueryWithReAuth } from '..';
-import { IGetCalendarEventDetailsRequest, IGetCalendarEventDetailsResponse, IGetCalendarEventsResponse, IPostCalendarEventsRequest, IPostCalendarEventsResponse, IPutCalendarEventsRequest, IPutCalendarEventsResponse } from './types';
+import { createApi } from "@reduxjs/toolkit/query/react"
+import { baseQueryWithReAuth } from ".."
+import {
+  IGetCalendarEventDetailsRequest,
+  IGetCalendarEventDetailsResponse,
+  IGetCalendarEventsResponse,
+  IPostCalendarEventsRequest,
+  IPostCalendarEventsResponse,
+  IPutCalendarEventsRequest,
+  IPutCalendarEventsResponse,
+} from "./types"
 
 export const calendarApi = createApi({
   baseQuery: baseQueryWithReAuth,
-  reducerPath: 'calendarApi',
+  reducerPath: "calendarApi",
   endpoints: (builder) => ({
     getCalendarEvents: builder.query<IGetCalendarEventsResponse, void>({
       query: () => ({
-        url: 'calendar/events',
-        method: 'GET',
+        url: "calendar/events",
+        method: "GET",
       }),
-    }),  
-    createEvent: builder.mutation<IPostCalendarEventsResponse, IPostCalendarEventsRequest>({
-      query: ({color, description, startDate, endDate, title, participants, gmtDelta}) => ({
-        url: 'calendar/events',
-        method: 'POST',
+    }),
+    createEvent: builder.mutation<
+      IPostCalendarEventsResponse,
+      IPostCalendarEventsRequest
+    >({
+      query: ({
+        color,
+        description,
+        startDate,
+        endDate,
+        title,
+        participants,
+        gmtDelta,
+      }) => ({
+        url: "calendar/events",
+        method: "POST",
         body: {
           title,
           startDate,
@@ -27,19 +46,32 @@ export const calendarApi = createApi({
         },
       }),
     }),
-    deleteEvent: builder.mutation<void, {id: number}>({
-      query: ({id}) => ({
+    deleteEvent: builder.mutation<void, { id: number }>({
+      query: ({ id }) => ({
         url: `calendar/events/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
         body: {
           id,
         },
       }),
     }),
-    updateEvent: builder.mutation<IPutCalendarEventsResponse, IPutCalendarEventsRequest>({
-      query: ({id, color, description, endDate, gmtDelta, participants, startDate, title, status}) => ({
+    updateEvent: builder.mutation<
+      IPutCalendarEventsResponse,
+      IPutCalendarEventsRequest
+    >({
+      query: ({
+        id,
+        color,
+        description,
+        endDate,
+        gmtDelta,
+        participants,
+        startDate,
+        title,
+        status,
+      }) => ({
         url: `calendar/events/${id}`,
-        method: 'PATCH',
+        method: "PATCH",
         body: {
           title,
           startDate,
@@ -52,14 +84,23 @@ export const calendarApi = createApi({
         },
       }),
     }),
-    getCalendarEventDetails: builder.query<IGetCalendarEventDetailsResponse, IGetCalendarEventDetailsRequest>({
-      query: ({id}) => ({
+    getCalendarEventDetails: builder.query<
+      IGetCalendarEventDetailsResponse,
+      IGetCalendarEventDetailsRequest
+    >({
+      query: ({ id }) => ({
         url: `calendar/events/${id}`,
-        method: 'GET',
+        method: "GET",
+      }),
+    }),
+    getCalendarRecent: builder.query<string[], void>({
+      query: () => ({
+        url: `calendar/recent`,
+        method: "GET",
       }),
     }),
   }),
-});
+})
 
 export const {
   useUpdateEventMutation,
@@ -67,4 +108,5 @@ export const {
   useCreateEventMutation,
   useGetCalendarEventsQuery,
   useGetCalendarEventDetailsQuery,
-} = calendarApi;
+  useGetCalendarRecentQuery,
+} = calendarApi

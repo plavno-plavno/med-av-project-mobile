@@ -1,11 +1,10 @@
-import { StyleSheet } from 'react-native';
-import colors from '../../assets/colors';
-import { moderateScale } from 'react-native-size-matters';
-import { fontFamilies, fontWeights } from '../../utils/theme';
+import { StyleSheet } from "react-native"
+import colors from "../../assets/colors"
+import { moderateScale } from "react-native-size-matters"
+import { fontFamilies, fontWeights } from "../../utils/theme"
 
 export const styles = StyleSheet.create({
-  container: {
-  },
+  container: {},
   label: {
     ...fontFamilies.interManropeSemiBold16,
     ...fontWeights.fontWeight500,
@@ -28,12 +27,12 @@ export const styles = StyleSheet.create({
     color: colors.charcoal,
   },
   textInput: {
-    maxWidth: '90%',
+    maxWidth: "90%",
     color: colors.midGrey,
   },
   chipContainer: {
-    flexWrap: 'wrap',
-    flexDirection: 'row',
+    flexWrap: "wrap",
+    flexDirection: "row",
   },
   textAreaInput: {
     height: moderateScale(150),
@@ -56,11 +55,11 @@ export const styles = StyleSheet.create({
   },
   focusedInput: {
     borderColor: colors.lightAqua,
-    boxShadow: '0px 0px 0px 2px rgba(78, 183, 189, 0.16)',
+    boxShadow: "0px 0px 0px 2px rgba(78, 183, 189, 0.16)",
   },
   errorInput: {
     borderColor: colors.alertRed,
-    boxShadow: 'none'
+    boxShadow: "none",
   },
   errorText: {
     color: colors.alertRed,
@@ -69,15 +68,15 @@ export const styles = StyleSheet.create({
     marginTop: moderateScale(4),
   },
   rightIcon: {
-    position: 'absolute',
+    position: "absolute",
     right: moderateScale(12),
     top: moderateScale(12),
   },
   chip: {
     marginLeft: moderateScale(6),
-    marginVertical: moderateScale(6),
-    alignItems: 'center',
-    flexDirection: 'row',
+    marginVertical: moderateScale(4),
+    alignItems: "center",
+    flexDirection: "row",
     backgroundColor: colors.borderGrey,
     borderRadius: moderateScale(8),
     paddingHorizontal: moderateScale(8),
@@ -87,11 +86,10 @@ export const styles = StyleSheet.create({
     ...fontFamilies.interManropeRegular14,
     ...fontWeights.fontWeight400,
     color: colors.midGrey,
-   },
-   subtitle: {
+  },
+  subtitle: {
     ...fontFamilies.interManropeRegular14,
     ...fontWeights.fontWeight400,
     color: colors.midGrey,
-   }
-});
-
+  },
+})

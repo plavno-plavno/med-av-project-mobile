@@ -15,6 +15,7 @@ import DateTimePickerModal from "react-native-modal-datetime-picker"
 import {
   useCreateEventMutation,
   useGetCalendarEventDetailsQuery,
+  useGetCalendarRecentQuery,
   useUpdateEventMutation,
 } from "src/api/calendarApi/calendarApi"
 import Toast from "react-native-toast-message"
@@ -63,9 +64,10 @@ const ScheduleMeetingModal = ({
 }: IScheduleMeetingModal) => {
   const { t } = useTranslation()
   const { currentDate } = useAppSelector((state) => state.calendar)
-
   const formikRef = React.useRef<FormikProps<IFormValues>>(null as any)
   const isEditMode = !!eventId
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const [createEvent, { isLoading: isCreateEventLoading }] =
     useCreateEventMutation()
@@ -75,6 +77,8 @@ const ScheduleMeetingModal = ({
 
   const [updateEvent, { isLoading: isUpdateEventLoading }] =
     useUpdateEventMutation()
+
+  const { data: getCalendarRecent } = useGetCalendarRecentQuery()
 
   const [datePickerState, setDatePickerState] = useState({
     field: "",
@@ -343,7 +347,40 @@ const ScheduleMeetingModal = ({
                               : String(errors.participants)
                             : undefined
                         }
+                        onFocus={() => setIsMenuOpen(true)}
+                        onBlur={() => setIsMenuOpen(false)}
                       />
+                      {isMenuOpen && (
+                        <View style={{ position: "relative" }}>
+                          <View style={styles.menuContainer}>
+                            {getCalendarRecent &&
+                              getCalendarRecent.map((email, idx) => {
+                                return (
+                                  <TouchableOpacity
+                                    onPress={() => {
+                                      setFieldValue(
+                                        "participants",
+                                        values.participants.includes(email)
+                                          ? values.participants.filter(
+                                              (participant) =>
+                                                participant !== email
+                                            )
+                                          : [...values.participants, email]
+                                      )
+                                    }}
+                                    key={idx}
+                                    style={styles.menuItem}
+                                  >
+                                    {values.participants.includes(email) && (
+                                      <Icon name="successCheck" />
+                                    )}
+                                    <Text style={styles.subtitle}>{email}</Text>
+                                  </TouchableOpacity>
+                                )
+                              })}
+                          </View>
+                        </View>
+                      )}
                       <CustomInput
                         inputType="colorPicker"
                         label="Color"
