@@ -78,8 +78,6 @@ const SetupProfileScreen = () => {
   }
   // TODO: FIX GMT DELTA
   const handleUpdateProfile = async (values: IFormValues) => {
-    console.log("HELLO")
-
     const res = await updateAuthMe({
       firstName: values.firstName,
       lastName: values.lastName,

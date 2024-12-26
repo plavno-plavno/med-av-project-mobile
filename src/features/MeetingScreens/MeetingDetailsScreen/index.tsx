@@ -1,13 +1,34 @@
-import { View, Text } from "react-native"
+import { View, Text, TouchableOpacity } from "react-native"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { styles } from "./styles"
-import { CustomButton } from "@components"
+import { CustomButton, Icon } from "@components"
 import { useTranslation } from "react-i18next"
 import { helpers } from "@utils/theme"
 import colors from "src/assets/colors"
+import useWebRTC from "src/hooks/useWebRtc"
 
 const MeetingDetailsScreen = () => {
   const { t } = useTranslation()
+  const {
+    localStream,
+    remoteStreams,
+    startCall,
+    endCall,
+     isMuted,
+    isVideoOff,
+    toggleAudio,
+    toggleVideo,
+    messages,
+    sendMessage,
+    setLocalStream,
+    startScreenShare,
+    stopScreenShare,
+    isScreenSharing,
+    sharingOwner,
+    participants,
+    RTCView,
+  } = useWebRTC();
+
   return (
     <ScreenWrapper title="MeetingDetails" isBackButton isCenterTitle>
       <View style={styles.container}>
@@ -20,9 +41,25 @@ const MeetingDetailsScreen = () => {
             justifyContent: "center",
             alignSelf: "center",
             borderRadius: 40,
-            width: "70%",
+            width: "65%",
+            overflow: 'hidden',
           }}
-        ></View>
+        >
+          {!isVideoOff && localStream && (
+            <RTCView style={{
+              height: "100%",
+              width: "100%",
+            }} streamURL={localStream.toURL()} mirror={true} />
+          )}
+          <TouchableOpacity onPress={toggleVideo} style={{ position: 'absolute', bottom: 10, alignSelf: 'center' }}>
+            {!isVideoOff ?
+              <Icon name={'eyeOpen'} />
+              :
+              <Icon name={'eyeClose'} />}
+          </TouchableOpacity>
+
+          {/* TODO make the same for isMuted and toggleAudio as toggleVideo */}
+        </View>
         <View>
           <Text style={styles.title}>Getting ready...</Text>
           <Text style={styles.subtitle}>

@@ -143,7 +143,7 @@ const CalendarScreen = () => {
           onPressEvent={() => console.log("event")}
           ampm
           swipeEnabled={false}
-          overlapOffset={screenWidth * 0.005}
+          overlapOffset={screenWidth * 0.3}
           date={new Date(selectedDay)}
           renderEvent={renderEvent}
           renderHeader={() => {

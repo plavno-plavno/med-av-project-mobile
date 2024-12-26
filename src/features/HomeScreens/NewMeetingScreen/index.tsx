@@ -30,10 +30,6 @@ const NewMeetingScreen = () => {
 
   const handleNavigateNewMeeting = () => {
     naviqation.navigate(ScreensEnum.MEETING_DETAILS, {})
-    Toast.show({
-      type: "success",
-      text1: t("LinkCopied!"),
-    })
   }
 
   return (

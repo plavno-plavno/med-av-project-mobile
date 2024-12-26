@@ -22,7 +22,7 @@ import MeetingDetailsScreen from "src/features/MeetingScreens/MeetingDetailsScre
 const Stack = createNativeStackNavigator()
 
 const Navigation: React.FC = () => {
-  const getRoute = useCallback(async () => {
+  const getRoute = async () => {
     const accessToken = await Keychain.getGenericPassword({
       service: "accessToken",
     })
@@ -35,11 +35,11 @@ const Navigation: React.FC = () => {
     setTimeout(() => {
       SplashScreen.hide()
     }, 500)
-  }, [])
+  };
 
   useEffect(() => {
     getRoute()
-  }, [getRoute])
+  }, [])
 
   useEffect(() => {
     const handleDeepLink = (event: { url: string }) => {

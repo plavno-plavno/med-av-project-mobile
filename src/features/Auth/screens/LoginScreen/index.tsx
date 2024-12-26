@@ -27,7 +27,7 @@ const LoginScreen = () => {
   const navigation = useNavigation<ROUTES>()
   const formikRef = React.useRef<FormikProps<FormValues>>(null as any)
 
-  const { data: authMeData } = useAuthMeQuery()
+  const { data: authMeData, refetch: authMeRefetch } = useAuthMeQuery()
 
   const initialCheck = useMemo(() => {
     const checkProfileInfo =
@@ -61,7 +61,7 @@ const LoginScreen = () => {
       await Keychain.setGenericPassword("refreshToken", res.refreshToken, {
         service: "refreshToken",
       })
-
+      await authMeRefetch();
       navigation.reset({
         index: 0,
         routes: [{ name: initialCheck }],
