@@ -25,6 +25,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { styles } from "./styles"
 import colors from "src/assets/colors"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
+import { DateTimeFormatEnum } from "@utils/enums"
 
 interface IFormValues {
   date: string
@@ -80,7 +81,6 @@ const ScheduleMeetingModal = ({
     useUpdateEventMutation()
 
   const { data: authMe } = useAuthMeQuery()
-  console.log(authMe, "authMe")
 
   const { data: getCalendarRecent } = useGetCalendarRecentQuery()
 
@@ -97,13 +97,13 @@ const ScheduleMeetingModal = ({
   const initialValues: IFormValues = {
     title: eventDetailsData?.title || "",
     date:
-      moment(eventDetailsData?.startDate).format("YYYY-MM-DD") ||
-      currentDate.format("YYYY-MM-DD"),
+      moment(eventDetailsData?.startDate).format(DateTimeFormatEnum.fullDate) ||
+      currentDate.format(DateTimeFormatEnum.fullDate),
     startDate: eventDetailsData?.startDate
-      ? moment(eventDetailsData?.startDate).format("HH:mm")
+      ? moment(eventDetailsData?.startDate).format(DateTimeFormatEnum.timeDate)
       : "",
     endDate: eventDetailsData?.endDate
-      ? moment(eventDetailsData?.endDate).format("HH:mm")
+      ? moment(eventDetailsData?.endDate).format(DateTimeFormatEnum.timeDate)
       : "",
     timezone: eventDetailsData?.gmtDelta.toString() || "",
     participants: participants || [],
@@ -145,9 +145,9 @@ const ScheduleMeetingModal = ({
     const { setFieldValue } = formikRef.current as FormikProps<any>
 
     const fieldFormatMap: Record<(typeof datePickerState)["field"], string> = {
-      date: "YYYY-MM-DD",
-      startDate: "HH:mm",
-      endDate: "HH:mm",
+      date: DateTimeFormatEnum.fullDate,
+      startDate: DateTimeFormatEnum.timeDate,
+      endDate: DateTimeFormatEnum.timeDate,
     }
 
     const format = fieldFormatMap[datePickerState.field]

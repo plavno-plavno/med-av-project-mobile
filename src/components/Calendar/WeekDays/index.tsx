@@ -15,10 +15,14 @@ const WeekCards = () => {
     dispatch(setSelectedDay(day))
   }
   const weekDays = Array.from({ length: 7 }, (_, index) => {
-    const date = currentDate.clone().startOf("week").add(index, "days")
+    const date = currentDate
+      .clone()
+      .startOf("week")
+      //start from Monday
+      .add(index + 1, "days")
     return {
       day: date.format("ddd"),
-      date: date.format("DD"),
+      date: date.format("dd"),
       displayDate: date.format("YYYY-MM-DD"),
     }
   })
@@ -65,7 +69,7 @@ const WeekCards = () => {
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
+    width: "100%",
   },
   contentContainer: {
     justifyContent: "space-between",
