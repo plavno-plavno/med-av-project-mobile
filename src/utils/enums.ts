@@ -1,4 +1,7 @@
 export enum DateTimeFormatEnum {
-  fullDate = "DD-MM-YYYY",
-  timeDate = "hh:mm A",
+  DDMMYYYY = "DD-MM-YYYY",
+  hhmmA = "hh:mm A",
+  DDMMYYYYhhmm = "DD-MM-YYYY hh:mm",
+  YYYYMMDD = "YYYY-MM-DD",
+  ddddMMMMD = "dddd, MMMM D",
 }

@@ -10,7 +10,6 @@ export const formatTime = (date: string | undefined) => {
     }`
   }
 }
-
 export const getCustomTimezoneDisplay = () => {
   const now = new Date()
 

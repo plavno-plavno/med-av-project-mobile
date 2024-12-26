@@ -19,7 +19,6 @@ import { formatTime } from "@utils/utils"
 import ScheduleMeetingModal from "src/modals/ScheduleMeetingModal"
 import { Portal } from "react-native-portalize"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
-import moment from "moment"
 
 const CalendarScreen = () => {
   const { selectedDay } = useAppSelector((state) => state.calendar)
@@ -53,14 +52,27 @@ const CalendarScreen = () => {
     sheetScheduleRef.current?.close()
     sheetDetailsRef.current?.open()
   }
+  const transformToAdjustedDate = (time: string) => {
+    const parsedDate = new Date(time)
+
+    const year = parsedDate.getUTCFullYear()
+    const month = parsedDate.getUTCMonth() // Zero-based index (0 for January)
+    const day = parsedDate.getUTCDate()
+    const hour = parsedDate.getUTCHours()
+    const minute = parsedDate.getUTCMinutes()
+
+    // Adjust the hour using gmtDelta
+    const adjustedHour = hour + (authMeData?.gmtDelta || 0)
+    return new Date(year, month, day, adjustedHour, minute)
+  }
 
   const transformedEvents =
     calendarEventsData?.data?.map((event: any) => ({
       id: event.id,
       title: event.title,
       description: event.description,
-      start: moment(event.startDate).add(authMeData?.gmtDelta || 0, 'hours').toDate(),
-      end: moment(event.endDate).add(authMeData?.gmtDelta || 0, 'hours').toDate(),
+      start: transformToAdjustedDate(event.startDate),
+      end: transformToAdjustedDate(event.endDate),
       color: event.color || colors.lightAqua,
       status: event.status,
       participants: event.participants,
@@ -76,7 +88,7 @@ const CalendarScreen = () => {
     touchableOpacityProps: CalendarTouchableOpacityProps
   ) => {
     const participantStatus = findParticipantStatusByEmail(
-      authMeData?.email,
+      String(authMeData?.email),
       event
     )
 
@@ -153,7 +165,7 @@ const CalendarScreen = () => {
           eventCellTextColor={colors.ghostWhite}
           eventCellStyle={(event) => {
             const participantStatus = findParticipantStatusByEmail(
-              authMeData?.email,
+              String(authMeData?.email),
               event
             )
             return [

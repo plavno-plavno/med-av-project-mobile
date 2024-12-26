@@ -57,6 +57,13 @@ interface IScheduleMeetingModal {
   refetch?: () => void
 }
 
+interface IDatePickerState {
+  field: string
+  mode: "date" | "time"
+  isVisible: boolean
+  initialDate: string
+}
+
 const ScheduleMeetingModal = ({
   onClose,
   sheetRef,
@@ -84,10 +91,11 @@ const ScheduleMeetingModal = ({
 
   const { data: getCalendarRecent } = useGetCalendarRecentQuery()
 
-  const [datePickerState, setDatePickerState] = useState({
+  const [datePickerState, setDatePickerState] = useState<IDatePickerState>({
     field: "",
     mode: "date" as "date" | "time",
     isVisible: false,
+    initialDate: "",
   })
 
   const participants =
@@ -97,26 +105,40 @@ const ScheduleMeetingModal = ({
   const initialValues: IFormValues = {
     title: eventDetailsData?.title || "",
     date:
-      moment(eventDetailsData?.startDate).format(DateTimeFormatEnum.fullDate) ||
-      currentDate.format(DateTimeFormatEnum.fullDate),
+      moment(eventDetailsData?.startDate).format(DateTimeFormatEnum.DDMMYYYY) ||
+      currentDate.format(DateTimeFormatEnum.DDMMYYYY),
     startDate: eventDetailsData?.startDate
-      ? moment(eventDetailsData?.startDate).format(DateTimeFormatEnum.timeDate)
+      ? moment(eventDetailsData?.startDate).format(DateTimeFormatEnum.hhmmA)
       : "",
     endDate: eventDetailsData?.endDate
-      ? moment(eventDetailsData?.endDate).format(DateTimeFormatEnum.timeDate)
+      ? moment(eventDetailsData?.endDate).format(DateTimeFormatEnum.hhmmA)
       : "",
     timezone: eventDetailsData?.gmtDelta.toString() || "",
-    participants: participants || [],
+    participants: (isEditMode && participants) || [],
     color: eventDetailsData?.color || "",
     description: eventDetailsData?.description || "",
   }
 
   const defaultTime = () => {
     const date = new Date()
+
     if (datePickerState.mode === "date") {
-      return new Date()
+      return date // Return current date if the mode is "date"
     }
-    date.setHours(8, 0, 0, 0)
+
+    // Default to 8:00 AM if no `startDate` is set
+    if (datePickerState.initialDate) {
+      const [hours, minutes] = moment(
+        datePickerState.initialDate,
+        DateTimeFormatEnum.hhmmA
+      )
+        .format("HH:mm")
+        .split(":")
+      date.setHours(Number(hours), Number(minutes), 0, 0)
+    } else {
+      date.setHours(8, 0, 0, 0)
+    }
+
     return date
   }
 
@@ -127,10 +149,16 @@ const ScheduleMeetingModal = ({
     mode: "date" | "time"
     field: string
   }) => {
+    const initialDate =
+      field === "startDate"
+        ? initialValues.startDate || ""
+        : initialValues.endDate || ""
+
     setDatePickerState({
       field,
       mode,
       isVisible: true,
+      initialDate: String(initialDate),
     })
   }
 
@@ -145,9 +173,9 @@ const ScheduleMeetingModal = ({
     const { setFieldValue } = formikRef.current as FormikProps<any>
 
     const fieldFormatMap: Record<(typeof datePickerState)["field"], string> = {
-      date: DateTimeFormatEnum.fullDate,
-      startDate: DateTimeFormatEnum.timeDate,
-      endDate: DateTimeFormatEnum.timeDate,
+      date: DateTimeFormatEnum.DDMMYYYY,
+      startDate: DateTimeFormatEnum.hhmmA,
+      endDate: DateTimeFormatEnum.hhmmA,
     }
 
     const format = fieldFormatMap[datePickerState.field]
@@ -163,17 +191,23 @@ const ScheduleMeetingModal = ({
 
   const handleSubmitForm = async (values: IFormValues) => {
     try {
+      const date = moment(values.date.split("-").reverse().join("-")).format(
+        DateTimeFormatEnum.YYYYMMDD
+      )
       const payload = {
         ...values,
-        startDate: moment(
-          `${values.date} ${values.startDate}`,
-          "YYYY-MM-DD HH:mm"
-        )
-          .utcOffset(-values.timezone) // Adjust based on the timezone offset
-          .toISOString(),
-        endDate: moment(`${values.date} ${values.endDate}`, "YYYY-MM-DD HH:mm")
-          .utcOffset(-values.timezone) // Adjust based on the timezone offset
-          .toISOString(),
+        startDate:
+          date +
+          " " +
+          moment(values.startDate, ["h:mm: A"])
+            .subtract(values.timezone, "hours")
+            .format("HH:mm:ss"),
+        endDate:
+          date +
+          " " +
+          moment(values.endDate, ["h:mm: A"])
+            .subtract(values.timezone, "hours")
+            .format("HH:mm:ss"),
         gmtDelta: Number(values.timezone),
       }
 
@@ -438,6 +472,7 @@ const ScheduleMeetingModal = ({
         mode={datePickerState.mode}
         onConfirm={handleDateConfirm}
         onCancel={hideDatePicker}
+        locale="en"
         display={datePickerState.mode === "date" ? "inline" : undefined}
         is24Hour={false}
         minuteInterval={10}

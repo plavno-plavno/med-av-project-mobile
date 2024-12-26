@@ -1,5 +1,6 @@
 import moment from "moment"
 import * as Yup from "yup"
+import { DateTimeFormatEnum } from "./enums"
 
 export const validationLoginSchema = Yup.object().shape({
   email: Yup.string()
@@ -55,7 +56,9 @@ export const validationCreateEventSchema = Yup.object().shape({
     .test("is-greater", "End time must be after start time", function (value) {
       const { startDate } = this.parent
       if (!startDate || !value) return true
-      return moment(value, "HH:mm").isAfter(moment(startDate, "HH:mm"))
+      return moment(value, DateTimeFormatEnum.hhmmA).isAfter(
+        moment(startDate, DateTimeFormatEnum.hhmmA)
+      )
     }),
 
   participants: Yup.array()

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useState } from "react"
 import { screenHeight } from "@utils/screenResponsive"
 import { Text, View } from "react-native"
 import colors from "src/assets/colors"
@@ -19,6 +19,7 @@ import Toast from "react-native-toast-message"
 import { ActivityIndicator } from "react-native-paper"
 import { formatTime } from "@utils/utils"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
+import { DateTimeFormatEnum } from "@utils/enums"
 
 const DetailsEventModal = ({
   handleOpenScheduleModal,
@@ -84,10 +85,6 @@ const DetailsEventModal = ({
     }
   }
 
-  const transformDate = (dateString: string) => {
-    return moment(dateString).format("dddd, MMMM D")
-  }
-
   return (
     <>
       <BottomSheet
@@ -143,7 +140,9 @@ const DetailsEventModal = ({
                     <Icon name="calendarIcon" />
                     <Text style={styles.text}>
                       {eventDetailsData?.startDate &&
-                        transformDate(eventDetailsData.startDate)}
+                        moment(eventDetailsData.startDate).format(
+                          DateTimeFormatEnum.ddddMMMMD
+                        )}
                     </Text>
                   </View>
                   <View style={styles.infoWrapper}>
