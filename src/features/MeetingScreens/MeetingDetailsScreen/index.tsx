@@ -14,7 +14,7 @@ const MeetingDetailsScreen = () => {
     remoteStreams,
     startCall,
     endCall,
-     isMuted,
+    isMuted,
     isVideoOff,
     toggleAudio,
     toggleVideo,
@@ -27,10 +27,10 @@ const MeetingDetailsScreen = () => {
     sharingOwner,
     participants,
     RTCView,
-  } = useWebRTC();
+  } = useWebRTC()
 
   return (
-    <ScreenWrapper title="MeetingDetails" isBackButton isCenterTitle>
+    <ScreenWrapper title="Meeting Details" isBackButton isCenterTitle>
       <View style={styles.container}>
         <View
           // TODO: Add video
@@ -42,23 +42,31 @@ const MeetingDetailsScreen = () => {
             alignSelf: "center",
             borderRadius: 40,
             width: "65%",
-            overflow: 'hidden',
+            overflow: "hidden",
           }}
         >
           {!isVideoOff && localStream && (
-            <RTCView style={{
-              height: "100%",
-              width: "100%",
-            }} streamURL={localStream.toURL()} mirror={true} />
+            <RTCView
+              style={{
+                height: "100%",
+                width: "100%",
+              }}
+              streamURL={localStream.toURL()}
+              mirror={true}
+            />
           )}
-          <TouchableOpacity onPress={toggleVideo} style={{ position: 'absolute', bottom: 10, alignSelf: 'center' }}>
-            {!isVideoOff ?
-              <Icon name={'eyeOpen'} />
-              :
-              <Icon name={'eyeClose'} />}
-          </TouchableOpacity>
-
-          {/* TODO make the same for isMuted and toggleAudio as toggleVideo */}
+          <View style={styles.iconContainer}>
+            <TouchableOpacity onPress={toggleAudio}>
+              {isMuted ? <Icon name={"microOff"} /> : <Icon name={"microOn"} />}
+            </TouchableOpacity>
+            <TouchableOpacity onPress={toggleVideo}>
+              {!isVideoOff ? (
+                <Icon name={"cameraOn"} />
+              ) : (
+                <Icon name={"cameraOff"} />
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
         <View>
           <Text style={styles.title}>Getting ready...</Text>

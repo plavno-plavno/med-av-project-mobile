@@ -26,4 +26,11 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: colors.white,
   },
+  iconContainer: {
+    alignSelf: "center",
+    position: "absolute",
+    bottom: moderateScale(12),
+    flexDirection: "row",
+    gap: moderateScale(8),
+  },
 })
