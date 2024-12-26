@@ -430,7 +430,9 @@ const ScheduleMeetingModal = ({
         </KeyboardAwareScrollView>
       </BottomSheet>
       <DateTimePickerModal
+        buttonTextColorIOS={colors.lightAqua}
         pickerStyleIOS={helpers.flexCenter}
+        accentColor={colors.lightAqua}
         date={defaultTime()}
         isVisible={datePickerState.isVisible}
         mode={datePickerState.mode}
