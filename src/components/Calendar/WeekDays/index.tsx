@@ -22,7 +22,7 @@ const WeekCards = () => {
       .add(index + 1, "days")
     return {
       day: date.format("ddd"),
-      date: date.format("dd"),
+      date: date.format("DD"),
       displayDate: date.format("YYYY-MM-DD"),
     }
   })
