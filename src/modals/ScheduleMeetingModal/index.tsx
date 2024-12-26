@@ -24,6 +24,7 @@ import { navigate } from "src/navigation/RootNavigation"
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 import { styles } from "./styles"
 import colors from "src/assets/colors"
+import { useAuthMeQuery } from "src/api/userApi/userApi"
 
 interface IFormValues {
   date: string
@@ -78,6 +79,9 @@ const ScheduleMeetingModal = ({
   const [updateEvent, { isLoading: isUpdateEventLoading }] =
     useUpdateEventMutation()
 
+  const { data: authMe } = useAuthMeQuery()
+  console.log(authMe, "authMe")
+
   const { data: getCalendarRecent } = useGetCalendarRecentQuery()
 
   const [datePickerState, setDatePickerState] = useState({
@@ -85,6 +89,27 @@ const ScheduleMeetingModal = ({
     mode: "date" as "date" | "time",
     isVisible: false,
   })
+
+  const participants =
+    getCalendarRecent &&
+    getCalendarRecent.filter((email) => email !== authMe?.email)
+
+  const initialValues: IFormValues = {
+    title: eventDetailsData?.title || "",
+    date:
+      moment(eventDetailsData?.startDate).format("YYYY-MM-DD") ||
+      currentDate.format("YYYY-MM-DD"),
+    startDate: eventDetailsData?.startDate
+      ? moment(eventDetailsData?.startDate).format("HH:mm")
+      : "",
+    endDate: eventDetailsData?.endDate
+      ? moment(eventDetailsData?.endDate).format("HH:mm")
+      : "",
+    timezone: eventDetailsData?.gmtDelta.toString() || "",
+    participants: participants || [],
+    color: eventDetailsData?.color || "",
+    description: eventDetailsData?.description || "",
+  }
 
   const defaultTime = () => {
     const date = new Date()
@@ -219,27 +244,12 @@ const ScheduleMeetingModal = ({
             <Formik
               enableReinitialize
               innerRef={formikRef}
-              initialValues={{
-                title: eventDetailsData?.title || "",
-                date:
-                  moment(eventDetailsData?.startDate).format("YYYY-MM-DD") ||
-                  currentDate.format("YYYY-MM-DD"),
-                startDate: eventDetailsData?.startDate
-                  ? moment(eventDetailsData?.startDate).format("HH:mm")
-                  : "",
-                endDate: eventDetailsData?.endDate
-                  ? moment(eventDetailsData?.endDate).format("HH:mm")
-                  : "",
-                timezone: eventDetailsData?.gmtDelta.toString() || "",
-                participants:
-                  eventDetailsData?.participants?.map((p) => p?.email) || [],
-                color: eventDetailsData?.color || "",
-                description: eventDetailsData?.description || "",
-              }}
+              initialValues={initialValues}
               validationSchema={validationCreateEventSchema}
               onSubmit={handleSubmitForm}
             >
               {({
+                isValid,
                 handleChange,
                 handleSubmit,
                 setFieldValue,
@@ -298,6 +308,7 @@ const ScheduleMeetingModal = ({
                       >
                         <View pointerEvents="none">
                           <CustomInput
+                            inputType="dropdown"
                             label="Time Start"
                             placeholder="Select start time"
                             required
@@ -317,6 +328,7 @@ const ScheduleMeetingModal = ({
                       >
                         <View pointerEvents="none">
                           <CustomInput
+                            inputType="dropdown"
                             label="Time End"
                             placeholder="Select end time"
                             required
@@ -343,7 +355,7 @@ const ScheduleMeetingModal = ({
                         error={
                           touched.participants && errors.participants
                             ? Array.isArray(errors.participants)
-                              ? errors.participants.join(", ")
+                              ? errors.participants.join("")
                               : String(errors.participants)
                             : undefined
                         }
@@ -353,8 +365,8 @@ const ScheduleMeetingModal = ({
                       {isMenuOpen && (
                         <View style={{ position: "relative" }}>
                           <View style={styles.menuContainer}>
-                            {getCalendarRecent &&
-                              getCalendarRecent.map((email, idx) => {
+                            {participants &&
+                              participants.map((email, idx) => {
                                 return (
                                   <TouchableOpacity
                                     onPress={() => {
@@ -404,6 +416,7 @@ const ScheduleMeetingModal = ({
                         error={touched.description && errors.description}
                       />
                       <CustomButton
+                        disabled={!isValid}
                         type="primary"
                         text={isEditMode ? t("Edit") : t("Schedule")}
                         isLoading={isCreateEventLoading || isUpdateEventLoading}

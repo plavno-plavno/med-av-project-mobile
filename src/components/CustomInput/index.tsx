@@ -76,6 +76,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
     const [isSecure, setIsSecure] = useState<boolean>(
       secureTextEntry && isHidePassword
     )
+    const [fieldError, setFieldError] = useState(error)
 
     const renderContent = () => {
       switch (inputType) {
@@ -120,8 +121,13 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
         }
         case "chip": {
           const [chipsInputValue, setChipsInputValue] = useState("")
+          // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
           const handleAddChip = () => {
+            // if (!emailRegex.test(chipsInputValue)) {
+            //   setFieldError("Please enter a valid email address")
+            //   return
+            // }
             if (
               chipsInputValue.trim() &&
               !value.includes(chipsInputValue.trim())
@@ -155,11 +161,6 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
               <CustomTextInput
                 styles={styles.input}
                 value={chipsInputValue}
-                // onKeyPress={e => {
-                //   if(e.nativeEvent.key === ' ') {
-                //     handleAddChip()
-                //   }
-                // }}
                 onChangeText={setChipsInputValue}
                 onSubmitEditing={handleAddChip}
                 label={label}
@@ -281,9 +282,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
             <Icon style={styles.rightIcon} name="errorInput" />
           )}
         </View>
-        {error && typeof error === "string" && (
-          <Text style={styles.errorText}>{error}</Text>
-        )}
+        {error && <Text style={styles.errorText}>{error}</Text>}
       </View>
     )
   }
