@@ -76,8 +76,6 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
     const [isSecure, setIsSecure] = useState<boolean>(
       secureTextEntry && isHidePassword
     )
-    const [fieldError, setFieldError] = useState(error)
-
     const renderContent = () => {
       switch (inputType) {
         case "text":
@@ -121,13 +119,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
         }
         case "chip": {
           const [chipsInputValue, setChipsInputValue] = useState("")
-          // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
           const handleAddChip = () => {
-            // if (!emailRegex.test(chipsInputValue)) {
-            //   setFieldError("Please enter a valid email address")
-            //   return
-            // }
             if (
               chipsInputValue.trim() &&
               !value.includes(chipsInputValue.trim())
@@ -237,7 +229,8 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
     const isErrorIconVisible =
       !secureTextEntry &&
       inputType !== "dropdown" &&
-      inputType !== "colorPicker"
+      inputType !== "colorPicker" &&
+      !rightIconProps
 
     return (
       <View style={[styles.container, style]}>

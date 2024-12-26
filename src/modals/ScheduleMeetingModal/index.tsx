@@ -308,7 +308,6 @@ const ScheduleMeetingModal = ({
                       >
                         <View pointerEvents="none">
                           <CustomInput
-                            inputType="dropdown"
                             label="Time Start"
                             placeholder="Select start time"
                             required
@@ -328,7 +327,6 @@ const ScheduleMeetingModal = ({
                       >
                         <View pointerEvents="none">
                           <CustomInput
-                            inputType="dropdown"
                             label="Time End"
                             placeholder="Select end time"
                             required
