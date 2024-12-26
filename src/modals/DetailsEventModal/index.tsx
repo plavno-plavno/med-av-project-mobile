@@ -150,7 +150,7 @@ const DetailsEventModal = ({
                     <Icon name="clock" />
                     <Text style={styles.text}>
                       {formatTime(eventDetailsData?.startDate) +
-                        "-" +
+                        " – " +
                         formatTime(eventDetailsData?.endDate)}
                     </Text>
                   </View>
