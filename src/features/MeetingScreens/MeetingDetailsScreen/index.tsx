@@ -6,6 +6,16 @@ import { useTranslation } from "react-i18next"
 import { helpers } from "@utils/theme"
 import colors from "src/assets/colors"
 import useWebRTC from "src/hooks/useWebRtc"
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
+import { copyToClipboard } from "@utils/clipboard"
+import { ROUTES } from "src/navigation/RoutesTypes"
+import { ScreensEnum } from "src/navigation/ScreensEnum"
+
+type ParamList = {
+  Detail: {
+    hash?: string;
+  }
+}
 
 const MeetingDetailsScreen = () => {
   const { t } = useTranslation()
@@ -27,7 +37,9 @@ const MeetingDetailsScreen = () => {
     sharingOwner,
     participants,
     RTCView,
-  } = useWebRTC()
+  } = useWebRTC();
+    const route = useRoute<RouteProp<ParamList, "Detail">>()
+    const { navigate } = useNavigation<ROUTES>();
 
   return (
     <ScreenWrapper title="Meeting Details" isBackButton isCenterTitle>
@@ -78,12 +90,14 @@ const MeetingDetailsScreen = () => {
           <CustomButton
             text={t("JoinMeeting")}
             style={{ backgroundColor: colors.lightAqua }}
+            onPress={() => navigate(ScreensEnum.MEETING, {hash: route?.params?.hash})}
           />
           <CustomButton
             text={t("CopyMeetingLink")}
             type="secondary"
             leftIcon="copy"
             style={styles.copyMeetingLink}
+            onPress={() => copyToClipboard(`https://av-hims.netlify.app/meetings/${route?.params?.hash}`)}
           />
         </View>
       </View>

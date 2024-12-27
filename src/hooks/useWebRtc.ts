@@ -6,6 +6,7 @@ import { io } from 'socket.io-client';
 import * as Keychain from "react-native-keychain"
 import { useAuthMeQuery } from 'src/api/userApi/userApi';
 import { RTCSessionDescriptionInit } from 'react-native-webrtc/lib/typescript/RTCSessionDescription';
+import { RouteProp, useRoute } from '@react-navigation/native';
 
 
 const config = {
@@ -30,7 +31,13 @@ export interface RemoteStream {
     videoTrack: MediaStreamTrack | null;
 }
 
+type ParamList = {
+    Detail: {
+      hash: string
+    }
+  }
 
+// https://av-hims.netlify.app/meetings/${slug}
 const useWebRtc = () => {
     const [localStream, setLocalStream] = useState<MediaStream | null>(null);
     const [remoteStreams, setRemoteStreams] = useState<RemoteStream[]>([]);
@@ -49,8 +56,9 @@ const useWebRtc = () => {
 
     const [isMuted, setIsMuted] = useState(false);
     const [isVideoOff, setIsVideoOff] = useState(false);
+  const route = useRoute<RouteProp<ParamList, "Detail">>()
 
-    const roomId = 1
+    const roomId = route?.params?.hash;
 
     const token = async () => {
         const credentials = await Keychain.getGenericPassword({
@@ -284,7 +292,7 @@ const useWebRtc = () => {
     const startCall = async () => {
         try {
             socket.emit('join', {
-                roomId: 1,
+                roomId: roomId,
                 language: 'en'
             });
         } catch (error) {

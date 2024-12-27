@@ -9,10 +9,14 @@ import {
 import Config from "react-native-config"
 import * as Keychain from "react-native-keychain"
 import { Mutex } from "async-mutex"
-import { navigationRef } from "../navigation/RootNavigation"
+import { navigationRef } from "src/navigation/RootNavigation"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 
-const baseURL = Config.BASE_API_URL;
+const baseURL = 'https://med-app-av.plavno.io:8080/api/v1/'
+// const baseURL = Config.BASE_API_URL;
+const ENV = Config.ENV;
+console.log(ENV, 'ENVENVENVENVENVENVENVENV');
+console.log(baseURL, 'baseURLbaseURLbaseURLbaseURL');
 
 const mutex = new Mutex()
 

@@ -12,6 +12,7 @@ export interface IGetCalendarEventDetailsResponse {
   color: string
   participants: IParticipants[]
   createdBy: ICreatedBy
+  hash: string
 }
 
 export interface IRole {

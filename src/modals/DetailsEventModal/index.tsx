@@ -20,6 +20,9 @@ import { ActivityIndicator } from "react-native-paper"
 import { formatTime } from "@utils/utils"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
 import { DateTimeFormatEnum } from "@utils/enums"
+import { copyToClipboard } from "@utils/clipboard"
+import { ScreensEnum } from "src/navigation/ScreensEnum"
+import { navigate } from "src/navigation/RootNavigation"
 
 const DetailsEventModal = ({
   handleOpenScheduleModal,
@@ -120,6 +123,10 @@ const DetailsEventModal = ({
                         backgroundColor: colors.lightAqua,
                       },
                     ]}
+                    onPress={() => {
+                      onClose();
+                      navigate(ScreensEnum.MEETING_DETAILS, {hash: eventDetailsData?.hash})
+                    }}
                   />
                   <CustomButton
                     text={t("CopyLink")}
@@ -133,6 +140,7 @@ const DetailsEventModal = ({
                         borderColor: colors.lavenderMist,
                       },
                     ]}
+                    onPress={() => copyToClipboard(`https://av-hims.netlify.app/meetings/${eventDetailsData?.hash}`)}
                   />
                 </View>
                 <View style={[helpers.gap12]}>

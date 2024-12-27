@@ -9,7 +9,7 @@ export enum ScreensEnum {
   NO_CONNECTION = "NO_CONNECTION",
   SETUP_PROFILE = "SETUP_PROFILE",
   MEETING_DETAILS = "MEETING_DETAILS",
-
+  MEETING = "MEETING",
   // Bottom tab routes
   MAIN = "MAIN",
   CALENDAR = "Calendar",
