@@ -18,7 +18,7 @@ import { Linking } from "react-native"
 import queryString from "query-string"
 import SetupProfileScreen from "src/features/Auth/screens/SetupProfileScreen"
 import MeetingDetailsScreen from "src/features/MeetingScreens/MeetingDetailsScreen"
-import MeetingScreen from "src/features/MeetingScreen"
+import MeetingScreen from "src/features/MeetingScreens/MeetingScreen"
 
 const Stack = createNativeStackNavigator()
 
@@ -36,7 +36,7 @@ const Navigation: React.FC = () => {
     setTimeout(() => {
       SplashScreen.hide()
     }, 500)
-  };
+  }
 
   useEffect(() => {
     getRoute()
@@ -130,10 +130,7 @@ const Navigation: React.FC = () => {
           component={MeetingDetailsScreen}
         />
 
-        <Stack.Screen
-          name={ScreensEnum.MEETING}
-          component={MeetingScreen}
-        />
+        <Stack.Screen name={ScreensEnum.MEETING} component={MeetingScreen} />
         <Stack.Screen name={ScreensEnum.MAIN} component={BottomTabNavigator} />
       </Stack.Navigator>
     </NavigationContainer>

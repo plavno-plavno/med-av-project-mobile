@@ -1,7 +1,7 @@
-import { StyleSheet } from 'react-native';
-import { moderateScale } from 'react-native-size-matters';
-import { screenWidth } from './screenResponsive';
-import fonts from '../assets/fonts';
+import { StyleSheet } from "react-native"
+import { moderateScale } from "react-native-size-matters"
+import { screenWidth } from "./screenResponsive"
+import fonts from "../assets/fonts"
 // import colors from '../assets/colors';
 
 export const fontFamilies = StyleSheet.create({
@@ -42,7 +42,6 @@ export const fontFamilies = StyleSheet.create({
     lineHeight: moderateScale(22),
   },
 
-
   interManropeSemiBold12: {
     fontFamily: fonts.ManropeSemiBold,
     fontSize: moderateScale(12),
@@ -74,35 +73,35 @@ export const fontFamilies = StyleSheet.create({
     fontSize: moderateScale(32),
     lineHeight: moderateScale(38),
   },
-});
+})
 
 export const fontWeights = StyleSheet.create({
   fontWeight400: {
-    fontStyle: 'normal',
-    fontWeight: '400',
+    fontStyle: "normal",
+    fontWeight: "400",
   },
   fontWeight500: {
-    fontStyle: 'normal',
-    fontWeight: '500',
+    fontStyle: "normal",
+    fontWeight: "500",
   },
   fontWeight600: {
-    fontStyle: 'normal',
-    fontWeight: '600',
+    fontStyle: "normal",
+    fontWeight: "600",
   },
   fontWeight700: {
-    fontStyle: 'normal',
-    fontWeight: '700',
+    fontStyle: "normal",
+    fontWeight: "700",
   },
-});
+})
 
 export const helpers = StyleSheet.create({
   absoluteBottomLeft16: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 10,
     left: 16,
   },
   absoluteBottom: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 10,
   },
   rounded8: {
@@ -232,16 +231,16 @@ export const helpers = StyleSheet.create({
     marginRight: moderateScale(6),
   },
   mt20Percent: {
-    marginTop: '20%',
+    marginTop: "20%",
   },
   mt25Percent: {
-    marginTop: '25%',
+    marginTop: "25%",
   },
   mt50Percent: {
-    marginTop: '50%',
+    marginTop: "50%",
   },
   mt40Percent: {
-    marginTop: '40%',
+    marginTop: "40%",
   },
   pb0: {
     paddingBottom: 0,
@@ -287,6 +286,9 @@ export const helpers = StyleSheet.create({
   },
   ph16: {
     paddingHorizontal: moderateScale(16),
+  },
+  ph20: {
+    paddingHorizontal: moderateScale(20),
   },
   ph14: {
     paddingHorizontal: moderateScale(14),
@@ -336,57 +338,57 @@ export const helpers = StyleSheet.create({
     flexGrow: 0.5,
   },
   flexRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   flexWrap: {
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
   },
   flexRowCenter: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   flexRowCenterBetween: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   flexRowStartBetween: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
   },
   flexRowEndBetween: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
   },
   flexRowCenterEnd: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
   },
   justifyContentEnd: {
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   justifyContentCenter: {
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   alignItemsEnd: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   flexRowBetween: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   justifyContentSpaceAround: {
-    justifyContent: 'space-around',
+    justifyContent: "space-around",
   },
   alignItemsCenter: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   flexCenter: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   height20: {
     height: moderateScale(20),
@@ -410,58 +412,58 @@ export const helpers = StyleSheet.create({
     minHeight: moderateScale(36),
   },
   height100Percent: {
-    height: '100%',
+    height: "100%",
   },
   heightAuto: {
-    height: 'auto',
+    height: "auto",
   },
   maxHeightAuto: {
-    maxHeight: 'auto',
+    maxHeight: "auto",
   },
   maxHeight100Percent: {
-    maxHeight: '100%',
+    maxHeight: "100%",
   },
   width100Percent: {
-    width: '100%',
+    width: "100%",
   },
   width30Percent: {
-    width: '30%',
+    width: "30%",
   },
   width35Percent: {
-    width: '35%',
+    width: "35%",
   },
   width40Percent: {
-    width: '40%',
+    width: "40%",
   },
   width45Percent: {
-    width: '45%',
+    width: "45%",
   },
   width50Percent: {
-    width: '50%',
+    width: "50%",
   },
   width55Percent: {
-    width: '55%',
+    width: "55%",
   },
   width60Percent: {
-    width: '60%',
+    width: "60%",
   },
   width65Percent: {
-    width: '65%',
+    width: "65%",
   },
   width70Percent: {
-    width: '70%',
+    width: "70%",
   },
   width80Percent: {
-    width: '80%',
+    width: "80%",
   },
   width85Percent: {
-    width: '85%',
+    width: "85%",
   },
   width90Percent: {
-    width: '90%',
+    width: "90%",
   },
   width95Percent: {
-    width: '95%',
+    width: "95%",
   },
   widthFullScreenWithPadding: {
     width: screenWidth - moderateScale(32),
@@ -475,61 +477,61 @@ export const helpers = StyleSheet.create({
     maxWidth: moderateScale(40),
   },
   maxWidth90Percent: {
-    maxWidth: '90%',
+    maxWidth: "90%",
   },
   maxWidth85Percent: {
-    maxWidth: '85%',
+    maxWidth: "85%",
   },
   maxWidth80Percent: {
-    maxWidth: '80%',
+    maxWidth: "80%",
   },
   maxWidth75Percent: {
-    maxWidth: '75%',
+    maxWidth: "75%",
   },
   maxWidth70Percent: {
-    maxWidth: '70%',
+    maxWidth: "70%",
   },
   maxWidth65Percent: {
-    maxWidth: '65%',
+    maxWidth: "65%",
   },
   maxWidth60Percent: {
-    maxWidth: '60%',
+    maxWidth: "60%",
   },
   maxWidth55Percent: {
-    maxWidth: '55%',
+    maxWidth: "55%",
   },
   maxWidth50Percent: {
-    maxWidth: '50%',
+    maxWidth: "50%",
   },
   maxWidth45Percent: {
-    maxWidth: '45%',
+    maxWidth: "45%",
   },
   maxWidth40Percent: {
-    maxWidth: '40%',
+    maxWidth: "40%",
   },
   maxWidth35Percent: {
-    maxWidth: '35%',
+    maxWidth: "35%",
   },
   maxWidth30Percent: {
-    maxWidth: '30%',
+    maxWidth: "30%",
   },
   maxWidth25Percent: {
-    maxWidth: '25%',
+    maxWidth: "25%",
   },
   maxWidth20Percent: {
-    maxWidth: '20%',
+    maxWidth: "20%",
   },
   textAlignCenter: {
-    textAlign: 'center',
+    textAlign: "center",
   },
   alignSelfCenter: {
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   alignSelfEnd: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
   },
   textAlignRight: {
-    textAlign: 'right',
+    textAlign: "right",
   },
   // shadow2S: {
   //   shadowColor: colors.warmGrey900,
@@ -551,6 +553,9 @@ export const helpers = StyleSheet.create({
   //   shadowRadius: 6,
   //   elevation: 4,
   // },
+  gap4: {
+    gap: moderateScale(4),
+  },
   gap8: {
     gap: moderateScale(8),
   },
@@ -563,4 +568,4 @@ export const helpers = StyleSheet.create({
   gap24: {
     gap: moderateScale(24),
   },
-});
+})
