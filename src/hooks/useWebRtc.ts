@@ -69,8 +69,7 @@ const useWebRtc = (isPreview?: boolean) => {
   const [isVideoOff, setIsVideoOff] = useState(false)
   const route = useRoute<RouteProp<ParamList, "Detail">>()
 
-  // const roomId = route?.params?.hash
-  const roomId = "default-room"
+  const roomId = route?.params?.hash
 
   const { data: authMeData } = useAuthMeQuery()
   const userRef = useRef<string | number>()
@@ -168,7 +167,7 @@ const useWebRtc = (isPreview?: boolean) => {
   const toggleAudio = () => {
     if (localStream) {
       localStream?.getAudioTracks?.()?.forEach((track) => {
-        track.enabled = isMuted
+        track._enabled = isMuted
       })
       setIsMuted((prev) => !prev)
     }

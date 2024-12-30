@@ -4,44 +4,48 @@ import { moderateScale } from "react-native-size-matters"
 import colors from "src/assets/colors"
 
 export const styles = StyleSheet.create({
+  container: {
+    height: "100%",
+    paddingHorizontal: moderateScale(20),
+
+    backgroundColor: colors.white,
+    gap: moderateScale(24),
+  },
   bottomSheet: {
     backgroundColor: colors.white,
   },
-  container: {
-    flexGrow: 1,
-    paddingHorizontal: moderateScale(20),
-    backgroundColor: colors.white,
-    gap: moderateScale(24),
+  header: {
+    width: "100%",
+    justifyContent: "space-between",
+    flexDirection: "row",
+    alignItems: "center",
   },
   title: {
     ...fontFamilies.interManropeSemiBold24,
     ...fontWeights.fontWeight500,
     color: colors.charcoal,
   },
+  subtitle: {
+    ...fontFamilies.interManropeSemiBold18,
+    ...fontWeights.fontWeight500,
+    color: colors.charcoal,
+  },
   content: {
-    flexGrow: 1,
-    height: "77%",
+    gap: moderateScale(16),
   },
-  message: {
-    gap: moderateScale(4),
+  infoWrapper: {
+    flexDirection: "row",
+    gap: moderateScale(8),
   },
-  messageText: {
+  text: {
     ...fontFamilies.interManropeSemiBold16,
     ...fontWeights.fontWeight400,
     color: colors.charcoal,
   },
-  messageTime: {},
-  messageInputContainer: {
-    flexGrow: 1,
+  participantsContainer: {
+    flexShrink: 1,
+    flexWrap: "wrap",
     flexDirection: "row",
-    alignItems: "center",
     gap: moderateScale(8),
-    borderTopWidth: 1,
-    borderTopColor: colors.borderGrey,
-    paddingHorizontal: moderateScale(20),
-    paddingVertical: moderateScale(8),
-  },
-  messageInput: {
-    flexGrow: 1,
   },
 })

@@ -61,7 +61,7 @@ export const styles = StyleSheet.create({
     borderRadius: moderateScale(12),
   },
   video: {
-    width: "20%",
-    height: "20%",
+    width: "30%",
+    height: "30%",
   },
 })

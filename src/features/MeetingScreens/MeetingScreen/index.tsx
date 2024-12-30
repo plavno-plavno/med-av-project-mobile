@@ -9,7 +9,7 @@ import { useStatusBar } from "src/hooks/useStatusBar"
 import colors from "src/assets/colors"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { Portal } from "react-native-portalize"
-import MeetingChatModal from "src/modals/DetailsEventModal"
+import MeetingChatModal from "src/modals/MeetingChatModal"
 import { BottomSheetMethods } from "@devvie/bottom-sheet"
 
 const MeetingScreen = () => {
@@ -74,7 +74,7 @@ const MeetingScreen = () => {
     { name: isMuted ? "microOff" : "microOn", onPress: toggleAudio },
     {
       name: "meetingChat",
-      onPress: onOpen,
+      onPress: () => {},
       active: false,
     },
     {
@@ -134,7 +134,7 @@ const MeetingScreen = () => {
 
                 return (
                   <View
-                    style={{ width: 200, height: 500, backgroundColor: "blue" }}
+                    style={{ width: 300, height: 500, backgroundColor: "blue" }}
                   >
                     <RTCView
                       streamURL={mediaStream.toURL()}

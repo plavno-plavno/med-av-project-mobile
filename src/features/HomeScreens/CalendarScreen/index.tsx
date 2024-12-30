@@ -13,12 +13,12 @@ import { useGetCalendarEventsQuery } from "src/api/calendarApi/calendarApi"
 import { useFocusEffect } from "@react-navigation/native"
 import { screenWidth } from "@utils/screenResponsive"
 import { styles } from "./styles"
-import DetailsEventModal from "src/modals/DetailsEventModal"
 import { BottomSheetMethods } from "@devvie/bottom-sheet"
 import { formatTime } from "@utils/utils"
 import ScheduleMeetingModal from "src/modals/ScheduleMeetingModal"
 import { Portal } from "react-native-portalize"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
+import DetailsEventModal from "src/modals/DetailsEventModal"
 
 const CalendarScreen = () => {
   const { selectedDay } = useAppSelector((state) => state.calendar)

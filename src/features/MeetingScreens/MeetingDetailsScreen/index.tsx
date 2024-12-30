@@ -85,9 +85,9 @@ const MeetingDetailsScreen = () => {
           <CustomButton
             text={t("JoinMeeting")}
             style={{ backgroundColor: colors.lightAqua }}
-            onPress={() =>
-              navigate(ScreensEnum.MEETING, { hash: "khBHvM63ne6p1wwkABMg" })
-            }
+            onPress={() => {
+              navigate(ScreensEnum.MEETING, { hash: hash })
+            }}
           />
           <CustomButton
             text={t("CopyMeetingLink")}
