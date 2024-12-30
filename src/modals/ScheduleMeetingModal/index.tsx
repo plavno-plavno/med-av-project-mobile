@@ -250,6 +250,7 @@ const ScheduleMeetingModal = ({
           enableOnAndroid
           enableAutomaticScroll
           showsVerticalScrollIndicator={false}
+          extraScrollHeight={screenHeight * 0.2}
         >
           <View style={styles.container}>
             <View style={styles.header}>

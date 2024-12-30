@@ -3,8 +3,8 @@ apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
 project.ext.envConfigFiles = [
-   production: ".env.production",
-   development: ".env.development"
+        production: ".env.production",
+        development: ".env.development"
 ]
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 
@@ -82,6 +82,13 @@ android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
+
+    variantFilter { variant ->
+        def names = variant.flavors*.name
+        if (names.contains("production") && names.contains("development")) {
+            variant.ignore = true
+        }
+    }
 
     flavorDimensions "default"
     productFlavors {

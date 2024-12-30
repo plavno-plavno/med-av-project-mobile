@@ -81,5 +81,7 @@
   "ProfileUpdated": "Profile updated",
   "CopyMeetingLink": "Copy Meeting Link",
   "LinkCopied": "Link copied!",
-  "SetupProfile": "Setup Profile"
+  "SetupProfile": "Setup Profile",
+  "TakeAPhoto": "Take a photo",
+  "UploadANewPhoto": "Upload a photo"
 }

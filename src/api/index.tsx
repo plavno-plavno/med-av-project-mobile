@@ -9,14 +9,10 @@ import {
 import Config from "react-native-config"
 import * as Keychain from "react-native-keychain"
 import { Mutex } from "async-mutex"
-import { navigationRef } from "src/navigation/RootNavigation"
-import { ScreensEnum } from "src/navigation/ScreensEnum"
 
-const baseURL = 'https://med-app-av.plavno.io:8080/api/v1/'
-// const baseURL = Config.BASE_API_URL;
+const baseURL = Config.BASE_API_URL;
 const ENV = Config.ENV;
 console.log(ENV, 'ENVENVENVENVENVENVENVENV');
-console.log(baseURL, 'baseURLbaseURLbaseURLbaseURL');
 
 const mutex = new Mutex()
 
@@ -62,7 +58,7 @@ export const baseQueryWithReAuth: BaseQueryFn<
         if (refreshResult) {
           await Keychain.setGenericPassword(
             "accessToken",
-            refreshResult?.data?.accessToken,
+            refreshResult?.data?.token,
             {service: 'accessToken'},
           );
           await Keychain.setGenericPassword(
@@ -85,15 +81,36 @@ export const baseQueryWithReAuth: BaseQueryFn<
   return result as QueryReturnValue<unknown, FetchBaseQueryError, {}>
 }
 
-export const refreshTokenQuery = fetchBaseQuery({
-  baseUrl: baseURL,
-  prepareHeaders: async (headers) => {
-    const refreshToken = await Keychain.getGenericPassword({
-      service: "refreshToken",
-    })
-    if (refreshToken) {
+export const refreshTokenQuery = async (
+  endpoint: string,
+  api: any,
+  extraOptions: any
+) => {
+  const refreshToken = await Keychain.getGenericPassword({
+    service: "refreshToken",
+  })
+
+  if (!refreshToken) {
+    throw new Error("No refresh token available")
+  }
+
+  return fetchBaseQuery({
+    baseUrl: baseURL,
+    prepareHeaders: (headers) => {
+      headers.set("Content-Type", "application/json")
       headers.set("authorization", `Bearer ${refreshToken.password}`)
-    }
-    return headers
-  },
-})
+      return headers
+    },
+  })(
+    {
+      url: endpoint,
+      method: "POST",
+      body: JSON.stringify({
+        // Include any required payload for refreshing the token, if needed.
+      }),
+    },
+    api,
+    extraOptions
+  )
+}
+

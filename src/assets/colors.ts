@@ -27,6 +27,7 @@ const colors = {
   errorLight: "#FCEDEE",
   alertWarning: "#DFAA21",
   successGreen: "#5EC18E",
+  whiteGray02: '#F8F8F8',
 }
 
 export default colors

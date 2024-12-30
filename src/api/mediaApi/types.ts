@@ -1,5 +1,7 @@
+import { Image } from "react-native-image-crop-picker";
+
 export interface IPostMediaRequest {
-    files: File;
+    files: Image;
     prefix: string;
     postfix: string;
     tag?: string;

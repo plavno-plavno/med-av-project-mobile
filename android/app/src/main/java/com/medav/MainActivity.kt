@@ -8,6 +8,7 @@ import com.facebook.react.defaults.DefaultReactActivityDelegate
 import org.devio.rn.splashscreen.SplashScreen;
 import android.content.Intent
 import android.net.Uri
+import com.oney.WebRTCModule.WebRTCModuleOptions
 
 class MainActivity : ReactActivity() {
 
@@ -19,8 +20,10 @@ class MainActivity : ReactActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
       SplashScreen.show(this)
-      // Initialize the WebRTC module options.
-      super.onCreate(null)
+        // Initialize the WebRTC module options.
+      val options = WebRTCModuleOptions.getInstance()
+      options.enableMediaProjectionService = true
+      super.onCreate(savedInstanceState)
       // ATTENTION: This was auto-generated to handle app links.
       val appLinkIntent: Intent = intent
       val appLinkAction: String? = appLinkIntent.action

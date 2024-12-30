@@ -7,6 +7,9 @@ import "./i18n/i18next"
 import ToastMessage from "./components/ToastMessages"
 import NoConnectionModal from "./modals/NoConnectionModal"
 import { Host } from "react-native-portalize"
+import { LogBox } from "react-native"
+
+LogBox.ignoreAllLogs();
 
 const App = () => {
   return (

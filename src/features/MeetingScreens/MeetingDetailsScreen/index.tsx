@@ -1,3 +1,4 @@
+import React from "react"
 import { View, Text, TouchableOpacity } from "react-native"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { styles } from "./styles"
@@ -37,7 +38,7 @@ const MeetingDetailsScreen = () => {
     sharingOwner,
     participants,
     RTCView,
-  } = useWebRTC();
+  } = useWebRTC(true);
     const route = useRoute<RouteProp<ParamList, "Detail">>()
     const { navigate } = useNavigation<ROUTES>();
 
@@ -47,7 +48,7 @@ const MeetingDetailsScreen = () => {
         <View
           // TODO: Add video
           style={{
-            backgroundColor: colors.charcoal,
+            
             marginTop: 20,
             height: "60%",
             justifyContent: "center",
@@ -57,16 +58,18 @@ const MeetingDetailsScreen = () => {
             overflow: "hidden",
           }}
         >
-          {!isVideoOff && localStream && (
+          {localStream && !isVideoOff ? 
             <RTCView
-              style={{
-                height: "100%",
-                width: "100%",
-              }}
-              streamURL={localStream.toURL()}
-              mirror={true}
+            style={{
+              height: "100%",
+              width: "100%",
+            }}
+            streamURL={localStream?.toURL?.()}
+            mirror={true}
             />
-          )}
+            :
+            <View style={{backgroundColor: colors.charcoal, width: '100%', height: '100%'}}/>
+          }
           <View style={styles.iconContainer}>
             <TouchableOpacity onPress={toggleAudio}>
               {isMuted ? <Icon name={"microOff"} /> : <Icon name={"microOn"} />}

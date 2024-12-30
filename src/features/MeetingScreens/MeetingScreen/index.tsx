@@ -1,9 +1,13 @@
-import React, { useEffect } from "react"
+import React from "react"
 import { FlatList, Text, View } from "react-native"
 import useWebRtc from "src/hooks/useWebRtc"
 import { styles } from "./styles"
 import { Icon } from "@components"
 import { helpers } from "@utils/theme"
+import { MediaStream } from "react-native-webrtc"
+import { useStatusBar } from "src/hooks/useStatusBar"
+import colors from "src/assets/colors"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 const MeetingScreen = () => {
   const {
@@ -24,7 +28,10 @@ const MeetingScreen = () => {
     sharingOwner,
     participants,
     RTCView,
+    roomId,
   } = useWebRtc()
+
+  useStatusBar('light-content', colors.dark)
 
   const callTopActions = [
     {
@@ -68,14 +75,11 @@ const MeetingScreen = () => {
     },
   ]
 
-  useEffect(() => {
-    startCall()
-  }, [])
   return (
-    <View style={styles.container}>
+    <SafeAreaView edges={['top']} style={styles.container}>
       <View style={styles.mainWrapper}>
         <View style={styles.upperControlContainer}>
-          <Text style={styles.title}>qqqtestqqq</Text>
+          <Text style={styles.title}>{roomId}</Text>
           <View>
             <FlatList
               data={callTopActions}
@@ -90,16 +94,36 @@ const MeetingScreen = () => {
           </View>
         </View>
         <View style={styles.videoContainer}>
-          <RTCView streamURL={localStream?.toURL()} style={styles.videoCall} />
+          <RTCView streamURL={localStream?.toURL?.()} style={styles.videoCall} />
           <FlatList
-            data={Object.values(remoteStreams)}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => {
-              console.log(item, "itemitemitemitemitem")
+  data={Object.values(remoteStreams)}
+  keyExtractor={(item, index) => index.toString()}
+  renderItem={({ item }) => {
+    if (!item.videoTrack && !item.audioTrack) {
+      return null; // Skip if no tracks
+    }
 
-              return <RTCView streamURL={item?.toURL()} style={styles.video} />
-            }}
-          />
+    // Create a MediaStream from the tracks
+    const mediaStream = new MediaStream();
+
+    if (item.videoTrack) {
+      mediaStream.addTrack(item.videoTrack);
+    }
+
+    if (item.audioTrack) {
+      mediaStream.addTrack(item.audioTrack);
+    }
+
+    return (
+      <View style={{width: 200, height: 500, backgroundColor: 'blue'}}>
+      <RTCView 
+        streamURL={mediaStream.toURL()} 
+        style={styles.video} 
+        />
+        </View>
+    );
+  }}
+/>
         </View>
       </View>
       <View style={styles.bottomControlContainer}>
@@ -115,7 +139,7 @@ const MeetingScreen = () => {
           )}
         />
       </View>
-    </View>
+    </SafeAreaView>
   )
 }
 

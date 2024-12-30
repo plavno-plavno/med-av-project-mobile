@@ -18,7 +18,7 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignContent: "center",
-    marginTop: moderateScale(60),
+    marginTop: moderateScale(16),
     marginBottom: moderateScale(16),
   },
   title: {
@@ -33,15 +33,15 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.charcoal,
     paddingHorizontal: moderateScale(20),
     paddingTop: moderateScale(24),
-    paddingBottom: moderateScale(40),
+    paddingBottom: moderateScale(24),
   },
   actionButton: {
     height: moderateScale(48),
     width: moderateScale(48),
   },
   videoCall: {
-    width: "100%",
-    height: "100%",
+    width: "20%",
+    height: "20%",
     borderRadius: moderateScale(12),
     backgroundColor: colors.charcoal,
   },
@@ -61,7 +61,7 @@ export const styles = StyleSheet.create({
     borderRadius: moderateScale(12),
   },
   video: {
-    // width: "100%",
-    // height: "100%",
+    width: "20%",
+    height: "20%",
   },
 })

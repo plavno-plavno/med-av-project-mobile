@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithReAuth } from '..';
-import { IAuthMeResponse, IUpdateAuthMeRequest } from './types';
+import { IAuthMeResponse, IUpdateAuthMeRequest, User } from './types';
 
 export const userApi = createApi({
   baseQuery: baseQueryWithReAuth,
@@ -24,6 +24,9 @@ export const userApi = createApi({
         gmtDelta
       } }),
     }),
+    getUsersById: builder.mutation<{user: User}, {id: number}>({
+      query: ({id}) => ({ url: `users/${id}`, method: 'GET' }),
+    }),
   }),
 });
 
@@ -31,4 +34,5 @@ export const {
   useLogoutMutation,
   useAuthMeQuery,
   useUpdateAuthMeMutation,
+  useGetUsersByIdMutation,
 } = userApi;

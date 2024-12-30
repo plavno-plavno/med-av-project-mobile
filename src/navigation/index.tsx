@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react"
+import React, { useEffect } from "react"
 import { NavigationContainer } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { navigationRef } from "./RootNavigation"
@@ -19,16 +19,30 @@ import queryString from "query-string"
 import SetupProfileScreen from "src/features/Auth/screens/SetupProfileScreen"
 import MeetingDetailsScreen from "src/features/MeetingScreens/MeetingDetailsScreen"
 import MeetingScreen from "src/features/MeetingScreens/MeetingScreen"
+import { useAuthMeQuery } from "src/api/userApi/userApi"
 
 const Stack = createNativeStackNavigator()
 
 const Navigation: React.FC = () => {
+  const { refetch: authMeRefetch } = useAuthMeQuery()
+
   const getRoute = async () => {
     const accessToken = await Keychain.getGenericPassword({
       service: "accessToken",
     })
+    console.log(accessToken, 'accessToken');
+
     if (accessToken) {
-      RootNavigation.navigate(ScreensEnum.MAIN)
+      const updatedAuthMeData = await authMeRefetch().unwrap()
+      const initialCheck = updatedAuthMeData?.firstName &&
+        updatedAuthMeData?.lastName &&
+        updatedAuthMeData?.gmtDelta &&
+        updatedAuthMeData?.photo
+        ? ScreensEnum.MAIN
+        : ScreensEnum.SETUP_PROFILE
+
+
+      RootNavigation.navigate(initialCheck)
     } else {
       RootNavigation.navigate(ScreensEnum.ONBOARDING)
     }

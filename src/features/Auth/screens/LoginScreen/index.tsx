@@ -27,50 +27,41 @@ const LoginScreen = () => {
   const navigation = useNavigation<ROUTES>()
   const formikRef = React.useRef<FormikProps<FormValues>>(null as any)
 
-  const { data: authMeData, refetch: authMeRefetch } = useAuthMeQuery()
-
-  const initialCheck = useMemo(() => {
-    const checkProfileInfo =
-      authMeData?.firstName &&
-      authMeData?.lastName &&
-      authMeData?.gmtDelta &&
-      authMeData?.photo
-
-    if (!checkProfileInfo) {
-      return ScreensEnum.SETUP_PROFILE
-    } else {
-      return ScreensEnum.MAIN
-    }
-  }, [authMeData])
+  const { refetch: authMeRefetch } = useAuthMeQuery()
 
   const [emailLogin, { isLoading: isEmailLoginLoading }] =
     useEmailLoginMutation()
 
-  const handleLogin = async (values: { email: string; password: string }) => {
-    try {
-      const res = await emailLogin({
-        email: values.email,
-        password: values.password,
-      }).unwrap()
-      console.log(res.token, "token")
-
-      await Keychain.setGenericPassword("accessToken", res?.token, {
-        service: "accessToken",
-      })
-      console.log(res.token, "token")
-      await Keychain.setGenericPassword("refreshToken", res.refreshToken, {
-        service: "refreshToken",
-      })
-      await authMeRefetch();
-      navigation.reset({
-        index: 0,
-        routes: [{ name: initialCheck }],
-      })
-    } catch (error) {
-      const { setErrors } = formikRef.current
-      setErrors({ email: t("InvalidEmailOrPassword") })
+    const handleLogin = async (values: { email: string; password: string }) => {
+      try {
+        const res = await emailLogin({
+          email: values.email,
+          password: values.password,
+        }).unwrap()
+        await Keychain.setGenericPassword("accessToken", res?.token, {
+          service: "accessToken",
+        })
+        await Keychain.setGenericPassword("refreshToken", res.refreshToken, {
+          service: "refreshToken",
+        })
+  
+        const updatedAuthMeData = await authMeRefetch().unwrap()
+        const initialCheck = updatedAuthMeData?.firstName &&
+          updatedAuthMeData?.lastName &&
+          updatedAuthMeData?.gmtDelta &&
+          updatedAuthMeData?.photo
+          ? ScreensEnum.MAIN
+          : ScreensEnum.SETUP_PROFILE
+  
+        navigation.reset({
+          index: 0,
+          routes: [{ name: initialCheck }],
+        })
+      } catch (error) {
+        const { setErrors } = formikRef.current
+        setErrors({ email: t("InvalidEmailOrPassword") })
+      }
     }
-  }
 
   return (
     <ScreenWrapper

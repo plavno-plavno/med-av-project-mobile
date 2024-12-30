@@ -10,7 +10,11 @@ export const mediaApi = createApi({
       query: ({ files, prefix, postfix, tag }) => {
         const formData = new FormData();
 
-        formData.append('files', files);
+        formData.append('files', {
+          uri: files.path, 
+          name: files.filename || `photo_${Date.now()}.jpg`,
+          type: files.mime, 
+        });
         formData.append('prefix', prefix);
         formData.append('postfix', postfix);
 
