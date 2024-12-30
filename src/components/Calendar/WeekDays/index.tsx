@@ -17,9 +17,9 @@ const WeekCards = () => {
   const weekDays = Array.from({ length: 7 }, (_, index) => {
     const date = currentDate
       .clone()
-      .startOf("week")
+      .startOf("isoWeek")
       //start from Monday
-      .add(index + 1, "days")
+      .add(index, "days")
     return {
       day: date.format("ddd"),
       date: date.format("DD"),

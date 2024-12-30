@@ -44,7 +44,6 @@ PODS:
     - React-RCTText (= 0.76.4)
     - React-RCTVibration (= 0.76.4)
   - React-callinvoker (0.76.4)
-  - React-Codegen (0.1.0)
   - React-Core (0.76.4):
     - glog
     - hermes-engine
@@ -1269,14 +1268,27 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-image-picker (5.7.0):
-    - RCT-Folly
+  - react-native-image-picker (7.2.3):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
     - RCTRequired
     - RCTTypeSafety
-    - React
-    - React-Codegen
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
     - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-keyboard-controller (1.15.0):
     - DoubleConversion
     - glog
@@ -1996,7 +2008,6 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - JitsiWebRTC
-    - React-Codegen
     - SocketRocket
     - TOCropViewController
 
@@ -2175,7 +2186,6 @@ SPEC CHECKSUMS:
   RCTTypeSafety: d92eadf87003fe0a307d65b9551ca2b9f2312d1a
   React: bcfa87f7eb47fbc172a3d28bc6a7625bf41b9975
   React-callinvoker: 4d41b07e7ab0322dd1767c2620613fe750c3e632
-  React-Codegen: 4b8b4817cea7a54b83851d4c1f91f79aa73de30a
   React-Core: 66f90b8cf3548d1632d9e9e7f668db02dbf83100
   React-CoreModules: 4e670556f772355a9aea9225404aeb24b22b3316
   React-cxxreact: 7e9d703303dd6cf458ebb937ea74fe9d15c60b12
@@ -2201,7 +2211,7 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: 8e528efbba69994a8cb107b4698d028430e80f25
   react-native-config: 8f7283449bbb048902f4e764affbbf24504454af
   react-native-document-picker: e9d83c149bdd72dc01cf8dcb8df0389c6bd5fddb
-  react-native-image-picker: 74b6c109144adcb00ab6b354e50aa8ad2822029d
+  react-native-image-picker: e7331948589e764ecd5a9c715c3fc14d4e6187e6
   react-native-keyboard-controller: 3428e4761623fd6a242d9bf3573112f8ebe92238
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
   react-native-safe-area-context: d6406c2adbd41b2e09ab1c386781dc1c81a90919
@@ -2248,4 +2258,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: c20282ccd0f455fa3b6888e4b684d782b88e7395
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.15.2
