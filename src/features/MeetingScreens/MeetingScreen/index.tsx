@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useRef } from "react"
 import { FlatList, Text, View } from "react-native"
 import useWebRtc from "src/hooks/useWebRtc"
 import { styles } from "./styles"
@@ -8,6 +8,9 @@ import { MediaStream } from "react-native-webrtc"
 import { useStatusBar } from "src/hooks/useStatusBar"
 import colors from "src/assets/colors"
 import { SafeAreaView } from "react-native-safe-area-context"
+import { Portal } from "react-native-portalize"
+import MeetingChatModal from "src/modals/DetailsEventModal"
+import { BottomSheetMethods } from "@devvie/bottom-sheet"
 
 const MeetingScreen = () => {
   const {
@@ -33,6 +36,17 @@ const MeetingScreen = () => {
 
   useStatusBar("light-content", colors.dark)
 
+  const sheetRef = useRef<BottomSheetMethods>(null)
+
+  const onClose = () => {
+    sheetRef.current?.close()
+  }
+
+  const onOpen = () => {
+    sheetRef.current?.open()
+  }
+
+  //TODO: add actions
   const callTopActions = [
     {
       name: "swapCamera",
@@ -47,7 +61,7 @@ const MeetingScreen = () => {
       onPress: () => {},
     },
   ]
-
+  //TODO: add actions
   const callBottomActions = [
     {
       name: "callEnd",
@@ -60,7 +74,7 @@ const MeetingScreen = () => {
     { name: isMuted ? "microOff" : "microOn", onPress: toggleAudio },
     {
       name: "meetingChat",
-      onPress: () => {},
+      onPress: onOpen,
       active: false,
     },
     {
@@ -76,75 +90,83 @@ const MeetingScreen = () => {
   ]
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.container}>
-      <View style={styles.mainWrapper}>
-        <View style={styles.upperControlContainer}>
-          <Text style={styles.title}>{roomId}</Text>
-          <View>
+    <>
+      <SafeAreaView edges={["top"]} style={styles.container}>
+        <View style={styles.mainWrapper}>
+          <View style={styles.upperControlContainer}>
+            <Text style={styles.title}>{roomId}</Text>
+            <View>
+              <FlatList
+                data={callTopActions}
+                horizontal
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }) => (
+                  <View style={styles.actionButton}>
+                    <Icon name={item.name as IconName} onPress={item.onPress} />
+                  </View>
+                )}
+              />
+            </View>
+          </View>
+          <View style={styles.videoContainer}>
+            <RTCView
+              streamURL={localStream?.toURL?.()}
+              style={styles.videoCall}
+            />
             <FlatList
-              data={callTopActions}
-              horizontal
+              data={Object.values(remoteStreams)}
               keyExtractor={(item, index) => index.toString()}
-              renderItem={({ item }) => (
-                <View style={styles.actionButton}>
-                  <Icon name={item.name as IconName} onPress={item.onPress} />
-                </View>
-              )}
+              renderItem={({ item }) => {
+                if (!item.videoTrack && !item.audioTrack) {
+                  return null // Skip if no tracks
+                }
+
+                // Create a MediaStream from the tracks
+                const mediaStream = new MediaStream()
+
+                if (item.videoTrack) {
+                  mediaStream.addTrack(item.videoTrack)
+                }
+
+                if (item.audioTrack) {
+                  mediaStream.addTrack(item.audioTrack)
+                }
+
+                return (
+                  <View
+                    style={{ width: 200, height: 500, backgroundColor: "blue" }}
+                  >
+                    <RTCView
+                      streamURL={mediaStream.toURL()}
+                      style={styles.video}
+                    />
+                  </View>
+                )
+              }}
             />
           </View>
         </View>
-        <View style={styles.videoContainer}>
-          <RTCView
-            streamURL={localStream?.toURL?.()}
-            style={styles.videoCall}
-          />
+        <View style={styles.bottomControlContainer}>
           <FlatList
-            data={Object.values(remoteStreams)}
+            data={callBottomActions}
+            horizontal
+            contentContainerStyle={[
+              helpers.flex1,
+              helpers.flexRowCenterBetween,
+            ]}
             keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => {
-              if (!item.videoTrack && !item.audioTrack) {
-                return null // Skip if no tracks
-              }
-
-              // Create a MediaStream from the tracks
-              const mediaStream = new MediaStream()
-
-              if (item.videoTrack) {
-                mediaStream.addTrack(item.videoTrack)
-              }
-
-              if (item.audioTrack) {
-                mediaStream.addTrack(item.audioTrack)
-              }
-
-              return (
-                <View
-                  style={{ width: 200, height: 500, backgroundColor: "blue" }}
-                >
-                  <RTCView
-                    streamURL={mediaStream.toURL()}
-                    style={styles.video}
-                  />
-                </View>
-              )
-            }}
+            renderItem={({ item }) => (
+              <View style={styles.actionButton}>
+                <Icon name={item.name as IconName} onPress={item.onPress} />
+              </View>
+            )}
           />
         </View>
-      </View>
-      <View style={styles.bottomControlContainer}>
-        <FlatList
-          data={callBottomActions}
-          horizontal
-          contentContainerStyle={[helpers.flex1, helpers.flexRowCenterBetween]}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.actionButton}>
-              <Icon name={item.name as IconName} onPress={item.onPress} />
-            </View>
-          )}
-        />
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+      <Portal>
+        <MeetingChatModal sheetRef={sheetRef} />
+      </Portal>
+    </>
   )
 }
 
