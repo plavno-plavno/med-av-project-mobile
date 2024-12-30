@@ -40,8 +40,8 @@ export const styles = StyleSheet.create({
     width: moderateScale(48),
   },
   videoCall: {
-    width: "20%",
-    height: "20%",
+    width: "100%",
+    height: "100%",
     borderRadius: moderateScale(12),
     backgroundColor: colors.charcoal,
   },

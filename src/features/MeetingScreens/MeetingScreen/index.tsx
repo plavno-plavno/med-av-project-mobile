@@ -31,7 +31,7 @@ const MeetingScreen = () => {
     roomId,
   } = useWebRtc()
 
-  useStatusBar('light-content', colors.dark)
+  useStatusBar("light-content", colors.dark)
 
   const callTopActions = [
     {
@@ -76,7 +76,7 @@ const MeetingScreen = () => {
   ]
 
   return (
-    <SafeAreaView edges={['top']} style={styles.container}>
+    <SafeAreaView edges={["top"]} style={styles.container}>
       <View style={styles.mainWrapper}>
         <View style={styles.upperControlContainer}>
           <Text style={styles.title}>{roomId}</Text>
@@ -94,36 +94,41 @@ const MeetingScreen = () => {
           </View>
         </View>
         <View style={styles.videoContainer}>
-          <RTCView streamURL={localStream?.toURL?.()} style={styles.videoCall} />
+          <RTCView
+            streamURL={localStream?.toURL?.()}
+            style={styles.videoCall}
+          />
           <FlatList
-  data={Object.values(remoteStreams)}
-  keyExtractor={(item, index) => index.toString()}
-  renderItem={({ item }) => {
-    if (!item.videoTrack && !item.audioTrack) {
-      return null; // Skip if no tracks
-    }
+            data={Object.values(remoteStreams)}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => {
+              if (!item.videoTrack && !item.audioTrack) {
+                return null // Skip if no tracks
+              }
 
-    // Create a MediaStream from the tracks
-    const mediaStream = new MediaStream();
+              // Create a MediaStream from the tracks
+              const mediaStream = new MediaStream()
 
-    if (item.videoTrack) {
-      mediaStream.addTrack(item.videoTrack);
-    }
+              if (item.videoTrack) {
+                mediaStream.addTrack(item.videoTrack)
+              }
 
-    if (item.audioTrack) {
-      mediaStream.addTrack(item.audioTrack);
-    }
+              if (item.audioTrack) {
+                mediaStream.addTrack(item.audioTrack)
+              }
 
-    return (
-      <View style={{width: 200, height: 500, backgroundColor: 'blue'}}>
-      <RTCView 
-        streamURL={mediaStream.toURL()} 
-        style={styles.video} 
-        />
-        </View>
-    );
-  }}
-/>
+              return (
+                <View
+                  style={{ width: 200, height: 500, backgroundColor: "blue" }}
+                >
+                  <RTCView
+                    streamURL={mediaStream.toURL()}
+                    style={styles.video}
+                  />
+                </View>
+              )
+            }}
+          />
         </View>
       </View>
       <View style={styles.bottomControlContainer}>

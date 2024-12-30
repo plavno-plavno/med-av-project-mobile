@@ -14,12 +14,13 @@ import { ScreensEnum } from "src/navigation/ScreensEnum"
 
 type ParamList = {
   Detail: {
-    hash?: string;
+    hash?: string
   }
 }
 
 const MeetingDetailsScreen = () => {
   const { t } = useTranslation()
+  const { navigate } = useNavigation<ROUTES>()
   const {
     localStream,
     remoteStreams,
@@ -38,38 +39,29 @@ const MeetingDetailsScreen = () => {
     sharingOwner,
     participants,
     RTCView,
-  } = useWebRTC(true);
-    const route = useRoute<RouteProp<ParamList, "Detail">>()
-    const { navigate } = useNavigation<ROUTES>();
+  } = useWebRTC(true)
+
+  const route = useRoute<RouteProp<ParamList, "Detail">>()
+  const { hash } = route.params
 
   return (
-    <ScreenWrapper title="Meeting Details" isBackButton isCenterTitle>
+    <ScreenWrapper title={hash} isBackButton isCenterTitle>
       <View style={styles.container}>
-        <View
-          // TODO: Add video
-          style={{
-            
-            marginTop: 20,
-            height: "60%",
-            justifyContent: "center",
-            alignSelf: "center",
-            borderRadius: 40,
-            width: "65%",
-            overflow: "hidden",
-          }}
-        >
-          {localStream && !isVideoOff ? 
+        <View style={styles.videoContainer}>
+          {localStream && !isVideoOff ? (
             <RTCView
-            style={{
-              height: "100%",
-              width: "100%",
-            }}
-            streamURL={localStream?.toURL?.()}
-            mirror={true}
+              style={{
+                height: "100%",
+                width: "100%",
+              }}
+              streamURL={localStream?.toURL?.()}
+              mirror={true}
             />
-            :
-            <View style={{backgroundColor: colors.charcoal, width: '100%', height: '100%'}}/>
-          }
+          ) : (
+            <View style={styles.cameraOffContainer}>
+              <Text style={styles.cameraOffText}>{t("CameraIsOff")}</Text>
+            </View>
+          )}
           <View style={styles.iconContainer}>
             <TouchableOpacity onPress={toggleAudio}>
               {isMuted ? <Icon name={"microOff"} /> : <Icon name={"microOn"} />}
@@ -84,23 +76,27 @@ const MeetingDetailsScreen = () => {
           </View>
         </View>
         <View>
-          <Text style={styles.title}>Getting ready...</Text>
+          <Text style={styles.title}>{t("GettingReady")}</Text>
           <Text style={styles.subtitle}>
-            You’ll be able to join just a moment
+            {t("YoullBeAbleToJoinJustAMoment")}
           </Text>
         </View>
         <View style={helpers.gap8}>
           <CustomButton
             text={t("JoinMeeting")}
             style={{ backgroundColor: colors.lightAqua }}
-            onPress={() => navigate(ScreensEnum.MEETING, {hash: route?.params?.hash})}
+            onPress={() =>
+              navigate(ScreensEnum.MEETING, { hash: "khBHvM63ne6p1wwkABMg" })
+            }
           />
           <CustomButton
             text={t("CopyMeetingLink")}
             type="secondary"
             leftIcon="copy"
             style={styles.copyMeetingLink}
-            onPress={() => copyToClipboard(`https://av-hims.netlify.app/meetings/${route?.params?.hash}`)}
+            onPress={() =>
+              copyToClipboard(`https://av-hims.netlify.app/meetings/${hash}`)
+            }
           />
         </View>
       </View>

@@ -33,4 +33,25 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     gap: moderateScale(8),
   },
+  cameraOffContainer: {
+    backgroundColor: colors.charcoal,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    height: "100%",
+  },
+  cameraOffText: {
+    ...fontFamilies.interManropeSemiBold16,
+    ...fontWeights.fontWeight500,
+    color: colors.ghostWhite,
+  },
+  videoContainer: {
+    height: "60%",
+    width: "65%",
+    justifyContent: "center",
+    alignSelf: "center",
+    borderRadius: 16,
+    marginTop: moderateScale(24),
+    overflow: "hidden",
+  },
 })
