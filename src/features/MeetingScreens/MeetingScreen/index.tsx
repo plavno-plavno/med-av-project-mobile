@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { Portal } from "react-native-portalize"
 import MeetingChatModal from "src/modals/MeetingChatModal"
 import { BottomSheetMethods } from "@devvie/bottom-sheet"
+import VideoGrid from "src/components/VideoGrid/VideoGrid"
 
 const MeetingScreen = () => {
   const {
@@ -33,6 +34,11 @@ const MeetingScreen = () => {
     RTCView,
     roomId,
   } = useWebRtc()
+  console.log(localStream, "localStream")
+  console.log(remoteStreams, "remoteStreams")
+  console.log(isMuted, "isMuted")
+  console.log(isVideoOff, "isVideoOff")
+  console.log(startCall, "startCall")
 
   useStatusBar("light-content", colors.dark)
 
@@ -108,43 +114,7 @@ const MeetingScreen = () => {
               />
             </View>
           </View>
-          <View style={styles.videoContainer}>
-            <RTCView
-              streamURL={localStream?.toURL?.()}
-              style={styles.videoCall}
-            />
-            <FlatList
-              data={Object.values(remoteStreams)}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={({ item }) => {
-                if (!item.videoTrack && !item.audioTrack) {
-                  return null // Skip if no tracks
-                }
-
-                // Create a MediaStream from the tracks
-                const mediaStream = new MediaStream()
-
-                if (item.videoTrack) {
-                  mediaStream.addTrack(item.videoTrack)
-                }
-
-                if (item.audioTrack) {
-                  mediaStream.addTrack(item.audioTrack)
-                }
-
-                return (
-                  <View
-                    style={{ width: 300, height: 500, backgroundColor: "blue" }}
-                  >
-                    <RTCView
-                      streamURL={mediaStream.toURL()}
-                      style={styles.video}
-                    />
-                  </View>
-                )
-              }}
-            />
-          </View>
+          <VideoGrid remoteStreams={remoteStreams} localStream={localStream} />
         </View>
         <View style={styles.bottomControlContainer}>
           <FlatList

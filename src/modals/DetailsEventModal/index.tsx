@@ -124,8 +124,10 @@ const DetailsEventModal = ({
                       },
                     ]}
                     onPress={() => {
-                      onClose();
-                      navigate(ScreensEnum.MEETING_DETAILS, {hash: eventDetailsData?.hash})
+                      onClose()
+                      navigate(ScreensEnum.MEETING_DETAILS, {
+                        hash: eventDetailsData?.hash,
+                      })
                     }}
                   />
                   <CustomButton
@@ -140,7 +142,11 @@ const DetailsEventModal = ({
                         borderColor: colors.lavenderMist,
                       },
                     ]}
-                    onPress={() => copyToClipboard(`https://av-hims.netlify.app/meetings/${eventDetailsData?.hash}`)}
+                    onPress={() =>
+                      copyToClipboard(
+                        `https://av-hims.netlify.app/meetings/${eventDetailsData?.hash}`
+                      )
+                    }
                   />
                 </View>
                 <View style={[helpers.gap12]}>

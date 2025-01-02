@@ -86,7 +86,7 @@ const MeetingDetailsScreen = () => {
             text={t("JoinMeeting")}
             style={{ backgroundColor: colors.lightAqua }}
             onPress={() => {
-              navigate(ScreensEnum.MEETING, { hash: hash })
+              navigate(ScreensEnum.MEETING, { hash: hash, isMuted: isMuted })
             }}
           />
           <CustomButton

@@ -48,6 +48,7 @@ export interface RemoteStream {
 type ParamList = {
   Detail: {
     hash: string
+    isMuted?: boolean
   }
 }
 
@@ -59,15 +60,15 @@ const useWebRtc = (isPreview?: boolean) => {
   const [messages, setMessages] = useState<[]>([])
   const [participants, setParticipants] = useState<User[] | []>([])
   const { reset } = useNavigation<ROUTES>()
+  const route = useRoute<RouteProp<ParamList, "Detail">>()
 
   const [isScreenSharing, setIsScreenSharing] = useState(false)
   const screenTrackRef = useRef<MediaStreamTrack | null>(null)
   const [sharingOwner, setSharingOwner] = useState<string | null>(null)
   const nextTrackId = useRef<string | number | null>(null)
 
-  const [isMuted, setIsMuted] = useState(false)
+  const [isMuted, setIsMuted] = useState(route.params?.isMuted || false)
   const [isVideoOff, setIsVideoOff] = useState(false)
-  const route = useRoute<RouteProp<ParamList, "Detail">>()
 
   const roomId = route?.params?.hash
 
@@ -93,7 +94,7 @@ const useWebRtc = (isPreview?: boolean) => {
     if (!isPreview) {
       ;(async () => {
         const accessToken = await token()
-        const newSocket = io("https://khutba-media-server.plavno.io:7000", {
+        const newSocket = io("https://khutba-media-server.plavno.io:7000/", {
           auth: { token: accessToken },
         })
         setSocket(newSocket)

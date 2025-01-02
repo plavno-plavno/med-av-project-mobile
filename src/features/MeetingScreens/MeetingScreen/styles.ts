@@ -39,12 +39,6 @@ export const styles = StyleSheet.create({
     height: moderateScale(48),
     width: moderateScale(48),
   },
-  videoCall: {
-    width: "100%",
-    height: "100%",
-    borderRadius: moderateScale(12),
-    backgroundColor: colors.charcoal,
-  },
 
   input: {
     height: 40,
@@ -52,16 +46,5 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 20,
     paddingHorizontal: 10,
-  },
-  videoContainer: {
-    flex: 1,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    borderRadius: moderateScale(12),
-  },
-  video: {
-    width: "30%",
-    height: "30%",
   },
 })
