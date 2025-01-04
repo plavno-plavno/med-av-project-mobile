@@ -98,9 +98,13 @@ const ScheduleMeetingModal = ({
     initialDate: "",
   })
 
-  const participants =
+  const recentParticipants =
     getCalendarRecent &&
     getCalendarRecent.filter((email) => email !== authMe?.email)
+
+  const eventParticipants = eventDetailsData?.participants
+    .map((participant) => participant.email)
+    .filter((email) => email !== authMe?.email)
 
   const initialValues: IFormValues = {
     title: eventDetailsData?.title || "",
@@ -114,7 +118,7 @@ const ScheduleMeetingModal = ({
       ? moment(eventDetailsData?.endDate).format(DateTimeFormatEnum.hhmmA)
       : "",
     timezone: eventDetailsData?.gmtDelta.toString() || "",
-    participants: (isEditMode && participants) || [],
+    participants: (isEditMode && eventParticipants) || [],
     color: eventDetailsData?.color || "",
     description: eventDetailsData?.description || "",
   }
@@ -398,8 +402,8 @@ const ScheduleMeetingModal = ({
                       {isMenuOpen && (
                         <View style={{ position: "relative" }}>
                           <View style={styles.menuContainer}>
-                            {participants &&
-                              participants.map((email, idx) => {
+                            {recentParticipants &&
+                              recentParticipants.map((email, idx) => {
                                 return (
                                   <TouchableOpacity
                                     onPress={() => {
