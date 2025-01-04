@@ -177,7 +177,7 @@ const useWebRtc = (isPreview?: boolean) => {
   const toggleVideo = () => {
     if (localStream) {
       localStream?.getVideoTracks?.()?.forEach((track) => {
-        track.enabled = isVideoOff
+        track._enabled = isVideoOff
       })
       setIsVideoOff((prev) => !prev)
     }

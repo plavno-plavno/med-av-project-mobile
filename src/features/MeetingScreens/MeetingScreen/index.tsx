@@ -100,7 +100,12 @@ const MeetingScreen = () => {
               />
             </View>
           </View>
-          <VideoGrid remoteStreams={remoteStreams} localStream={localStream}  isVideoOff={isVideoOff}/>
+          <VideoGrid
+            remoteStreams={remoteStreams}
+            localStream={localStream}
+            isVideoOff={isVideoOff}
+            isMuted={isMuted}
+          />
         </View>
         <View style={styles.bottomControlContainer}>
           <FlatList
