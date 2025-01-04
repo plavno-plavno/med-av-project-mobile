@@ -23,24 +23,13 @@ const MeetingDetailsScreen = () => {
   const { navigate } = useNavigation<ROUTES>()
   const {
     localStream,
-    remoteStreams,
-    startCall,
-    endCall,
     isMuted,
     isVideoOff,
     toggleAudio,
     toggleVideo,
-    messages,
-    sendMessage,
-    setLocalStream,
-    startScreenShare,
-    stopScreenShare,
-    isScreenSharing,
-    sharingOwner,
-    participants,
     RTCView,
   } = useWebRTC(true)
-
+  
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const { hash } = route.params
 
@@ -86,7 +75,7 @@ const MeetingDetailsScreen = () => {
             text={t("JoinMeeting")}
             style={{ backgroundColor: colors.lightAqua }}
             onPress={() => {
-              navigate(ScreensEnum.MEETING, { hash: hash, isMuted: isMuted })
+              navigate(ScreensEnum.MEETING, { hash: hash, isMuted: isMuted, isVideoOff: isVideoOff})
             }}
           />
           <CustomButton

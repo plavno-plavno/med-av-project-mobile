@@ -17,28 +17,14 @@ const MeetingScreen = () => {
   const {
     localStream,
     remoteStreams,
-    startCall,
     endCall,
     isMuted,
     isVideoOff,
     toggleAudio,
     toggleVideo,
-    messages,
-    sendMessage,
-    setLocalStream,
-    startScreenShare,
-    stopScreenShare,
-    isScreenSharing,
-    sharingOwner,
-    participants,
-    RTCView,
     roomId,
+    participants,
   } = useWebRtc()
-  console.log(localStream, "localStream")
-  console.log(remoteStreams, "remoteStreams")
-  console.log(isMuted, "isMuted")
-  console.log(isVideoOff, "isVideoOff")
-  console.log(startCall, "startCall")
 
   useStatusBar("light-content", colors.dark)
 
@@ -114,7 +100,7 @@ const MeetingScreen = () => {
               />
             </View>
           </View>
-          <VideoGrid remoteStreams={remoteStreams} localStream={localStream} />
+          <VideoGrid remoteStreams={remoteStreams} localStream={localStream}  isVideoOff={isVideoOff}/>
         </View>
         <View style={styles.bottomControlContainer}>
           <FlatList
