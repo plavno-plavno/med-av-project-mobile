@@ -29,12 +29,16 @@ const MeetingDetailsScreen = () => {
     toggleVideo,
     RTCView,
   } = useWebRTC(true)
-  
+
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const { hash } = route.params
 
   return (
-    <ScreenWrapper title={hash} isBackButton isCenterTitle>
+    <ScreenWrapper
+      title={hash || t("DesignOnboardingCall")}
+      isBackButton
+      isCenterTitle
+    >
       <View style={styles.container}>
         <View style={styles.videoContainer}>
           {localStream && !isVideoOff ? (
@@ -75,7 +79,11 @@ const MeetingDetailsScreen = () => {
             text={t("JoinMeeting")}
             style={{ backgroundColor: colors.lightAqua }}
             onPress={() => {
-              navigate(ScreensEnum.MEETING, { hash: hash, isMuted: isMuted, isVideoOff: isVideoOff})
+              navigate(ScreensEnum.MEETING, {
+                hash: hash,
+                isMuted: isMuted,
+                isVideoOff: isVideoOff,
+              })
             }}
           />
           <CustomButton
