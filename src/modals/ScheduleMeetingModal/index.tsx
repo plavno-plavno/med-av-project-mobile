@@ -399,7 +399,7 @@ const ScheduleMeetingModal = ({
                         onFocus={() => setIsMenuOpen(true)}
                         onBlur={() => setIsMenuOpen(false)}
                       />
-                      {isMenuOpen && (
+                      {isMenuOpen && recentParticipants?.length && (
                         <View style={{ position: "relative" }}>
                           <View style={styles.menuContainer}>
                             {recentParticipants &&

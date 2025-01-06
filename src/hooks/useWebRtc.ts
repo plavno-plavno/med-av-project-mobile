@@ -49,6 +49,7 @@ type ParamList = {
   Detail: {
     hash: string
     isMuted?: boolean
+    isVideoOff?: boolean
   }
 }
 
@@ -68,7 +69,9 @@ const useWebRtc = (isPreview?: boolean) => {
   const nextTrackId = useRef<string | number | null>(null)
 
   const [isMuted, setIsMuted] = useState(route.params?.isMuted || false)
-  const [isVideoOff, setIsVideoOff] = useState(false)
+  const [isVideoOff, setIsVideoOff] = useState(
+    route.params?.isVideoOff || false
+  )
 
   const roomId = route?.params?.hash
 
