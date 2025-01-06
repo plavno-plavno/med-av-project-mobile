@@ -30,10 +30,6 @@ const MeetingScreen = () => {
 
   const sheetRef = useRef<BottomSheetMethods>(null)
 
-  const onClose = () => {
-    sheetRef.current?.close()
-  }
-
   const onOpen = () => {
     sheetRef.current?.open()
   }
@@ -66,7 +62,7 @@ const MeetingScreen = () => {
     { name: isMuted ? "microOff" : "microOn", onPress: toggleAudio },
     {
       name: "meetingChat",
-      onPress: () => {},
+      onPress: onOpen,
       active: false,
     },
     {
