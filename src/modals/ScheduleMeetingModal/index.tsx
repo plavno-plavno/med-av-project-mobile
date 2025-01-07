@@ -26,6 +26,7 @@ import { styles } from "./styles"
 import colors from "src/assets/colors"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
 import { DateTimeFormatEnum } from "@utils/enums"
+import { emailRegex } from "@utils/utils"
 
 interface IFormValues {
   date: string
@@ -77,6 +78,7 @@ const ScheduleMeetingModal = ({
   const isEditMode = !!eventId
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [participantError, setParticipantError] = useState("")
 
   const [createEvent, { isLoading: isCreateEventLoading }] =
     useCreateEventMutation()
@@ -386,15 +388,22 @@ const ScheduleMeetingModal = ({
                         required
                         placeholder="Invite participants"
                         value={values.participants}
-                        onChangeText={(val) =>
+                        onChangeText={(val) => {
                           setFieldValue("participants", val)
-                        }
+                          if (!emailRegex.test(val as string)) {
+                            setParticipantError(
+                              "Please enter a valid email address"
+                            )
+                          } else {
+                            setParticipantError("")
+                          }
+                        }}
                         error={
                           touched.participants && errors.participants
                             ? Array.isArray(errors.participants)
                               ? errors.participants.join("")
                               : String(errors.participants)
-                            : undefined
+                            : participantError
                         }
                         onFocus={() => setIsMenuOpen(true)}
                         onBlur={() => setIsMenuOpen(false)}

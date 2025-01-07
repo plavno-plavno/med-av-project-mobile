@@ -1,6 +1,7 @@
 import moment from "moment"
 import * as Yup from "yup"
 import { DateTimeFormatEnum } from "./enums"
+import { emailRegex } from "./utils"
 
 export const validationLoginSchema = Yup.object().shape({
   email: Yup.string()
@@ -24,7 +25,6 @@ export const validationEmailSchema = Yup.object().shape({
     .trim()
     .test("email-format", "Please enter a valid email address", (value) => {
       if (!value) return false
-      const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i
       return emailRegex.test(value)
     }),
 })
