@@ -69,11 +69,11 @@ const WeekCards = () => {
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
+    flexGrow: 1,
   },
   contentContainer: {
+    flexGrow: 1,
     justifyContent: "space-between",
-    gap: moderateScale(4),
   },
   card: {
     alignItems: "center",
