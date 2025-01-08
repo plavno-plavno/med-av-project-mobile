@@ -288,7 +288,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
           )}
         </View>
         {isError && (
-          <Text style={styles.errorText}>{error || handleError}</Text>
+          <Text style={styles.errorText}>{handleError || error}</Text>
         )}
       </View>
     )
