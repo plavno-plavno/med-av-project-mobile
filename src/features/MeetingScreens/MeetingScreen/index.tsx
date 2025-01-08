@@ -12,6 +12,7 @@ import { Portal } from "react-native-portalize"
 import MeetingChatModal from "src/modals/MeetingChatModal"
 import { BottomSheetMethods } from "@devvie/bottom-sheet"
 import VideoGrid from "src/components/VideoGrid/VideoGrid"
+import ParticipantsModal from "src/modals/ParticipantsModal"
 
 const MeetingScreen = () => {
   const {
@@ -28,10 +29,14 @@ const MeetingScreen = () => {
 
   useStatusBar("light-content", colors.dark)
 
-  const sheetRef = useRef<BottomSheetMethods>(null)
+  const sheetChatRef = useRef<BottomSheetMethods>(null)
+  const sheetParticipantsRef = useRef<BottomSheetMethods>(null)
 
-  const onOpen = () => {
-    sheetRef.current?.open()
+  const handleChatOpen = () => {
+    sheetChatRef.current?.open()
+  }
+  const handleParticipantsOpen = () => {
+    sheetParticipantsRef.current?.open()
   }
 
   //TODO: add actions
@@ -62,12 +67,12 @@ const MeetingScreen = () => {
     { name: isMuted ? "microOff" : "microOn", onPress: toggleAudio },
     {
       name: "meetingChat",
-      onPress: onOpen,
+      onPress: handleChatOpen,
       active: false,
     },
     {
       name: "participantsIcon",
-      onPress: () => {},
+      onPress: handleParticipantsOpen,
       active: false,
     },
     {
@@ -121,7 +126,12 @@ const MeetingScreen = () => {
         </View>
       </SafeAreaView>
       <Portal>
-        <MeetingChatModal sheetRef={sheetRef} />
+        <ParticipantsModal
+          hash={roomId}
+          participants={participants}
+          sheetRef={sheetParticipantsRef}
+        />
+        <MeetingChatModal sheetRef={sheetChatRef} />
       </Portal>
     </>
   )

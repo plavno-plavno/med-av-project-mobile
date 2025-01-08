@@ -340,6 +340,9 @@ export const helpers = StyleSheet.create({
   flexRow: {
     flexDirection: "row",
   },
+  flexColumn: {
+    flexDirection: "column",
+  },
   flexWrap: {
     flexWrap: "wrap",
   },

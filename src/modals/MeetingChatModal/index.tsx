@@ -8,6 +8,7 @@ import { styles } from "./styles"
 import { Icon } from "@components"
 import { helpers } from "@utils/theme"
 import CustomInput from "src/components/CustomInput"
+import ModalHeader from "src/components/ModalHeader"
 
 const MeetingChatModal = ({
   sheetRef,
@@ -27,13 +28,7 @@ const MeetingChatModal = ({
         disableBodyPanning
       >
         <View style={styles.container}>
-          <View style={[helpers.flexRowBetween, helpers.alignItemsCenter]}>
-            <Text style={styles.title}>{t("Chat")}</Text>
-            <Icon
-              name="closeButton"
-              onPress={() => sheetRef.current?.close()}
-            />
-          </View>
+          <ModalHeader title={t("Chat")} sheetRef={sheetRef} />
           <View style={styles.content}>
             <View style={styles.message}>
               <View style={[helpers.flexRowCenter, helpers.gap4]}>
