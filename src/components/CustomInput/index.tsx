@@ -16,6 +16,7 @@ import CustomTextInput from "../CustomTextInput"
 import { helpers } from "@utils/theme"
 import ColorPicker from "../ColorPicker"
 import colors from "src/assets/colors"
+import { emailRegex } from "@utils/utils"
 
 interface CustomInputProps {
   label?: string
@@ -71,7 +72,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
     ref
   ) => {
     const inputRef = useRef<TextInput>(null)
-
+    const [handleError, setHandleError] = useState("")
     const [isFocused, setIsFocused] = useState(false)
     const [isSecure, setIsSecure] = useState<boolean>(
       secureTextEntry && isHidePassword
@@ -119,7 +120,17 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
         }
         case "chip": {
           const [chipsInputValue, setChipsInputValue] = useState("")
+
+          const handleChange = (val: string) => {
+            if (handleError) {
+              setHandleError("")
+            }
+            setChipsInputValue(val)
+          }
           const handleAddChip = () => {
+            if (!emailRegex.test(chipsInputValue as string)) {
+              return setHandleError("Please enter a valid email address")
+            }
             if (
               chipsInputValue.trim() &&
               !value.includes(chipsInputValue.trim())
@@ -153,7 +164,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
               <CustomTextInput
                 styles={styles.input}
                 value={chipsInputValue}
-                onChangeText={setChipsInputValue}
+                onChangeText={handleChange}
                 onSubmitEditing={handleAddChip}
                 label={label}
                 placeholder={value.length ? "Invite Participants" : placeholder}
@@ -232,6 +243,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
       inputType !== "colorPicker" &&
       !rightIconProps
 
+    const isError = handleError || error
     return (
       <View style={[styles.container, style]}>
         {label && (
@@ -243,7 +255,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
           style={[
             inputContainerProps || styles.inputContainer,
             isFocused && styles.focusedInput,
-            error && styles.errorInput,
+            isError && styles.errorInput,
           ]}
         >
           {renderContent()}
@@ -271,11 +283,13 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
               <Icon name="cross" />
             </TouchableOpacity>
           )}
-          {error && isErrorIconVisible && (
+          {isError && isErrorIconVisible && (
             <Icon style={styles.rightIcon} name="errorInput" />
           )}
         </View>
-        {error && <Text style={styles.errorText}>{error}</Text>}
+        {isError && (
+          <Text style={styles.errorText}>{error || handleError}</Text>
+        )}
       </View>
     )
   }

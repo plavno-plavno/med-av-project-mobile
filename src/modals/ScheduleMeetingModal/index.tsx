@@ -78,7 +78,6 @@ const ScheduleMeetingModal = ({
   const isEditMode = !!eventId
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [participantError, setParticipantError] = useState("")
 
   const [createEvent, { isLoading: isCreateEventLoading }] =
     useCreateEventMutation()
@@ -390,20 +389,13 @@ const ScheduleMeetingModal = ({
                         value={values.participants}
                         onChangeText={(val) => {
                           setFieldValue("participants", val)
-                          if (!emailRegex.test(val as string)) {
-                            setParticipantError(
-                              "Please enter a valid email address"
-                            )
-                          } else {
-                            setParticipantError("")
-                          }
                         }}
                         error={
                           touched.participants && errors.participants
                             ? Array.isArray(errors.participants)
                               ? errors.participants.join("")
                               : String(errors.participants)
-                            : participantError
+                            : undefined
                         }
                         onFocus={() => setIsMenuOpen(true)}
                         onBlur={() => setIsMenuOpen(false)}
