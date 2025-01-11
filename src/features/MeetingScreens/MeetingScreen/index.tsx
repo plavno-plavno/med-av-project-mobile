@@ -12,6 +12,13 @@ import MeetingChatModal from "src/modals/MeetingChatModal"
 import { BottomSheetMethods } from "@devvie/bottom-sheet"
 import VideoGrid from "src/components/VideoGrid/VideoGrid"
 import ParticipantsModal from "src/modals/ParticipantsModal"
+import { useRoute, RouteProp } from "@react-navigation/native"
+
+type ParamList = {
+  Detail: {
+    isCreatorMode?: boolean
+  }
+}
 
 const MeetingScreen = () => {
   const {
@@ -33,6 +40,10 @@ const MeetingScreen = () => {
   } = useWebRtc()
 
   useStatusBar("light-content", colors.dark)
+  console.log(participants, "participants")
+
+  const route = useRoute<RouteProp<ParamList, "Detail">>()
+  const { isCreatorMode } = route.params
 
   const sheetChatRef = useRef<BottomSheetMethods>(null)
   const sheetParticipantsRef = useRef<BottomSheetMethods>(null)
@@ -115,17 +126,22 @@ const MeetingScreen = () => {
             isMuted={isMuted}
           />
         </View>
-        <View style={styles.bottomControlContainer}>
+        <View>
           <FlatList
             data={callBottomActions}
             horizontal
-            contentContainerStyle={[
-              helpers.flex1,
-              helpers.flexRowCenterBetween,
-            ]}
-            keyExtractor={(item, index) => index.toString()}
+            contentContainerStyle={styles.bottomControlContainer}
+            keyExtractor={(index) => index.toString()}
             renderItem={({ item }) => (
               <View style={styles.actionButton}>
+                {participants.length > 0 &&
+                  item.name === "participantsIcon" && (
+                    <View style={styles.participansCountContainer}>
+                      <Text style={styles.participantsCount}>
+                        {participants.length}
+                      </Text>
+                    </View>
+                  )}
                 <Icon name={item.name as IconName} onPress={item.onPress} />
               </View>
             )}
@@ -134,6 +150,7 @@ const MeetingScreen = () => {
       </SafeAreaView>
       <Portal>
         <ParticipantsModal
+          isCreatorMode={isCreatorMode}
           hash={roomId}
           participants={participants}
           sheetRef={sheetParticipantsRef}

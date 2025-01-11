@@ -10,18 +10,23 @@ import { styles } from "./styles"
 import ModalHeader from "src/components/ModalHeader"
 import { copyToClipboard } from "@utils/clipboard"
 import { helpers } from "@utils/theme"
+import { useTranslation } from "react-i18next"
+import { formatLastName } from "@utils/utils"
 
 interface IParticipantsModal {
   participants: User[]
   sheetRef: React.RefObject<BottomSheetMethods>
   hash?: string
+  isCreatorMode?: boolean
 }
 
 const ParticipantsModal = ({
   participants,
   sheetRef,
   hash,
+  isCreatorMode,
 }: IParticipantsModal) => {
+  const { t } = useTranslation()
   return (
     <BottomSheet
       ref={sheetRef}
@@ -61,10 +66,14 @@ const ParticipantsModal = ({
                 )}
                 <View style={[helpers.flexColumn, { gap: 2 }]}>
                   <Text style={styles.participantName}>
-                    {participant.firstName} {participant.lastName[0]}.
+                    {participant.firstName}{" "}
+                    {formatLastName(participant.lastName)}
                   </Text>
-                  {/* //TODO: add role */}
-                  {/* <Text style={styles.participantRole}>Meeting organaiser</Text> */}
+                  {isCreatorMode && (
+                    <Text style={styles.participantRole}>
+                      {t("MeetingOrganaiser")}
+                    </Text>
+                  )}
                 </View>
               </View>
             )

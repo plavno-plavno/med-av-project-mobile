@@ -15,6 +15,7 @@ import { ScreensEnum } from "src/navigation/ScreensEnum"
 type ParamList = {
   Detail: {
     hash?: string
+    isCreatorMode?: boolean
   }
 }
 
@@ -32,7 +33,7 @@ const MeetingDetailsScreen = () => {
   } = useWebRTC(true)
 
   const route = useRoute<RouteProp<ParamList, "Detail">>()
-  const { hash } = route.params
+  const { hash, isCreatorMode } = route.params
 
   return (
     <ScreenWrapper
@@ -84,8 +85,9 @@ const MeetingDetailsScreen = () => {
                 hash: hash,
                 isMuted: isMuted,
                 isVideoOff: isVideoOff,
+                isCreatorMode: isCreatorMode,
               })
-              startCall();
+              startCall()
             }}
           />
           <CustomButton

@@ -101,9 +101,6 @@ const MeetingChatModal = ({
           </ScrollView>
         </View>
         <View style={styles.messageInputContainer}>
-          <TouchableOpacity>
-            <Icon name="addButton" />
-          </TouchableOpacity>
           <CustomInput
             placeholder={t("WriteAMessage")}
             style={styles.messageInput}

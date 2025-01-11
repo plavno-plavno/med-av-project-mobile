@@ -28,6 +28,9 @@ export const styles = StyleSheet.create({
     alignSelf: "center",
   },
   bottomControlContainer: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
     borderTopLeftRadius: moderateScale(32),
     borderTopRightRadius: moderateScale(32),
     backgroundColor: colors.charcoal,
@@ -46,5 +49,22 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 20,
     paddingHorizontal: 10,
+  },
+  participansCountContainer: {
+    position: "absolute",
+    right: moderateScale(-4),
+    top: moderateScale(-5),
+    zIndex: 1,
+    backgroundColor: colors.white,
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    width: moderateScale(20),
+    height: moderateScale(20),
+  },
+  participantsCount: {
+    ...fontFamilies.interManropeSemiBold12,
+    ...fontWeights.fontWeight500,
+    color: colors.charcoal,
   },
 })
