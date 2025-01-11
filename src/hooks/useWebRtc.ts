@@ -19,6 +19,7 @@ import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { User } from "src/api/userApi/types"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 import { ROUTES } from "src/navigation/RoutesTypes"
+import inCallManager from "react-native-incall-manager"
 
 const config = {
   iceServers: [
@@ -31,6 +32,7 @@ const config = {
   // bundlePolicy: "max-compat",
   // offerToReceiveAudio: true,
   // offerToReceiveVideo: true,
+  iceCandidatePoolSize: 10,
 }
 
 type ScreenShare = {
@@ -63,18 +65,15 @@ const useWebRtc = (isPreview?: boolean) => {
   const { reset } = useNavigation<ROUTES>()
   const route = useRoute<RouteProp<ParamList, "Detail">>()
 
-  const [isScreenSharing, setIsScreenSharing] = useState(false)
-  const screenTrackRef = useRef<MediaStreamTrack | null>(null)
-  const [sharingOwner, setSharingOwner] = useState<string | null>(null)
   const nextTrackId = useRef<string | number | null>(null)
 
   const [isMuted, setIsMuted] = useState(route.params?.isMuted || false)
-  const [isVideoOff, setIsVideoOff] = useState(
-    route.params?.isVideoOff || false
-  )
+  const [isVideoOff, setIsVideoOff] = useState(route.params?.isVideoOff || false)
+  const [isSpeakerOn, setIsSpeakerOn] = useState(false)
+  const [isCameraSwitched, setIsCameraSwitched] = useState(false)
 
   const roomId = route?.params?.hash
-
+  // const roomId = 'default-room'
   const { data: authMeData } = useAuthMeQuery()
   const userRef = useRef<string | number>()
   userRef.current = authMeData?.id
@@ -107,10 +106,6 @@ const useWebRtc = (isPreview?: boolean) => {
 
   useEffect(() => {
     const initialize = async () => {
-      // const stream = await mediaDevices.getUserMedia({
-      //     audio: true,
-      //     video: true
-      // });
       let mediaConstraints = {
         audio: true,
         video: {
@@ -118,18 +113,10 @@ const useWebRtc = (isPreview?: boolean) => {
           facingMode: "user",
         },
       }
-
       const stream = await mediaDevices.getUserMedia(mediaConstraints)
       setLocalStream(stream)
     }
-
     initialize()
-
-    // return () => {
-    //     if (peerConnection.current) {
-    //         peerConnection.current?.close?.();
-    //     }
-    // };
   }, [])
 
   useEffect(() => {
@@ -149,59 +136,59 @@ const useWebRtc = (isPreview?: boolean) => {
         "user-joined",
         async ({ userId }: { userId: number }) => await handleUserJoined(userId)
       )
-      // socket.on('added-new-participant', async ({ userId }: { userId: number }) => await handleUserJoined(userId));
-
-      // Screen sharing
-      socket.on("screen-share-updated", handleUpdateSharing)
-      // Meeting chat
+      socket.on("screen-share-updated", () => console.log('screen-share-updated'))
       socket.on("chat-message", handleChatMessage)
       socket.on("transceiver-info", handleTransceiver)
       socket.on("client-disconnected", ({ userId }: { userId: number }) => {
         setRemoteStreams((prev) =>
-          prev.filter((stream) => stream.userId !== userId)
+        {
+          const test = prev.filter((stream) => stream.userId !== userId)
+          console.log(test, 'testtesttesttesttesttesttest');
+        }
         )
       })
     }
-
-    // return () => {
-    //     endCall();
-    // }
   }, [socket, roomId])
 
   const toggleAudio = () => {
     if (localStream) {
-      localStream?.getAudioTracks?.()?.forEach((track) => {
-        track._enabled = isMuted
-      })
-      setIsMuted((prev) => !prev)
+      const audioTrack = localStream.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !audioTrack.enabled;
+        setIsMuted(!audioTrack.enabled);
+      }
     }
-  }
+  };
 
   const toggleVideo = () => {
     if (localStream) {
-      localStream?.getVideoTracks?.()?.forEach((track) => {
-        track._enabled = isVideoOff
-      })
-      setIsVideoOff((prev) => !prev)
+      const videoTrack = localStream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = !videoTrack.enabled;
+        setIsVideoOff(!videoTrack.enabled);
+      }
+    }
+  }
+
+  const toggleSpeaker = () => {
+    if(isSpeakerOn){
+      inCallManager.setSpeakerphoneOn(false);
+      setIsSpeakerOn(false)
+    } else {
+      inCallManager.setSpeakerphoneOn(true);
+      setIsSpeakerOn(true)
     }
   }
 
   const createPeerConnection = async () => {
-    console.log("Creating  PeerConnection first attempt")
-
     if (peerConnection.current) {
       return peerConnection.current
     }
-
-    console.log("Creating new PeerConnection")
-
     try {
       peerConnection.current = await new RTCPeerConnection(config)
       peerConnection.current.addEventListener(
         "icecandidate",
         ({ candidate }) => {
-          console.log(candidate, "onIcecandidate")
-
           if (candidate) {
             socket.emit("candidate", {
               candidate,
@@ -210,6 +197,14 @@ const useWebRtc = (isPreview?: boolean) => {
           }
         }
       )
+
+      peerConnection.current.addEventListener( 'iceconnectionstatechange', event => {
+     console.log(event, 'event iceconnectionstatechange');
+      } );
+
+      peerConnection.current.addEventListener( 'signalingstatechange', event => {
+       console.log(event, 'event signalingstatechange');
+      } );
 
       peerConnection.current.addEventListener(
         "connectionstatechange",
@@ -232,9 +227,6 @@ const useWebRtc = (isPreview?: boolean) => {
       )
       peerConnection.current.addEventListener("icecandidateerror", (event) => {
         console.log(event, "event icecandidateerroricecandidateerror")
-
-        // You can ignore some candidate errors.
-        // Connections can still be made even when errors occur.
       })
 
       peerConnection.current.addEventListener("datachannel", (event) => {
@@ -246,7 +238,6 @@ const useWebRtc = (isPreview?: boolean) => {
 
         dataChannel.addEventListener("message", (event) => {
           const data = event?.data
-          // eslint-disable-next-line no-console
           console.log("Message received through data channel:", data)
         })
 
@@ -260,35 +251,16 @@ const useWebRtc = (isPreview?: boolean) => {
       })
 
       peerConnection.current.addEventListener("track", (event) => {
-        console.log(event, "tracktracktracktracktracktracktrack")
-
-        const MAX_RETRIES = 5
-        let attempts = 0
-
+        console.log(event, 'event peerConnection');
+        
         const processTrack = () => {
-          const userId = nextTrackId.current
-
-          if (!userId) {
-            if (attempts < MAX_RETRIES) {
-              attempts++
-              console.warn(
-                `Retrying to fetch userId... Attempt ${attempts}/${MAX_RETRIES}`
-              )
-              setTimeout(processTrack, 2000)
-
-              return
-            }
-
-            console.error(
-              "User ID is not available for this track after maximum retries."
-            )
-
-            return
-          }
+          localStream?.getTracks().forEach( 
+            track => peerConnection.current?.addTrack( track, localStream )
+          );
 
           setRemoteStreams((prev) => {
             const existingStream = prev.find(
-              (stream) => stream.userId === userId
+              (stream) => stream.userId === userRef.current
             )
 
             if (existingStream) {
@@ -300,25 +272,23 @@ const useWebRtc = (isPreview?: boolean) => {
                 updatedStream.audioTrack = event.track
               }
 
-              return prev.map((stream) =>
-                stream.userId === userId ? updatedStream : stream
-              )
+              return prev?.map((stream) =>
+                stream.userId === userRef.current ? updatedStream : stream
+              ) || []
             } else {
               const newStream = {
-                userId,
+                userId: userRef.current,
                 audioTrack: event.track?.kind === "audio" ? event.track : null,
                 videoTrack: event.track?.kind === "video" ? event.track : null,
               }
 
-              return [...prev, newStream]
+              return [...prev, newStream];
             }
           })
         }
 
         processTrack()
       })
-
-      // return pc;
     } catch (error) {
       console.error("Failed to create PeerConnection:", error)
       throw new Error("Could not create RTCPeerConnection")
@@ -357,7 +327,7 @@ const useWebRtc = (isPreview?: boolean) => {
 
       socket.off("chat-message", handleChatMessage)
       socket.off("transceiver-info", handleTransceiver)
-      socket.off("screen-share-updated", handleUpdateSharing)
+      socket.off("screen-share-updated", () => console.log('screen-share-updated'))
     }
 
     peerConnection.current = null
@@ -373,13 +343,10 @@ const useWebRtc = (isPreview?: boolean) => {
     }
 
     try {
-      console.log(peerConnection.current?.signalingState, "signalingState")
-
       const offer = new RTCSessionDescription({
         sdp,
         type,
       })
-      console.log("Setting remote description for offer")
       await peerConnection.current?.setRemoteDescription(
         new RTCSessionDescription(offer)
       )
@@ -389,7 +356,6 @@ const useWebRtc = (isPreview?: boolean) => {
       if (peerConnection.current?.localDescription) {
         const localDescription = peerConnection.current
           .localDescription as RTCSessionDescriptionInit
-        console.log("Local description is set")
         socket.emit("answer", {
           sdp: localDescription,
           roomId,
@@ -405,11 +371,7 @@ const useWebRtc = (isPreview?: boolean) => {
   const handleAnswer = async (sdp: RTCSessionDescriptionInit) => {
     try {
       if (peerConnection.current) {
-        await peerConnection.current?.setRemoteDescription(
-          new RTCSessionDescription(sdp)
-        )
-        // const answerDescription = new RTCSessionDescription( sdp );
-        // await peerConnection?.current?.setRemoteDescription( answerDescription );
+        await peerConnection.current?.setRemoteDescription(new RTCSessionDescription(sdp))
       }
     } catch (error) {
       console.error("Error setting remote description:", error)
@@ -418,11 +380,12 @@ const useWebRtc = (isPreview?: boolean) => {
 
   const handleUserJoined = async (userId: number) => {
     try {
-      console.log("User joined " + userId)
-
       const userExists = participants.find(
         (participant) => participant?.id === userId
       )
+      if(userExists){
+        return
+      }
 
       let userData: any
       if (!userExists) {
@@ -431,11 +394,6 @@ const useWebRtc = (isPreview?: boolean) => {
         setParticipants((prev) => [...prev, userData])
       }
 
-      // const stream = await mediaDevices.getUserMedia({
-      //     audio: true,
-      //     video: true
-      // });
-
       let mediaConstraints = {
         audio: true,
         video: {
@@ -443,23 +401,13 @@ const useWebRtc = (isPreview?: boolean) => {
           facingMode: "user",
         },
       }
-
       const stream = await mediaDevices.getUserMedia(mediaConstraints)
-      console.log("Media stream tracks:", stream.getTracks())
-      console.log("Video track:", stream.getVideoTracks())
       if (userRef.current) {
-        setLocalStream({
-          userId: userRef.current || "",
-          audioTrack: stream.getAudioTracks()[0] || null,
-          videoTrack: stream.getVideoTracks()[0] || null,
-        })
+        setLocalStream(stream)
       }
-      console.log("Stream settings:", stream.getVideoTracks()[0].getSettings())
-
       if (!peerConnection?.current) {
         createPeerConnection()
       }
-
       stream.getTracks().forEach((track) => {
         peerConnection.current?.addTrack(track, stream)
         console.log("Added track", track)
@@ -468,17 +416,11 @@ const useWebRtc = (isPreview?: boolean) => {
       const offer = await peerConnection.current?.createOffer({})
 
       await peerConnection.current?.setLocalDescription(offer)
-      // await peerConnection.current?.setLocalDescription(await peerConnection.current?.createAnswer());
-      // eslint-disable-next-line no-console
-
       if (peerConnection.current?.localDescription) {
-        // const localDescription = peerConnection.current.localDescription as RTCSessionDescriptionInit;
         socket.emit("offer", {
           sdp: peerConnection.current?.localDescription,
           roomId,
         })
-        // eslint-disable-next-line no-console
-        console.log("Sent offer")
       } else {
         console.error("Failed to send offer: localDescription is null")
       }
@@ -511,7 +453,10 @@ const useWebRtc = (isPreview?: boolean) => {
     userId: number
   }) => {
     const isUserExists = participants.filter((user) => user?.id === userId)
-    if (!isUserExists.length) {
+    if(isUserExists){
+      return
+    }
+    if (!isUserExists) {
       const userData = await getUsersById({ id: userId }).unwrap()
 
       setParticipants((prev) => {
@@ -530,146 +475,9 @@ const useWebRtc = (isPreview?: boolean) => {
     }
   }
 
-  // screen sharing
-
-  const handleUpdateSharing = (data: ScreenShare) => {
-    const { userId, isSharing } = data
-    setIsScreenSharing(isSharing)
-
-    if (isSharing) {
-      setSharingOwner(userId)
-    } else {
-      setSharingOwner(null)
-    }
-  }
-
-  const startScreenShare = async () => {
-    try {
-      const screenStream = await mediaDevices.getDisplayMedia()
-
-      // const screenStream = await mediaDevices.getDisplayMedia({
-      //     video: true,
-      // });
-
-      const micStream = await mediaDevices.getUserMedia({
-        audio: true,
-      })
-
-      const screenTrack = screenStream.getVideoTracks()[0]
-      const micTrack = micStream.getAudioTracks()[0]
-
-      if (!screenTrack) {
-        console.error("No video track available for screen sharing")
-
-        return
-      }
-
-      screenTrackRef.current = screenTrack
-
-      const videoSender = peerConnection.current
-        ?.getSenders()
-        ?.find((s) => s.track?.kind === "video")
-
-      if (videoSender) {
-        await videoSender.replaceTrack(screenTrack)
-      } else {
-        console.warn("No video sender found. Adding track...")
-        peerConnection.current?.addTrack(screenTrack)
-      }
-
-      const audioSender = peerConnection.current
-        ?.getSenders()
-        .find((s) => s.track?.kind === "audio")
-
-      if (audioSender) {
-        await audioSender.replaceTrack(micTrack)
-      } else {
-        console.warn("No audio sender found. Adding track...")
-        peerConnection.current?.addTrack(micTrack)
-      }
-
-      setLocalStream({
-        userId: authMeData?.id || "",
-        audioTrack: micStream.getAudioTracks()[0] || null,
-        videoTrack: screenStream.getVideoTracks()[0] || null,
-      })
-
-      socket.emit("toggle-screenshare", {
-        roomId,
-        userId: socket.id,
-        isSharing: true,
-      })
-
-      screenTrack.addEventListener("ended", () => {
-        stopScreenShare()
-      })
-    } catch (error) {
-      console.error("Error starting screen sharing:", error)
-    }
-  }
-
-  const stopScreenShare = async () => {
-    if (screenTrackRef.current) {
-      screenTrackRef.current.stop()
-      screenTrackRef.current = null
-    }
-
-    try {
-      if (localStream) {
-        // const cameraStream = await mediaDevices.getUserMedia({
-        //     video: true,
-        //     audio: true,
-        // });
-        let mediaConstraints = {
-          audio: true,
-          video: {
-            frameRate: 30,
-            facingMode: "user",
-          },
-        }
-        const cameraStream = await mediaDevices.getUserMedia(mediaConstraints)
-
-        const videoTrack = cameraStream.getVideoTracks()[0]
-
-        if (!videoTrack) {
-          console.error("Failed to get video track from camera stream")
-
-          return
-        }
-
-        const sender = peerConnection.current
-          ?.getSenders()
-          .find((s) => s.track?.kind === "video")
-
-        if (sender) {
-          sender.replaceTrack(videoTrack)
-        }
-
-        setLocalStream({
-          userId: authMeData?.id || "",
-          audioTrack: cameraStream.getAudioTracks()[0] || null,
-          videoTrack: cameraStream.getVideoTracks()[0] || null,
-        })
-
-        socket.emit("toggle-screenshare", {
-          roomId,
-          userId: socket.id,
-          isSharing: false,
-        })
-      }
-    } catch (error) {
-      console.error(
-        "Error while stopping screen share and switching to camera:",
-        error
-      )
-    }
-  }
-
   // Meeting chat
-
   const handleChatMessage = (data: any) => {
     console.log(data, "data handleChatMessagehandleChatMessage")
-
     setMessages((prev) => [...prev, data])
   }
 
@@ -680,6 +488,16 @@ const useWebRtc = (isPreview?: boolean) => {
       message,
     })
   }
+
+  const switchCamera = () => {
+    if (localStream) {
+      const videoTrack = localStream.getVideoTracks()[0];
+      if (videoTrack && typeof videoTrack._switchCamera === 'function') {
+        videoTrack._switchCamera();
+        setIsCameraSwitched(true);
+      }
+    }
+  };
 
   return {
     localStream,
@@ -692,14 +510,12 @@ const useWebRtc = (isPreview?: boolean) => {
     endCall,
     messages,
     sendMessage,
-    setLocalStream,
-    startScreenShare,
-    stopScreenShare,
-    isScreenSharing,
-    sharingOwner,
     participants,
     RTCView,
-
+    switchCamera,
+    toggleSpeaker,
+    isSpeakerOn,
+    isCameraSwitched,
     roomId,
   }
 }

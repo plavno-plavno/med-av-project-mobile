@@ -4,7 +4,6 @@ import useWebRtc from "src/hooks/useWebRtc"
 import { styles } from "./styles"
 import { Icon } from "@components"
 import { helpers } from "@utils/theme"
-import { MediaStream } from "react-native-webrtc"
 import { useStatusBar } from "src/hooks/useStatusBar"
 import colors from "src/assets/colors"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -25,6 +24,10 @@ const MeetingScreen = () => {
     toggleVideo,
     roomId,
     participants,
+    isSpeakerOn,
+    isCameraSwitched,
+    switchCamera,
+    toggleSpeaker,
   } = useWebRtc()
 
   useStatusBar("light-content", colors.dark)
@@ -43,11 +46,13 @@ const MeetingScreen = () => {
   const callTopActions = [
     {
       name: "swapCamera",
-      onPress: () => {},
+      onPress: switchCamera,
+      style: {opacity: isCameraSwitched ? 1 : 0.5}
     },
     {
       name: "soundOn",
-      onPress: () => {},
+      onPress: toggleSpeaker,
+      style: {opacity: isSpeakerOn ? 1 : 0.5}
     },
     {
       name: "screenRecordStart",
@@ -94,8 +99,8 @@ const MeetingScreen = () => {
                 horizontal
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={({ item }) => (
-                  <View style={styles.actionButton}>
-                    <Icon name={item.name as IconName} onPress={item.onPress} />
+                  <View style={[styles.actionButton, item.style]}>
+                    <Icon name={item.name as IconName} onPress={item.onPress}/>
                   </View>
                 )}
               />

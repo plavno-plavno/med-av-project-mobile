@@ -90,7 +90,7 @@ const SetupProfileScreen = () => {
       <ScreenWrapper
         title={t("SetupProfile")}
         isCenterTitle
-        keyboardVerticalOffset={isIOS() ? -40 : undefined}
+        keyboardVerticalOffset={isIOS() ? moderateScale(-100) : undefined}
       >
         <KeyboardAwareScrollView
           style={helpers.flex1}

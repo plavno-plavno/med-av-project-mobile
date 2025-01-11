@@ -28,6 +28,7 @@ const MeetingDetailsScreen = () => {
     toggleAudio,
     toggleVideo,
     RTCView,
+    startCall,
   } = useWebRTC(true)
 
   const route = useRoute<RouteProp<ParamList, "Detail">>()
@@ -84,6 +85,7 @@ const MeetingDetailsScreen = () => {
                 isMuted: isMuted,
                 isVideoOff: isVideoOff,
               })
+              startCall();
             }}
           />
           <CustomButton

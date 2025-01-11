@@ -26,13 +26,14 @@ const MeetingChatModal = ({
         backdropMaskColor={colors.blackOpacity08}
         style={styles.bottomSheet}
         disableBodyPanning
+        disableKeyboardHandling
       >
         <View style={styles.container}>
           <ModalHeader title={t("Chat")} sheetRef={sheetRef} />
           <View style={styles.content}>
             <View style={styles.message}>
               <View style={[helpers.flexRowCenter, helpers.gap4]}>
-                <Text style={styles.messageText}>Valery J.(You)</Text>{" "}
+                <Text style={styles.messageText}>Valery J.(You){" "}</Text>
                 <Text style={[styles.messageText, { color: colors.cadetGrey }]}>
                   15:34
                 </Text>

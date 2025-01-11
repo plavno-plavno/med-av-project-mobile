@@ -22,12 +22,9 @@ const ParticipantsModal = ({
   sheetRef,
   hash,
 }: IParticipantsModal) => {
-  console.log(participants, "participants")
-
   return (
     <BottomSheet
       ref={sheetRef}
-      //TODO: add height
       height={screenHeight * 0.9}
       backdropMaskColor={colors.blackOpacity08}
       style={styles.bottomSheet}
@@ -66,7 +63,7 @@ const ParticipantsModal = ({
                   <Text style={styles.participantName}>
                     {participant.firstName} {participant.lastName[0]}.
                   </Text>
-                  //TODO: add role
+                  {/* //TODO: add role */}
                   {/* <Text style={styles.participantRole}>Meeting organaiser</Text> */}
                 </View>
               </View>

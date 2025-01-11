@@ -30,6 +30,7 @@ target 'MedAV' do
 
   target 'MedAVDevelopment' do
     inherit! :complete
+    pod 'ReactNativeIncallManager', :path => '../node_modules/react-native-incall-manager'
   end
 
   post_install do |installer|
