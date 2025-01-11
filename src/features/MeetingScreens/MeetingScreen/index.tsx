@@ -28,6 +28,8 @@ const MeetingScreen = () => {
     isCameraSwitched,
     switchCamera,
     toggleSpeaker,
+    messages,
+    sendMessage,
   } = useWebRtc()
 
   useStatusBar("light-content", colors.dark)
@@ -47,12 +49,12 @@ const MeetingScreen = () => {
     {
       name: "swapCamera",
       onPress: switchCamera,
-      style: {opacity: isCameraSwitched ? 1 : 0.5}
+      style: { opacity: isCameraSwitched ? 1 : 0.5 },
     },
     {
       name: "soundOn",
       onPress: toggleSpeaker,
-      style: {opacity: isSpeakerOn ? 1 : 0.5}
+      style: { opacity: isSpeakerOn ? 1 : 0.5 },
     },
     {
       name: "screenRecordStart",
@@ -100,7 +102,7 @@ const MeetingScreen = () => {
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={({ item }) => (
                   <View style={[styles.actionButton, item.style]}>
-                    <Icon name={item.name as IconName} onPress={item.onPress}/>
+                    <Icon name={item.name as IconName} onPress={item.onPress} />
                   </View>
                 )}
               />
@@ -136,7 +138,11 @@ const MeetingScreen = () => {
           participants={participants}
           sheetRef={sheetParticipantsRef}
         />
-        <MeetingChatModal sheetRef={sheetChatRef} />
+        <MeetingChatModal
+          sheetRef={sheetChatRef}
+          messages={messages}
+          sendMessage={sendMessage}
+        />
       </Portal>
     </>
   )

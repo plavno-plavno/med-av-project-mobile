@@ -24,6 +24,7 @@ export const styles = StyleSheet.create({
   },
   message: {
     gap: moderateScale(4),
+    marginBottom: moderateScale(4),
   },
   messageText: {
     ...fontFamilies.interManropeSemiBold16,

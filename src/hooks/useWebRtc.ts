@@ -68,7 +68,9 @@ const useWebRtc = (isPreview?: boolean) => {
   const nextTrackId = useRef<string | number | null>(null)
 
   const [isMuted, setIsMuted] = useState(route.params?.isMuted || false)
-  const [isVideoOff, setIsVideoOff] = useState(route.params?.isVideoOff || false)
+  const [isVideoOff, setIsVideoOff] = useState(
+    route.params?.isVideoOff || false
+  )
   const [isSpeakerOn, setIsSpeakerOn] = useState(false)
   const [isCameraSwitched, setIsCameraSwitched] = useState(false)
 
@@ -136,46 +138,46 @@ const useWebRtc = (isPreview?: boolean) => {
         "user-joined",
         async ({ userId }: { userId: number }) => await handleUserJoined(userId)
       )
-      socket.on("screen-share-updated", () => console.log('screen-share-updated'))
+      socket.on("screen-share-updated", () =>
+        console.log("screen-share-updated")
+      )
       socket.on("chat-message", handleChatMessage)
       socket.on("transceiver-info", handleTransceiver)
       socket.on("client-disconnected", ({ userId }: { userId: number }) => {
-        setRemoteStreams((prev) =>
-        {
+        setRemoteStreams((prev) => {
           const test = prev.filter((stream) => stream.userId !== userId)
-          console.log(test, 'testtesttesttesttesttesttest');
-        }
-        )
+          console.log(test, "testtesttesttesttesttesttest")
+        })
       })
     }
   }, [socket, roomId])
 
   const toggleAudio = () => {
     if (localStream) {
-      const audioTrack = localStream.getAudioTracks()[0];
+      const audioTrack = localStream.getAudioTracks()[0]
       if (audioTrack) {
-        audioTrack.enabled = !audioTrack.enabled;
-        setIsMuted(!audioTrack.enabled);
+        audioTrack.enabled = !audioTrack.enabled
+        setIsMuted(!audioTrack.enabled)
       }
     }
-  };
+  }
 
   const toggleVideo = () => {
     if (localStream) {
-      const videoTrack = localStream.getVideoTracks()[0];
+      const videoTrack = localStream.getVideoTracks()[0]
       if (videoTrack) {
-        videoTrack.enabled = !videoTrack.enabled;
-        setIsVideoOff(!videoTrack.enabled);
+        videoTrack.enabled = !videoTrack.enabled
+        setIsVideoOff(!videoTrack.enabled)
       }
     }
   }
 
   const toggleSpeaker = () => {
-    if(isSpeakerOn){
-      inCallManager.setSpeakerphoneOn(false);
+    if (isSpeakerOn) {
+      inCallManager.setSpeakerphoneOn(false)
       setIsSpeakerOn(false)
     } else {
-      inCallManager.setSpeakerphoneOn(true);
+      inCallManager.setSpeakerphoneOn(true)
       setIsSpeakerOn(true)
     }
   }
@@ -198,13 +200,19 @@ const useWebRtc = (isPreview?: boolean) => {
         }
       )
 
-      peerConnection.current.addEventListener( 'iceconnectionstatechange', event => {
-     console.log(event, 'event iceconnectionstatechange');
-      } );
+      peerConnection.current.addEventListener(
+        "iceconnectionstatechange",
+        (event) => {
+          console.log(event, "event iceconnectionstatechange")
+        }
+      )
 
-      peerConnection.current.addEventListener( 'signalingstatechange', event => {
-       console.log(event, 'event signalingstatechange');
-      } );
+      peerConnection.current.addEventListener(
+        "signalingstatechange",
+        (event) => {
+          console.log(event, "event signalingstatechange")
+        }
+      )
 
       peerConnection.current.addEventListener(
         "connectionstatechange",
@@ -251,12 +259,14 @@ const useWebRtc = (isPreview?: boolean) => {
       })
 
       peerConnection.current.addEventListener("track", (event) => {
-        console.log(event, 'event peerConnection');
-        
+        console.log(event, "event peerConnection")
+
         const processTrack = () => {
-          localStream?.getTracks().forEach( 
-            track => peerConnection.current?.addTrack( track, localStream )
-          );
+          localStream
+            ?.getTracks()
+            .forEach((track) =>
+              peerConnection.current?.addTrack(track, localStream)
+            )
 
           setRemoteStreams((prev) => {
             const existingStream = prev.find(
@@ -272,9 +282,11 @@ const useWebRtc = (isPreview?: boolean) => {
                 updatedStream.audioTrack = event.track
               }
 
-              return prev?.map((stream) =>
-                stream.userId === userRef.current ? updatedStream : stream
-              ) || []
+              return (
+                prev?.map((stream) =>
+                  stream.userId === userRef.current ? updatedStream : stream
+                ) || []
+              )
             } else {
               const newStream = {
                 userId: userRef.current,
@@ -282,7 +294,7 @@ const useWebRtc = (isPreview?: boolean) => {
                 videoTrack: event.track?.kind === "video" ? event.track : null,
               }
 
-              return [...prev, newStream];
+              return [...prev, newStream]
             }
           })
         }
@@ -327,7 +339,9 @@ const useWebRtc = (isPreview?: boolean) => {
 
       socket.off("chat-message", handleChatMessage)
       socket.off("transceiver-info", handleTransceiver)
-      socket.off("screen-share-updated", () => console.log('screen-share-updated'))
+      socket.off("screen-share-updated", () =>
+        console.log("screen-share-updated")
+      )
     }
 
     peerConnection.current = null
@@ -371,7 +385,9 @@ const useWebRtc = (isPreview?: boolean) => {
   const handleAnswer = async (sdp: RTCSessionDescriptionInit) => {
     try {
       if (peerConnection.current) {
-        await peerConnection.current?.setRemoteDescription(new RTCSessionDescription(sdp))
+        await peerConnection.current?.setRemoteDescription(
+          new RTCSessionDescription(sdp)
+        )
       }
     } catch (error) {
       console.error("Error setting remote description:", error)
@@ -383,7 +399,7 @@ const useWebRtc = (isPreview?: boolean) => {
       const userExists = participants.find(
         (participant) => participant?.id === userId
       )
-      if(userExists){
+      if (userExists) {
         return
       }
 
@@ -453,7 +469,7 @@ const useWebRtc = (isPreview?: boolean) => {
     userId: number
   }) => {
     const isUserExists = participants.filter((user) => user?.id === userId)
-    if(isUserExists){
+    if (isUserExists) {
       return
     }
     if (!isUserExists) {
@@ -477,8 +493,14 @@ const useWebRtc = (isPreview?: boolean) => {
 
   // Meeting chat
   const handleChatMessage = (data: any) => {
-    console.log(data, "data handleChatMessagehandleChatMessage")
-    setMessages((prev) => [...prev, data])
+    const currentTime = new Date().toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+
+    console.log(data, "DATAhandleChatMessagehandleChatMessage")
+    setMessages((prev) => [...prev, { ...data, time: currentTime }])
   }
 
   const sendMessage = (data: any) => {
@@ -491,13 +513,13 @@ const useWebRtc = (isPreview?: boolean) => {
 
   const switchCamera = () => {
     if (localStream) {
-      const videoTrack = localStream.getVideoTracks()[0];
-      if (videoTrack && typeof videoTrack._switchCamera === 'function') {
-        videoTrack._switchCamera();
-        setIsCameraSwitched(true);
+      const videoTrack = localStream.getVideoTracks()[0]
+      if (videoTrack && typeof videoTrack._switchCamera === "function") {
+        videoTrack._switchCamera()
+        setIsCameraSwitched(true)
       }
     }
-  };
+  }
 
   return {
     localStream,
