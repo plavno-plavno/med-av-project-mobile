@@ -250,6 +250,7 @@ const ScheduleMeetingModal = ({
         disableKeyboardHandling
       >
         <KeyboardAwareScrollView
+          keyboardShouldPersistTaps="always"
           style={[helpers.flexGrow1]}
           bounces={false}
           enableOnAndroid
@@ -301,6 +302,7 @@ const ScheduleMeetingModal = ({
                   <ScrollView
                     style={(helpers.flex1, helpers.width100Percent)}
                     showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="always"
                   >
                     <View style={styles.formContainer}>
                       <CustomInput
@@ -329,7 +331,6 @@ const ScheduleMeetingModal = ({
                         }}
                         error={touched.date && errors.date}
                       />
-
                       <CustomInput
                         inputType="dropdown"
                         required
@@ -380,7 +381,6 @@ const ScheduleMeetingModal = ({
                           />
                         </View>
                       </TouchableOpacity>
-
                       <CustomInput
                         inputType="chip"
                         label="Invite Participants"
@@ -401,8 +401,8 @@ const ScheduleMeetingModal = ({
                         onBlur={() => setIsMenuOpen(false)}
                       />
                       {isMenuOpen && recentParticipants?.length && (
-                        <View style={{ position: "relative" }}>
-                          <View style={styles.menuContainer}>
+                        <View style={styles.menuContainer}>
+                          <ScrollView keyboardShouldPersistTaps="always">
                             {recentParticipants &&
                               recentParticipants.map((email, idx) => {
                                 return (
@@ -428,7 +428,7 @@ const ScheduleMeetingModal = ({
                                   </TouchableOpacity>
                                 )
                               })}
-                          </View>
+                          </ScrollView>
                         </View>
                       )}
                       <CustomInput
