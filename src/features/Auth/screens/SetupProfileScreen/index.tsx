@@ -22,6 +22,7 @@ import { useNavigation } from "@react-navigation/native"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import ImagePicker from "src/components/ImagePicker"
 import { Image as ImageType } from "react-native-image-crop-picker"
+import { timezones } from "@utils/timezones"
 
 interface IFormValues {
   photo: string
@@ -57,7 +58,10 @@ const SetupProfileScreen = () => {
           postfix: "avatar",
           tag: "avatar",
         })
-        setFieldValue("photo", uploadResponse?.data?.id || uploadResponse?.data?.[0]?.id)
+        setFieldValue(
+          "photo",
+          uploadResponse?.data?.id || uploadResponse?.data?.[0]?.id
+        )
       }
     } catch (err) {
       console.error("Error during file selection or upload:", err)
@@ -80,8 +84,7 @@ const SetupProfileScreen = () => {
       })
       navigation.navigate(ScreensEnum.MAIN)
     } catch (error) {
-      console.log(error, 'error handleUpdateProfile');
-
+      console.log(error, "error handleUpdateProfile")
     }
   }
 
@@ -125,7 +128,9 @@ const SetupProfileScreen = () => {
                     ) : (
                       <Icon name="avatarEmpty" />
                     )}
-                    <View style={[helpers.flex1, helpers.gap8, helpers.flexRow]}>
+                    <View
+                      style={[helpers.flex1, helpers.gap8, helpers.flexRow]}
+                    >
                       <CustomButton
                         isLoading={isUploadPhotoLoading}
                         text={t("Upload")}
@@ -168,6 +173,7 @@ const SetupProfileScreen = () => {
                   )}
 
                   <CustomInput
+                    dropdownData={timezones}
                     label={t("Timezone")}
                     placeholder={t("EnterYourTimezone")}
                     value={values.gmtDelta.toString()}

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useState } from "react"
 import { View, Text, ScrollView, TouchableOpacity } from "react-native"
 import { useTranslation } from "react-i18next"
 import { helpers } from "@utils/theme"
@@ -26,7 +26,7 @@ import { styles } from "./styles"
 import colors from "src/assets/colors"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
 import { DateTimeFormatEnum } from "@utils/enums"
-import { emailRegex } from "@utils/utils"
+import { timezones } from "@utils/timezones"
 
 interface IFormValues {
   date: string
@@ -38,17 +38,6 @@ interface IFormValues {
   color: string
   description: string
 }
-
-const mockTimeZones = [
-  {
-    label: "(GMT+2:00) Kyiv",
-    value: "2",
-  },
-  {
-    label: "(GMT+1:00) Warsaw",
-    value: "1",
-  },
-]
 
 interface IScheduleMeetingModal {
   onClose: () => void
@@ -346,7 +335,7 @@ const ScheduleMeetingModal = ({
                         onChangeText={(val) =>
                           handleChange("timezone")(val as string)
                         }
-                        dropdownData={mockTimeZones}
+                        dropdownData={timezones}
                         error={touched.timezone && errors.timezone}
                       />
                       <TouchableOpacity
