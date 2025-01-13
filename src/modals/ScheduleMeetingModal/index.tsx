@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { View, Text, ScrollView, TouchableOpacity } from "react-native"
 import { useTranslation } from "react-i18next"
 import { helpers } from "@utils/theme"
@@ -154,10 +154,12 @@ const ScheduleMeetingModal = ({
     mode: "date" | "time"
     field: string
   }) => {
+    const { values } = formikRef.current as FormikProps<any>
+
     const initialDate =
       field === "startDate"
-        ? initialValues.startDate || ""
-        : initialValues.endDate || ""
+        ? values?.startDate || initialValues.startDate
+        : values?.endDate || initialValues.endDate
 
     setDatePickerState({
       field,
@@ -239,6 +241,11 @@ const ScheduleMeetingModal = ({
     }
   }
 
+  const onModalClose = () => {
+    formikRef.current?.resetForm()
+    onClose()
+  }
+
   return (
     <>
       <BottomSheet
@@ -275,7 +282,7 @@ const ScheduleMeetingModal = ({
                     {isEditMode ? t("EditDetails") : t("ScheduleMeeting")}
                   </Text>
                 </View>
-                <Icon name={"closeButton"} onPress={onClose} />
+                <Icon name={"closeButton"} onPress={onModalClose} />
               </View>
               {!isEditMode && (
                 <Text style={styles.subtitle}>{t("ScheduleTheMeeting")}</Text>
