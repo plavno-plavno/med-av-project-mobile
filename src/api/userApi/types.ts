@@ -47,52 +47,52 @@ export interface IUpdateAuthMeRequest {
 }
 
 export interface User {
-  billingAddress: any[];
-  createdAt: string;
-  dateBirth: string | null;
-  deletedAt: string | null;
-  department: string | null;
-  directoryId: number | null;
-  email: string;
-  firstName: string;
-  gmtDelta: number;
-  id: number;
-  isTwoFAEnabled: boolean;
-  language: Language;
-  lastName: string;
-  newEmail: string | null;
-  organization: string | null;
-  photo: FileEntity;
-  provider: string;
-  role: RoleEntity;
-  shippingAddress: any[];
-  socialId: string | null;
-  status: Status;
-  subscribePlan: string | null;
-  title: string;
-  updatedAt: string;
-  widgets: any[];
+  billingAddress: any[]
+  createdAt: string
+  dateBirth: string | null
+  deletedAt: string | null
+  department: string | null
+  directoryId: number | null
+  email: string
+  firstName: string
+  gmtDelta: number
+  id: number
+  isTwoFAEnabled: boolean
+  language: Language
+  lastName: string
+  newEmail: string | null
+  organization: string | null
+  photo: FileEntity
+  provider: string
+  role: RoleEntity
+  shippingAddress: any[]
+  socialId: string | null
+  status: Status
+  subscribePlan: string | null
+  title: string
+  updatedAt: string
+  widgets: any[]
 }
 
 export interface Language {
-  __entity: "Language";
-  code: string;
-  id: number;
-  name: string;
+  __entity: "Language"
+  code: string
+  id: number
+  name: string
 }
 
 export interface FileEntity {
-  __entity: "FileEntity";
-  fileType: string;
-  id: string;
-  link: string;
-  name: string;
-  organizationId: number;
-  postfix: string;
-  prefix: string;
-  sharedWithAll: boolean;
-  sharedWithOrganization: boolean;
-  tag: string | null;
-  type: string;
-  userId: number;
+  __entity: "FileEntity"
+  fileType: string
+  id: string
+  link: string
+  name: string
+  organizationId: number
+  postfix: string
+  prefix: string
+  sharedWithAll: boolean
+  sharedWithOrganization: boolean
+  tag: string | null
+  type: string
+  userId: number
 }

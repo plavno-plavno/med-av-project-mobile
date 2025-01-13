@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "space-between",
-    gap: moderateScale(24),
+    gap: moderateScale(20),
   },
   title: {
     ...fontFamilies.interManropeSemiBold32,

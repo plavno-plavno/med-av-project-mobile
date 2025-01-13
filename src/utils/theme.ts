@@ -119,6 +119,9 @@ export const helpers = StyleSheet.create({
   mt48: {
     marginTop: moderateScale(48),
   },
+  mt20: {
+    marginTop: moderateScale(20),
+  },
   mt16: {
     marginTop: moderateScale(16),
   },
