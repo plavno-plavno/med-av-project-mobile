@@ -1,37 +1,50 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { baseQuery } from '..';
-import { IEmailLoginResponse, ILoginRequest, ISingUpResponse, ISingUpRequest, IResetPasswordResponse, IResetPasswordRequest, IForgotPasswordResponse, IForgotPasswordRequest, IResendEmailRequest, IResendEmailResponse, IEmailConfirm } from './types';
+import { createApi } from "@reduxjs/toolkit/query/react"
+import { baseQuery } from ".."
+import {
+  IEmailLoginResponse,
+  ILoginRequest,
+  ISingUpResponse,
+  ISingUpRequest,
+  IResetPasswordResponse,
+  IResetPasswordRequest,
+  IForgotPasswordResponse,
+  IForgotPasswordRequest,
+  IResendEmailRequest,
+  IResendEmailResponse,
+  IEmailConfirm,
+  ILanguageOptions,
+} from "./types"
 
 export const authApi = createApi({
   baseQuery: baseQuery,
-  reducerPath: 'authApi',
+  reducerPath: "authApi",
   endpoints: (builder) => ({
     emailLogin: builder.mutation<IEmailLoginResponse, ILoginRequest>({
-      query: ({email, password}) => ({
-        url: 'auth/email/login',
-        method: 'POST',
+      query: ({ email, password }) => ({
+        url: "auth/email/login",
+        method: "POST",
         body: {
           email,
-          password
+          password,
         },
       }),
     }),
     emailSingUp: builder.mutation<void, ISingUpRequest>({
-      query: ({email}) => ({
-        url: 'auth/email/register',
-        method: 'POST',
+      query: ({ email }) => ({
+        url: "auth/email/register",
+        method: "POST",
         body: {
           email,
         },
         headers: {
-          'x-ismobile': 'true',
+          "x-ismobile": "true",
         },
       }),
     }),
     emailConfirm: builder.mutation<void, IEmailConfirm>({
-      query: ({hash, password}) => ({
-        url: 'auth/email/confirm',
-        method: 'POST',
+      query: ({ hash, password }) => ({
+        url: "auth/email/confirm",
+        method: "POST",
         body: {
           hash,
           password,
@@ -39,41 +52,50 @@ export const authApi = createApi({
       }),
     }),
     resendEmail: builder.mutation<IResendEmailResponse, IResendEmailRequest>({
-      query: ({email}) => ({
+      query: ({ email }) => ({
         url: `auth/sign-up/email-resend/${email}`,
-        method: 'POST',
+        method: "POST",
         body: {
           email,
         },
         headers: {
-          'x-ismobile': 'true',
+          "x-ismobile": "true",
         },
       }),
     }),
-    resetPassword: builder.mutation<IResetPasswordResponse, IResetPasswordRequest>({
-      query: ({password, hash}) => ({
+    resetPassword: builder.mutation<
+      IResetPasswordResponse,
+      IResetPasswordRequest
+    >({
+      query: ({ password, hash }) => ({
         url: `auth/reset/password`,
-        method: 'POST',
+        method: "POST",
         body: {
           password,
-          hash
+          hash,
         },
       }),
     }),
-    forgotPassword: builder.mutation<IForgotPasswordResponse, IForgotPasswordRequest>({
-      query: ({email}) => ({
+    forgotPassword: builder.mutation<
+      IForgotPasswordResponse,
+      IForgotPasswordRequest
+    >({
+      query: ({ email }) => ({
         url: `auth/forgot/password`,
-        method: 'POST',
+        method: "POST",
         body: {
           email,
         },
         headers: {
-          'x-ismobile': 'true',
+          "x-ismobile": "true",
         },
       }),
     }),
+    languageOptions: builder.query<ILanguageOptions, void>({
+      query: () => ({ url: "auth/language-options", method: "GET" }),
+    }),
   }),
-});
+})
 
 export const {
   useEmailLoginMutation,
@@ -82,4 +104,5 @@ export const {
   useForgotPasswordMutation,
   useResetPasswordMutation,
   useEmailConfirmMutation,
-} = authApi;
+  useLanguageOptionsQuery,
+} = authApi

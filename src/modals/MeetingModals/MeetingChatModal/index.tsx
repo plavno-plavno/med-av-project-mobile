@@ -4,13 +4,13 @@ import { screenHeight } from "@utils/screenResponsive"
 import colors from "src/assets/colors"
 import BottomSheet, { type BottomSheetMethods } from "@devvie/bottom-sheet"
 import { useTranslation } from "react-i18next"
-import { styles } from "./styles"
 import { Icon } from "@components"
 import { helpers } from "@utils/theme"
 import CustomInput from "src/components/CustomInput"
 import ModalHeader from "src/components/ModalHeader"
 import { useGetUsersByIdMutation } from "src/api/userApi/userApi"
 import { formatLastName } from "@utils/utils"
+import { styles } from "./styles"
 
 interface IMessage {
   userId: number

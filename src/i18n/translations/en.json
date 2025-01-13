@@ -59,6 +59,7 @@
   "PickAColor": "Pick a color to make your meeting stand out from the rest",
   "EnterTheTitle": "Enter the title",
   "SelectDate": "Select date",
+  "Select": "Select",
   "MeetingScheduled!": "Meeting Scheduled!",
   "Details": "Details",
   "DesignOnboardingCall": "Design Onboarding Call",
@@ -90,6 +91,10 @@
   "morePeople": "more people...",
   "Participants": "Participants",
   "WriteAMessage": "Write a message",
+  "Subtitles": "Subtitles",
   "MeetingOrganaiser": "Meeting organaiser",
+  "ShowSubtitles": "Show Subtitles",
+  "ChangeSubtitlesLanguage": "Change Subtitles Language",
+  "ChangeLanguage": "Change Language",
   "GettingReady": "Getting ready..."
 }

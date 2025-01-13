@@ -6,12 +6,12 @@ import React from "react"
 import { View, Text, Image, ScrollView } from "react-native"
 import colors from "src/assets/colors"
 import { User } from "src/api/userApi/types"
-import { styles } from "./styles"
 import ModalHeader from "src/components/ModalHeader"
 import { copyToClipboard } from "@utils/clipboard"
 import { helpers } from "@utils/theme"
 import { useTranslation } from "react-i18next"
 import { formatLastName } from "@utils/utils"
+import { styles } from "./styles"
 
 interface IParticipantsModal {
   participants: User[]

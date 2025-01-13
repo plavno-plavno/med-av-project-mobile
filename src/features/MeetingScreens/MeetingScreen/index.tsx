@@ -3,16 +3,16 @@ import { FlatList, Text, View } from "react-native"
 import useWebRtc from "src/hooks/useWebRtc"
 import { styles } from "./styles"
 import { Icon } from "@components"
-import { helpers } from "@utils/theme"
 import { useStatusBar } from "src/hooks/useStatusBar"
 import colors from "src/assets/colors"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { Portal } from "react-native-portalize"
-import MeetingChatModal from "src/modals/MeetingChatModal"
+import MeetingChatModal from "src/modals/MeetingModals/MeetingChatModal"
 import { BottomSheetMethods } from "@devvie/bottom-sheet"
 import VideoGrid from "src/components/VideoGrid/VideoGrid"
-import ParticipantsModal from "src/modals/ParticipantsModal"
+import ParticipantsModal from "src/modals/MeetingModals/ParticipantsModal"
 import { useRoute, RouteProp } from "@react-navigation/native"
+import SubtitlesModal from "src/modals/MeetingModals/SubtitlesModal"
 
 type ParamList = {
   Detail: {
@@ -40,16 +40,21 @@ const MeetingScreen = () => {
   } = useWebRtc()
 
   useStatusBar("light-content", colors.dark)
-  console.log(participants, "participants")
 
+  const [isCaptionOn, setIsCaptionOn] = React.useState(false)
+  const [subtitleLanguage, setSubtitleLanguage] = React.useState("")
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const { isCreatorMode } = route.params
 
   const sheetChatRef = useRef<BottomSheetMethods>(null)
+  const sheetCatiptionsRef = useRef<BottomSheetMethods>(null)
   const sheetParticipantsRef = useRef<BottomSheetMethods>(null)
 
   const handleChatOpen = () => {
     sheetChatRef.current?.open()
+  }
+  const handleCaptionsOpen = () => {
+    sheetCatiptionsRef.current?.open()
   }
   const handleParticipantsOpen = () => {
     sheetParticipantsRef.current?.open()
@@ -94,8 +99,8 @@ const MeetingScreen = () => {
       active: false,
     },
     {
-      name: "captions",
-      onPress: () => {},
+      name: isCaptionOn ? "captionsOn" : "captions",
+      onPress: handleCaptionsOpen,
       active: false,
     },
   ]
@@ -149,6 +154,12 @@ const MeetingScreen = () => {
         </View>
       </SafeAreaView>
       <Portal>
+        <SubtitlesModal
+          setSubtitleLanguage={setSubtitleLanguage}
+          sheetRef={sheetCatiptionsRef}
+          setIsCaptionOn={setIsCaptionOn}
+          isCaptionOn={isCaptionOn}
+        />
         <ParticipantsModal
           isCreatorMode={isCreatorMode}
           hash={roomId}
