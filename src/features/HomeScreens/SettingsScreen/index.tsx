@@ -41,7 +41,9 @@ const SettingsScreen = () => {
     {
       title: t("ProfileSettings"),
       icon: "profileSettings",
-      onPress: () => {},
+      onPress: () => {
+        navigation.navigate(ScreensEnum.PROFILE_SETTINGS, {})
+      },
     },
     {
       title: t("AccountSettings"),
@@ -61,7 +63,7 @@ const SettingsScreen = () => {
   ]
   const renderItem = ({ item }: { item: any }) => {
     return (
-      <TouchableOpacity style={styles.menuItem}>
+      <TouchableOpacity style={styles.menuItem} onPress={item.onPress}>
         <View style={[helpers.flexRow, helpers.gap8]}>
           <Icon name={item.icon} />
           <Text style={styles.menuTitle}>{item.title}</Text>

@@ -10,6 +10,7 @@ export enum ScreensEnum {
   SETUP_PROFILE = "SETUP_PROFILE",
   MEETING_DETAILS = "MEETING_DETAILS",
   MEETING = "MEETING",
+  PROFILE_SETTINGS = "PROFILE_SETTINGS",
   // Bottom tab routes
   MAIN = "MAIN",
   CALENDAR = "Calendar",

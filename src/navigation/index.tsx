@@ -20,6 +20,7 @@ import SetupProfileScreen from "src/features/Auth/screens/SetupProfileScreen"
 import MeetingDetailsScreen from "src/features/MeetingScreens/MeetingDetailsScreen"
 import MeetingScreen from "src/features/MeetingScreens/MeetingScreen"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
+import ProfileSettingsScreen from "src/features/HomeScreens/SettingsScreen/ProfileSettingsScreen"
 
 const Stack = createNativeStackNavigator()
 
@@ -30,17 +31,17 @@ const Navigation: React.FC = () => {
     const accessToken = await Keychain.getGenericPassword({
       service: "accessToken",
     })
-    console.log(accessToken, 'accessToken');
+    console.log(accessToken, "accessToken")
 
     if (accessToken) {
       const updatedAuthMeData = await authMeRefetch().unwrap()
-      const initialCheck = updatedAuthMeData?.firstName &&
+      const initialCheck =
+        updatedAuthMeData?.firstName &&
         updatedAuthMeData?.lastName &&
         updatedAuthMeData?.gmtDelta &&
         updatedAuthMeData?.photo
-        ? ScreensEnum.MAIN
-        : ScreensEnum.SETUP_PROFILE
-
+          ? ScreensEnum.MAIN
+          : ScreensEnum.SETUP_PROFILE
 
       RootNavigation.navigate(initialCheck)
     } else {
@@ -142,6 +143,10 @@ const Navigation: React.FC = () => {
         <Stack.Screen
           name={ScreensEnum.MEETING_DETAILS}
           component={MeetingDetailsScreen}
+        />
+        <Stack.Screen
+          name={ScreensEnum.PROFILE_SETTINGS}
+          component={ProfileSettingsScreen}
         />
 
         <Stack.Screen name={ScreensEnum.MEETING} component={MeetingScreen} />

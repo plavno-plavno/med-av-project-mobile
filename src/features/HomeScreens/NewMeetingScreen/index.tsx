@@ -13,7 +13,6 @@ import { Portal } from "react-native-portalize"
 import { useNavigation } from "@react-navigation/native"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 import { ROUTES } from "src/navigation/RoutesTypes"
-import Toast from "react-native-toast-message"
 
 const NewMeetingScreen = () => {
   const { t } = useTranslation()

@@ -43,6 +43,7 @@ export interface IUpdateAuthMeRequest {
   photo?: string
   firstName?: string
   lastName?: string
+  language?: number
   gmtDelta?: number | string
 }
 

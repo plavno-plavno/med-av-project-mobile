@@ -91,7 +91,7 @@ export const authApi = createApi({
         },
       }),
     }),
-    languageOptions: builder.query<ILanguageOptions, void>({
+    languageOptions: builder.query<ILanguageOptions[], void>({
       query: () => ({ url: "auth/language-options", method: "GET" }),
     }),
   }),
