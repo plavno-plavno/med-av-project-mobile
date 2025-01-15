@@ -27,6 +27,7 @@ import colors from "src/assets/colors"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
 import { DateTimeFormatEnum } from "@utils/enums"
 import { timezones } from "@utils/timezones"
+import { timeRounder } from "@utils/utils"
 
 interface IFormValues {
   date: string
@@ -41,6 +42,7 @@ interface IFormValues {
 
 interface IScheduleMeetingModal {
   onClose: () => void
+  handleEventTime: string
   handleGoModalBack?: () => void
   sheetRef: React.RefObject<BottomSheetMethods>
   eventId?: number
@@ -57,6 +59,7 @@ interface IDatePickerState {
 const ScheduleMeetingModal = ({
   onClose,
   sheetRef,
+  handleEventTime,
   eventId,
   handleGoModalBack,
   refetch,
@@ -67,7 +70,6 @@ const ScheduleMeetingModal = ({
   const isEditMode = !!eventId
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-
   const [createEvent, { isLoading: isCreateEventLoading }] =
     useCreateEventMutation()
 
@@ -81,6 +83,17 @@ const ScheduleMeetingModal = ({
 
   const { data: getCalendarRecent } = useGetCalendarRecentQuery()
 
+  const defaultTimeStart = handleEventTime
+    ? moment(handleEventTime).format(DateTimeFormatEnum.hhmmA)
+    : timeRounder({
+        time: moment(eventDetailsData?.startDate),
+        roundedTo: 10,
+      }).format(DateTimeFormatEnum.hhmmA)
+
+  const defaultDate =
+    moment(handleEventTime).format(DateTimeFormatEnum.DDMMYYYY) ||
+    moment(eventDetailsData?.startDate).format(DateTimeFormatEnum.DDMMYYYY) ||
+    currentDate.format(DateTimeFormatEnum.DDMMYYYY)
   const [datePickerState, setDatePickerState] = useState<IDatePickerState>({
     field: "",
     mode: "date" as "date" | "time",
@@ -98,12 +111,8 @@ const ScheduleMeetingModal = ({
 
   const initialValues: IFormValues = {
     title: eventDetailsData?.title || "",
-    date:
-      moment(eventDetailsData?.startDate).format(DateTimeFormatEnum.DDMMYYYY) ||
-      currentDate.format(DateTimeFormatEnum.DDMMYYYY),
-    startDate: eventDetailsData?.startDate
-      ? moment(eventDetailsData?.startDate).format(DateTimeFormatEnum.hhmmA)
-      : "",
+    date: defaultDate,
+    startDate: defaultTimeStart,
     endDate: eventDetailsData?.endDate
       ? moment(eventDetailsData?.endDate).format(DateTimeFormatEnum.hhmmA)
       : "",

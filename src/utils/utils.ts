@@ -1,3 +1,5 @@
+import moment from "moment"
+
 export const formatTime = (date: string | undefined) => {
   if (date) {
     const hours = new Date(date)?.getHours()
@@ -32,4 +34,14 @@ export const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i
 
 export const formatLastName = (lastName: string) => {
   return `${lastName[0].toUpperCase()}.`
+}
+
+export const timeRounder = ({
+  time,
+  roundedTo,
+}: {
+  time: moment.Moment
+  roundedTo: number
+}) => {
+  return time.minutes(Math.round(moment(time).minutes() / roundedTo) * 10)
 }

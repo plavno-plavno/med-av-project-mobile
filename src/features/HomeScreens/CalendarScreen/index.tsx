@@ -25,6 +25,7 @@ const CalendarScreen = () => {
   const sheetDetailsRef = useRef<BottomSheetMethods>(null)
   const sheetScheduleRef = useRef<BottomSheetMethods>(null)
   const [eventId, setEventId] = React.useState(0)
+  const [handleEventTime, setCustomEventTime] = React.useState("")
 
   const {
     data: calendarEventsData,
@@ -136,6 +137,11 @@ const CalendarScreen = () => {
     )
   }
 
+  const handleCreateEvent = (e: string) => {
+    setCustomEventTime(e)
+    sheetScheduleRef.current?.open()
+  }
+
   useFocusEffect(
     useCallback(() => {
       calendarEventsRefetch()
@@ -152,8 +158,9 @@ const CalendarScreen = () => {
           events={transformedEvents}
           height={100}
           mode={"day"}
-          onPressEvent={() => console.log("event")}
           ampm
+          onPressCell={(e) => handleCreateEvent(e as any)}
+          onPressEvent={() => console.log("event")}
           swipeEnabled={false}
           overlapOffset={screenWidth * 0.1}
           date={new Date(selectedDay)}
@@ -193,6 +200,7 @@ const CalendarScreen = () => {
           sheetRef={sheetDetailsRef}
         />
         <ScheduleMeetingModal
+          handleEventTime={handleEventTime}
           handleGoModalBack={handleGoModalBack}
           onClose={handleCloseScheduleModal}
           sheetRef={sheetScheduleRef}

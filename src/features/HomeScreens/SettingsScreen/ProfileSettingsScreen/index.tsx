@@ -81,7 +81,6 @@ const ProfileSettingsScreen = () => {
   }
 
   const handleUpdateProfile = async (values: IFormValues) => {
-    console.log("\x1b[31m%s\x1b[0m", "values", values)
     try {
       const res = await updateAuthMe({
         firstName: values.firstName,
