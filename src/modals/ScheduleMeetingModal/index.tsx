@@ -42,7 +42,7 @@ interface IFormValues {
 
 interface IScheduleMeetingModal {
   onClose: () => void
-  handleEventTime: string
+  handleEventTime?: string
   handleGoModalBack?: () => void
   sheetRef: React.RefObject<BottomSheetMethods>
   eventId?: number

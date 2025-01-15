@@ -17,6 +17,8 @@ import SubtitlesModal from "src/modals/MeetingModals/SubtitlesModal"
 type ParamList = {
   Detail: {
     isCreatorMode?: boolean
+    title?: string
+    hash?: string
   }
 }
 
@@ -44,7 +46,7 @@ const MeetingScreen = () => {
   const [isCaptionOn, setIsCaptionOn] = React.useState(false)
   const [subtitleLanguage, setSubtitleLanguage] = React.useState("")
   const route = useRoute<RouteProp<ParamList, "Detail">>()
-  const { isCreatorMode } = route.params
+  const { isCreatorMode, title, hash } = route.params
 
   const sheetChatRef = useRef<BottomSheetMethods>(null)
   const sheetCatiptionsRef = useRef<BottomSheetMethods>(null)
@@ -110,7 +112,7 @@ const MeetingScreen = () => {
       <SafeAreaView edges={["top"]} style={styles.container}>
         <View style={styles.mainWrapper}>
           <View style={styles.upperControlContainer}>
-            <Text style={styles.title}>{roomId}</Text>
+            <Text style={styles.title}>{title || hash}</Text>
             <View>
               <FlatList
                 data={callTopActions}

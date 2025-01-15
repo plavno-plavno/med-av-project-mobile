@@ -45,6 +45,7 @@ const DetailsEventModal = ({
     isLoading: isEventDetailsLoading,
     refetch: eventDetailsRefetch,
   } = useGetCalendarEventDetailsQuery({ id: eventId })
+
   const { data: authMeData } = useAuthMeQuery()
   const { refetch: calendarEventsRefetch } = useGetCalendarEventsQuery()
   const [updateEvent, { isLoading: isUpdateEventLoading }] =
@@ -127,6 +128,7 @@ const DetailsEventModal = ({
                       onClose()
                       navigate(ScreensEnum.MEETING_DETAILS, {
                         hash: eventDetailsData?.hash,
+                        title: eventDetailsData?.title,
                         isCreatorMode,
                       })
                     }}

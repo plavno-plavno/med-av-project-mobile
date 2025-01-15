@@ -14,6 +14,7 @@ import { ScreensEnum } from "src/navigation/ScreensEnum"
 
 type ParamList = {
   Detail: {
+    title: string
     hash?: string
     isCreatorMode?: boolean
   }
@@ -30,17 +31,13 @@ const MeetingDetailsScreen = () => {
     toggleVideo,
     RTCView,
     startCall,
+    roomId,
   } = useWebRTC(true)
-
   const route = useRoute<RouteProp<ParamList, "Detail">>()
-  const { hash, isCreatorMode } = route.params
+  const { hash, isCreatorMode, title } = route.params
 
   return (
-    <ScreenWrapper
-      title={hash || t("DesignOnboardingCall")}
-      isBackButton
-      isCenterTitle
-    >
+    <ScreenWrapper title={title || " "} isBackButton isCenterTitle>
       <View style={styles.container}>
         <View style={styles.videoContainer}>
           {localStream && !isVideoOff ? (
@@ -86,6 +83,7 @@ const MeetingDetailsScreen = () => {
                 isMuted: isMuted,
                 isVideoOff: isVideoOff,
                 isCreatorMode: isCreatorMode,
+                title: title,
               })
               startCall()
             }}
