@@ -13,6 +13,7 @@ const colors = {
   defaultBlue: "#1777FE",
   violet: "#722ED1",
   rose: "#EB2F95",
+  steelGray: "#798189",
 
   blackOpacity06: "rgba(0, 0, 0, 0.6)",
   blackOpacity08: "#192027E0",
@@ -27,7 +28,7 @@ const colors = {
   errorLight: "#FCEDEE",
   alertWarning: "#DFAA21",
   successGreen: "#5EC18E",
-  whiteGray02: '#F8F8F8',
+  whiteGray02: "#F8F8F8",
 }
 
 export default colors

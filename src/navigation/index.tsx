@@ -21,6 +21,8 @@ import MeetingDetailsScreen from "src/features/MeetingScreens/MeetingDetailsScre
 import MeetingScreen from "src/features/MeetingScreens/MeetingScreen"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
 import ProfileSettingsScreen from "src/features/HomeScreens/SettingsScreen/ProfileSettingsScreen"
+import AccountSettingsScreen from "src/features/HomeScreens/SettingsScreen/AccountSettingsScreens"
+import ChangeEmailScreen from "src/features/HomeScreens/SettingsScreen/AccountSettingsScreens/ChangeEmailScreen"
 
 const Stack = createNativeStackNavigator()
 
@@ -147,6 +149,14 @@ const Navigation: React.FC = () => {
         <Stack.Screen
           name={ScreensEnum.PROFILE_SETTINGS}
           component={ProfileSettingsScreen}
+        />
+        <Stack.Screen
+          name={ScreensEnum.ACCOUNT_SETTINGS}
+          component={AccountSettingsScreen}
+        />
+        <Stack.Screen
+          name={ScreensEnum.CHANGE_EMAIL}
+          component={ChangeEmailScreen}
         />
 
         <Stack.Screen name={ScreensEnum.MEETING} component={MeetingScreen} />

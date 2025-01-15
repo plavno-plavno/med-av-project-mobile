@@ -48,7 +48,9 @@ const SettingsScreen = () => {
     {
       title: t("AccountSettings"),
       icon: "accountSettings",
-      onPress: () => {},
+      onPress: () => {
+        navigation.navigate(ScreensEnum.ACCOUNT_SETTINGS, {})
+      },
     },
     {
       title: t("MyRecordings"),

@@ -22,10 +22,9 @@ export const validationEmailSchema = Yup.object().shape({
   email: Yup.string()
     .email("Please enter a valid email address")
     .required("Email address is required")
-    .trim()
     .test("email-format", "Please enter a valid email address", (value) => {
       if (!value) return false
-      return emailRegex.test(value)
+      return emailRegex.test(value.trim())
     }),
 })
 
