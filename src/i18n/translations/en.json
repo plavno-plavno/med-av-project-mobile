@@ -44,6 +44,7 @@
   "YourInternetConnectionIsNotWorking": "Your internet connection is not working. Please check it or try again later.",
   "Refresh": "Refresh",
   "PasswordChanged!": "Password Changed! Please Log In with a new password.",
+  "PasswordChanged": "Password Changed!",
   "emailNotExists": "Email doesn't exist",
   "Success": "Success",
   "ChangeE-mail": "Change E-mail",
@@ -106,5 +107,12 @@
   "HelpCenter": "Help Center",
   "DestinationLanguage": "Destination Language",
   "EnterYourDestinationLanguage": "Enter your destination language",
+  "OldPassword": "Old Password",
+  "ConfirmNewPassword": "Confirm New Password",
+  "ConfirmYourNewPassword": "Confirm your new password",
+  "EnterYourNewPassword": "Enter your new password",
+  "EnterYourOldPassword": "Enter your old password",
+  "ChangePassword": "Change Password",
+  "incorrectOldPassword": "Incorrect old password",
   "GettingReady": "Getting ready..."
 }

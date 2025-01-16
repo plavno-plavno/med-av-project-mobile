@@ -23,6 +23,8 @@ export const userApi = createApi({
         lastName,
         gmtDelta,
         language,
+        password,
+        oldPassword,
       }: IUpdateAuthMeRequest) => ({
         url: "auth/me",
         method: "PATCH",
@@ -32,6 +34,8 @@ export const userApi = createApi({
           lastName,
           gmtDelta,
           language,
+          password,
+          oldPassword,
         },
       }),
     }),

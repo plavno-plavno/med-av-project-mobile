@@ -37,6 +37,18 @@ export const validationResetPasswordSchema = Yup.object().shape({
     .required("Confirm Password is required"),
 })
 
+export const validationChangePasswordSchema = Yup.object().shape({
+  oldPassword: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .required("Password is required"),
+  newPassword: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .required("Password is required"),
+  confirmNewPassword: Yup.string()
+    .oneOf([Yup.ref("newPassword")], "Passwords must match")
+    .required("Confirm Password is required"),
+})
+
 export const validationCreateEventSchema = Yup.object().shape({
   title: Yup.string()
     .required("Title is required")

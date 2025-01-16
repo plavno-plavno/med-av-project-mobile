@@ -46,6 +46,8 @@ export interface IUpdateAuthMeRequest {
   language?: number
   gmtDelta?: number | string
   email?: string
+  password?: string
+  oldPassword?: string
 }
 
 export interface User {

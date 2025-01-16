@@ -32,7 +32,9 @@ const AccountSettingsScreen = () => {
     {
       label: t("Password"),
       info: "* * * * * * * * * *",
-      onPress: () => {},
+      onPress: () => {
+        navigation.navigate(ScreensEnum.CHANGE_PASSWORD)
+      },
     },
   ]
 

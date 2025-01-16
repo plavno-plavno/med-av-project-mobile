@@ -23,6 +23,7 @@ import { useAuthMeQuery } from "src/api/userApi/userApi"
 import ProfileSettingsScreen from "src/features/HomeScreens/SettingsScreen/ProfileSettingsScreen"
 import AccountSettingsScreen from "src/features/HomeScreens/SettingsScreen/AccountSettingsScreens"
 import ChangeEmailScreen from "src/features/HomeScreens/SettingsScreen/AccountSettingsScreens/ChangeEmailScreen"
+import ChangePasswordScreen from "src/features/HomeScreens/SettingsScreen/AccountSettingsScreens/ChangePasswordScreen"
 
 const Stack = createNativeStackNavigator()
 
@@ -157,6 +158,10 @@ const Navigation: React.FC = () => {
         <Stack.Screen
           name={ScreensEnum.CHANGE_EMAIL}
           component={ChangeEmailScreen}
+        />
+        <Stack.Screen
+          name={ScreensEnum.CHANGE_PASSWORD}
+          component={ChangePasswordScreen}
         />
 
         <Stack.Screen name={ScreensEnum.MEETING} component={MeetingScreen} />
