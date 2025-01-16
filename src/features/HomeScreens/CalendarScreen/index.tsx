@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from "react"
+import React, { useCallback, useMemo, useRef } from "react"
 import {
   Calendar,
   CalendarTouchableOpacityProps,
@@ -164,6 +164,7 @@ const CalendarScreen = () => {
           swipeEnabled={false}
           overlapOffset={screenWidth * 0.1}
           date={new Date(selectedDay)}
+          scrollOffsetMinutes={240}
           renderEvent={renderEvent}
           renderHeader={() => {
             return <WeekDays />

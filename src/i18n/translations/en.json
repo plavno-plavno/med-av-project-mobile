@@ -116,6 +116,6 @@
   "Cancel": "Cancel",
   "OK": "OK",
   "incorrectOldPassword": "Incorrect old password",
-  "DeleteAccountDescription": "Deleting your account will remove  all of your information from our database.  This cannot be undone.",
+  "DeleteAccountDescription": "Deleting your account will remove \nall of your information from our database. \nThis cannot be undone.",
   "GettingReady": "Getting ready..."
 }
