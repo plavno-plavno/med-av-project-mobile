@@ -39,6 +39,13 @@ export const userApi = createApi({
         },
       }),
     }),
+    deleteAuthMe: builder.mutation<void, void>({
+      query: () => ({
+        url: "auth/me",
+        method: "DELETE",
+        body: {},
+      }),
+    }),
     getUsersById: builder.mutation<{ user: User }, { id: number }>({
       query: ({ id }) => ({ url: `users/${id}`, method: "GET" }),
     }),
@@ -50,4 +57,5 @@ export const {
   useAuthMeQuery,
   useUpdateAuthMeMutation,
   useGetUsersByIdMutation,
+  useDeleteAuthMeMutation,
 } = userApi

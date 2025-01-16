@@ -113,6 +113,9 @@
   "EnterYourNewPassword": "Enter your new password",
   "EnterYourOldPassword": "Enter your old password",
   "ChangePassword": "Change Password",
+  "Cancel": "Cancel",
+  "OK": "OK",
   "incorrectOldPassword": "Incorrect old password",
+  "DeleteAccountDescription": "Deleting your account will remove  all of your information from our database.  This cannot be undone.",
   "GettingReady": "Getting ready..."
 }

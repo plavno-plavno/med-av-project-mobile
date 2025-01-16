@@ -3,11 +3,15 @@ import { isIOS } from "@utils/platformChecker"
 import { helpers } from "@utils/theme"
 import React from "react"
 import { useTranslation } from "react-i18next"
-import { View, StyleSheet, ScrollView } from "react-native"
+import { View, StyleSheet, ScrollView, Alert } from "react-native"
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 import { moderateScale } from "react-native-size-matters"
-import { useAuthMeQuery } from "src/api/userApi/userApi"
+import {
+  useAuthMeQuery,
+  useDeleteAuthMeMutation,
+} from "src/api/userApi/userApi"
 import colors from "src/assets/colors"
+import * as Keychain from "react-native-keychain"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import SettingsButton from "src/components/SettingsButton"
 import { ROUTES } from "src/navigation/RoutesTypes"
@@ -17,9 +21,26 @@ const AccountSettingsScreen = () => {
   const navigation = useNavigation<ROUTES>()
   const { t } = useTranslation()
 
-  const { data: authMeData, refetch: authMeRefetch } = useAuthMeQuery()
+  const { data: authMeData } = useAuthMeQuery()
+  const [deleteAuthMe] = useDeleteAuthMeMutation()
 
-  const handleDeleteAccount = () => {}
+  const handleDeleteAccount = () => {
+    Alert.alert(t("DeleteAccount"), t("DeleteAccountDescription"), [
+      {
+        text: "OK",
+        onPress: async () => {
+          await deleteAuthMe().unwrap()
+          await Keychain.resetGenericPassword({ service: "accessToken" })
+          await Keychain.resetGenericPassword({ service: "refreshToken" })
+          navigation.reset({
+            index: 0,
+            routes: [{ name: ScreensEnum.ONBOARDING }],
+          })
+        },
+      },
+      { text: "Cancel" },
+    ])
+  }
 
   const settingsButtons = [
     {
