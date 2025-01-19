@@ -1,3 +1,4 @@
+import { screenHeight } from "@utils/screenResponsive"
 import { fontFamilies, fontWeights } from "@utils/theme"
 import { StyleSheet } from "react-native"
 import { moderateScale } from "react-native-size-matters"
@@ -8,7 +9,7 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   container: {
-    flexGrow: 1,
+    flex: 1,
     paddingHorizontal: moderateScale(20),
     backgroundColor: colors.white,
     gap: moderateScale(24),
@@ -19,8 +20,9 @@ export const styles = StyleSheet.create({
     color: colors.charcoal,
   },
   content: {
-    flexGrow: 1,
-    height: "77%",
+    flex: 1,
+    height: screenHeight * 0.67,
+    marginBottom: moderateScale(10),
   },
   message: {
     gap: moderateScale(4),
@@ -33,7 +35,6 @@ export const styles = StyleSheet.create({
   },
   messageTime: {},
   messageInputContainer: {
-    flexGrow: 1,
     flexDirection: "row",
     alignItems: "center",
     gap: moderateScale(8),
@@ -43,6 +44,6 @@ export const styles = StyleSheet.create({
     paddingVertical: moderateScale(8),
   },
   messageInput: {
-    flexGrow: 1,
+    flex: 1,
   },
 })

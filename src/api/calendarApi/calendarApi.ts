@@ -1,6 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react"
 import { baseQueryWithReAuth } from ".."
 import {
+  ICreateInstantEventResponse,
   IGetCalendarEventDetailsRequest,
   IGetCalendarEventDetailsResponse,
   IGetCalendarEventsResponse,
@@ -44,6 +45,13 @@ export const calendarApi = createApi({
           description,
           gmtDelta,
         },
+      }),
+    }),
+    createInstantEvent: builder.mutation<ICreateInstantEventResponse, void>({
+      query: () => ({
+        url: "calendar/events/instant",
+        method: "POST",
+        body: {},
       }),
     }),
     deleteEvent: builder.mutation<void, { id: number }>({
@@ -106,6 +114,7 @@ export const {
   useUpdateEventMutation,
   useDeleteEventMutation,
   useCreateEventMutation,
+  useCreateInstantEventMutation,
   useGetCalendarEventsQuery,
   useGetCalendarEventDetailsQuery,
   useGetCalendarRecentQuery,

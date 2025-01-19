@@ -70,6 +70,7 @@ const WeekCards = () => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
+    paddingRight: moderateScale(20),
   },
   contentContainer: {
     flexGrow: 1,

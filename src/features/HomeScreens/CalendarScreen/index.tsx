@@ -7,7 +7,7 @@ import {
 import ScreenWrapper from "src/components/ScreenWrapper"
 import WeekDays from "src/components/Calendar/WeekDays"
 import colors from "src/assets/colors"
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native"
+import { ActivityIndicator, Text, TouchableOpacity } from "react-native"
 import { useAppSelector } from "src/hooks/redux"
 import { useGetCalendarEventsQuery } from "src/api/calendarApi/calendarApi"
 import { useFocusEffect } from "@react-navigation/native"
@@ -19,6 +19,7 @@ import ScheduleMeetingModal from "src/modals/ScheduleMeetingModal"
 import { Portal } from "react-native-portalize"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
 import DetailsEventModal from "src/modals/DetailsEventModal"
+import { moderateScale } from "react-native-size-matters"
 
 const CalendarScreen = () => {
   const { selectedDay } = useAppSelector((state) => state.calendar)
@@ -32,7 +33,13 @@ const CalendarScreen = () => {
     refetch: calendarEventsRefetch,
     isLoading: isCalendarEventsLoading,
   } = useGetCalendarEventsQuery()
+
   const { data: authMeData } = useAuthMeQuery()
+
+  const resetEventId = () => {
+    setEventId(0)
+  }
+
   const handleOpenDetailsModal = (eventId: number) => {
     setEventId(eventId)
     sheetDetailsRef.current?.open()
@@ -40,6 +47,7 @@ const CalendarScreen = () => {
 
   const handleCloseDetailsModal = () => {
     sheetDetailsRef.current?.close()
+    resetEventId()
   }
 
   const handleOpenScheduleModal = () => {
@@ -47,6 +55,7 @@ const CalendarScreen = () => {
   }
 
   const handleCloseScheduleModal = () => {
+    resetEventId()
     sheetScheduleRef.current?.close()
   }
   const handleGoModalBack = () => {
@@ -92,13 +101,8 @@ const CalendarScreen = () => {
       String(authMeData?.email),
       event
     )
-
     return (
-      <TouchableOpacity
-        {...touchableOpacityProps}
-        key={event?.id}
-        onPress={() => handleOpenDetailsModal(event?.id)}
-      >
+      <TouchableOpacity {...touchableOpacityProps} key={event?.id}>
         <Text
           style={[
             styles.eventText,
@@ -142,6 +146,11 @@ const CalendarScreen = () => {
     sheetScheduleRef.current?.open()
   }
 
+  const onPressEvent = (e: any) => {
+    setEventId(e?.id)
+    handleOpenDetailsModal(e?.id)
+  }
+
   useFocusEffect(
     useCallback(() => {
       calendarEventsRefetch()
@@ -159,8 +168,9 @@ const CalendarScreen = () => {
           height={100}
           mode={"day"}
           ampm
+          minHour={7}
           onPressCell={(e) => handleCreateEvent(e as any)}
-          onPressEvent={() => console.log("event")}
+          onPressEvent={onPressEvent}
           swipeEnabled={false}
           overlapOffset={screenWidth * 0.1}
           date={new Date(selectedDay)}

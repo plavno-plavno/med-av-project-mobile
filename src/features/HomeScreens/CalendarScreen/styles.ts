@@ -5,7 +5,7 @@ import colors from "src/assets/colors"
 
 export const styles = StyleSheet.create({
   container: {
-    width: "100%",
+    paddingRight: 0,
   },
   hourStyle: {
     ...fontFamilies.interManropeSemiBold12,

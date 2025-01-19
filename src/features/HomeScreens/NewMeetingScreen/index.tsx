@@ -13,12 +13,23 @@ import { Portal } from "react-native-portalize"
 import { useNavigation } from "@react-navigation/native"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 import { ROUTES } from "src/navigation/RoutesTypes"
+import { useCreateInstantEventMutation } from "src/api/calendarApi/calendarApi"
+
+type ParamList = {
+  Detail: {
+    title: string
+    hash?: string
+    isCreatorMode?: boolean
+  }
+}
 
 const NewMeetingScreen = () => {
   const { t } = useTranslation()
   const naviqation = useNavigation<ROUTES>()
   const sheetRef = useRef<BottomSheetMethods>(null)
 
+  const [createInstantEvent, { isLoading: isCreateInstantEventLoading }] =
+    useCreateInstantEventMutation()
   const onClose = () => {
     sheetRef.current?.close()
   }
@@ -26,9 +37,15 @@ const NewMeetingScreen = () => {
   const onOpen = () => {
     sheetRef.current?.open()
   }
-
-  const handleNavigateNewMeeting = () => {
-    naviqation.navigate(ScreensEnum.MEETING_DETAILS, {})
+  const onCreateInstantEvent = async () => {
+    try {
+      const res = await createInstantEvent().unwrap()
+      naviqation.navigate(ScreensEnum.MEETING_DETAILS, {
+        hash: res?.hash,
+      })
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   return (
@@ -44,7 +61,7 @@ const NewMeetingScreen = () => {
             <MeetingsButton
               icon="videoIcon"
               title={t("StartMeetingInstantly")}
-              onPress={handleNavigateNewMeeting}
+              onPress={onCreateInstantEvent}
             />
             <MeetingsButton
               icon="scheduleMeeting"

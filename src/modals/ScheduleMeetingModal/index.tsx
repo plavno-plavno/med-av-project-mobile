@@ -90,10 +90,21 @@ const ScheduleMeetingModal = ({
         roundedTo: 10,
       }).format(DateTimeFormatEnum.hhmmA)
 
+  const defaultTimeEnd = handleEventTime
+    ? moment(handleEventTime)
+        .add(30, "minutes")
+        .format(DateTimeFormatEnum.hhmmA)
+    : eventDetailsData?.endDate
+    ? moment(eventDetailsData?.endDate).format(DateTimeFormatEnum.hhmmA)
+    : moment(defaultTimeStart, DateTimeFormatEnum.hhmmA)
+        .add(30, "minutes")
+        .format(DateTimeFormatEnum.hhmmA)
+
   const defaultDate =
     moment(handleEventTime).format(DateTimeFormatEnum.DDMMYYYY) ||
     moment(eventDetailsData?.startDate).format(DateTimeFormatEnum.DDMMYYYY) ||
     currentDate.format(DateTimeFormatEnum.DDMMYYYY)
+
   const [datePickerState, setDatePickerState] = useState<IDatePickerState>({
     field: "",
     mode: "date" as "date" | "time",
@@ -110,16 +121,14 @@ const ScheduleMeetingModal = ({
     .filter((email) => email !== authMe?.email)
 
   const initialValues: IFormValues = {
-    title: eventDetailsData?.title || "",
+    title: (eventId && eventDetailsData?.title) || "",
     date: defaultDate,
     startDate: defaultTimeStart,
-    endDate: eventDetailsData?.endDate
-      ? moment(eventDetailsData?.endDate).format(DateTimeFormatEnum.hhmmA)
-      : "",
-    timezone: eventDetailsData?.gmtDelta.toString() || "",
-    participants: (isEditMode && eventParticipants) || [],
-    color: eventDetailsData?.color || "",
-    description: eventDetailsData?.description || "",
+    endDate: defaultTimeEnd,
+    timezone: (eventId && eventDetailsData?.gmtDelta.toString()) || "",
+    participants: (eventId && eventParticipants) || [],
+    color: (eventId && eventDetailsData?.color) || "",
+    description: (eventId && eventDetailsData?.description) || "",
   }
 
   const defaultTime = () => {
@@ -204,15 +213,15 @@ const ScheduleMeetingModal = ({
         startDate:
           date +
           " " +
-          moment(values.startDate, ["h:mm: A"])
+          moment(values.startDate, [DateTimeFormatEnum.hhmmA])
             .subtract(values.timezone, "hours")
-            .format("HH:mm:ss"),
+            .format(DateTimeFormatEnum.HHmmss),
         endDate:
           date +
           " " +
-          moment(values.endDate, ["h:mm: A"])
+          moment(values.endDate, [DateTimeFormatEnum.hhmmA])
             .subtract(values.timezone, "hours")
-            .format("HH:mm:ss"),
+            .format(DateTimeFormatEnum.HHmmss),
         gmtDelta: Number(values.timezone),
       }
 
@@ -362,7 +371,7 @@ const ScheduleMeetingModal = ({
                             rightIconProps={{
                               name: "downArrow",
                             }}
-                            error={touched.startDate && errors.startDate}
+                            error={errors.startDate}
                           />
                         </View>
                       </TouchableOpacity>
@@ -382,7 +391,7 @@ const ScheduleMeetingModal = ({
                             rightIconProps={{
                               name: "downArrow",
                             }}
-                            error={touched.endDate && errors.endDate}
+                            error={errors.endDate}
                           />
                         </View>
                       </TouchableOpacity>

@@ -37,7 +37,7 @@ const MeetingDetailsScreen = () => {
   const { hash, isCreatorMode, title } = route.params
 
   return (
-    <ScreenWrapper title={title || " "} isBackButton isCenterTitle>
+    <ScreenWrapper title={title || hash} isBackButton isCenterTitle>
       <View style={styles.container}>
         <View style={styles.videoContainer}>
           {localStream && !isVideoOff ? (
