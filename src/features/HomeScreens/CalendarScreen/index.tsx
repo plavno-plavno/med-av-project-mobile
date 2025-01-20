@@ -70,7 +70,6 @@ const CalendarScreen = () => {
   }
 
   const handleCloseScheduleModal = () => {
-    resetEventId()
     sheetScheduleRef.current?.close()
   }
   const handleGoModalBack = () => {
