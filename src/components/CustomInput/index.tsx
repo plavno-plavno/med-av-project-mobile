@@ -21,6 +21,7 @@ import { emailRegex } from "@utils/utils"
 interface CustomInputProps {
   label?: string
   placeholder?: string
+  dropdownPosition?: "bottom" | "top"
   subtitle?: string
   value: string[] | string
   onChangeText: (text: string | string[]) => void
@@ -50,6 +51,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
   (
     {
       label,
+      dropdownPosition = "bottom",
       placeholder,
       value,
       onChangeText,
@@ -98,11 +100,15 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
         case "dropdown": {
           return (
             <Dropdown
+              dropdownPosition={dropdownPosition}
               iconColor={colors.cadetGrey}
               style={styles.input}
+              selectedTextProps={{
+                numberOfLines: 1,
+              }}
               placeholderStyle={styles.placeholderStyle}
               selectedTextStyle={styles.dropdownStyle}
-              containerStyle={[helpers.rounded12]}
+              containerStyle={styles.containerStyle}
               iconStyle={styles.iconStyle}
               data={dropdownData || []}
               maxHeight={300}

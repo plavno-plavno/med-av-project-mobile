@@ -44,7 +44,7 @@ const DetailsEventModal = ({
     data: eventDetailsData,
     isLoading: isEventDetailsLoading,
     refetch: eventDetailsRefetch,
-  } = useGetCalendarEventDetailsQuery({ id: eventId })
+  } = useGetCalendarEventDetailsQuery({ id: eventId }, { skip: !eventId })
 
   const { data: authMeData } = useAuthMeQuery()
   const { refetch: calendarEventsRefetch } = useGetCalendarEventsQuery()
@@ -227,7 +227,6 @@ const DetailsEventModal = ({
                   text={isCreatorMode ? t("EditDetails") : t("Accept")}
                   onPress={() => {
                     if (isCreatorMode) {
-                      onClose()
                       handleOpenScheduleModal(eventId)
                     } else {
                       handleTogglerEvent({ status: "accept" })

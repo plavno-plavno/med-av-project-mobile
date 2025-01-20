@@ -1,7 +1,7 @@
 import React, { useMemo } from "react"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { useTranslation } from "react-i18next"
-import { useEmailLoginMutation } from "src/api/auth/authApi"
+import { useEmailLoginMutation, useTimezoneQuery } from "src/api/auth/authApi"
 import { CustomButton } from "@components"
 import { styles } from "./styles"
 import { View, Text } from "react-native"
@@ -28,39 +28,42 @@ const LoginScreen = () => {
   const formikRef = React.useRef<FormikProps<FormValues>>(null as any)
 
   const { refetch: authMeRefetch } = useAuthMeQuery()
+  const { refetch: timezoneRefetch } = useTimezoneQuery()
 
   const [emailLogin, { isLoading: isEmailLoginLoading }] =
     useEmailLoginMutation()
 
-    const handleLogin = async (values: { email: string; password: string }) => {
-      try {
-        const res = await emailLogin({
-          email: values.email,
-          password: values.password,
-        }).unwrap()
-        await Keychain.setGenericPassword("accessToken", res?.token, {
-          service: "accessToken",
-        })
-        await Keychain.setGenericPassword("refreshToken", res.refreshToken, {
-          service: "refreshToken",
-        })
-  
-        const updatedAuthMeData = await authMeRefetch().unwrap()
-        const initialCheck = updatedAuthMeData?.firstName &&
-          updatedAuthMeData?.lastName &&
-          updatedAuthMeData?.gmtDelta 
+  const handleLogin = async (values: { email: string; password: string }) => {
+    try {
+      const res = await emailLogin({
+        email: values.email,
+        password: values.password,
+      }).unwrap()
+      await Keychain.setGenericPassword("accessToken", res?.token, {
+        service: "accessToken",
+      })
+      await Keychain.setGenericPassword("refreshToken", res.refreshToken, {
+        service: "refreshToken",
+      })
+
+      const updatedAuthMeData = await authMeRefetch().unwrap()
+      const updatedTimezoneData = await timezoneRefetch().unwrap()
+      const initialCheck =
+        updatedAuthMeData?.firstName &&
+        updatedAuthMeData?.lastName &&
+        updatedTimezoneData?.id
           ? ScreensEnum.MAIN
           : ScreensEnum.SETUP_PROFILE
-  
-        navigation.reset({
-          index: 0,
-          routes: [{ name: initialCheck }],
-        })
-      } catch (error) {
-        const { setErrors } = formikRef.current
-        setErrors({ email: t("InvalidEmailOrPassword") })
-      }
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: initialCheck }],
+      })
+    } catch (error) {
+      const { setErrors } = formikRef.current
+      setErrors({ email: t("InvalidEmailOrPassword") })
     }
+  }
 
   return (
     <ScreenWrapper

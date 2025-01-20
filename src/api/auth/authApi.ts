@@ -14,6 +14,11 @@ import {
   IEmailConfirm,
   ILanguageOptions,
 } from "./types"
+import {
+  ITimezone,
+  ITimezoneOptionsResponse,
+  ITimezoneResponse,
+} from "../calendarApi/types"
 
 export const authApi = createApi({
   baseQuery: baseQuery,
@@ -94,6 +99,9 @@ export const authApi = createApi({
     languageOptions: builder.query<ILanguageOptions[], void>({
       query: () => ({ url: "auth/language-options", method: "GET" }),
     }),
+    timezone: builder.query<ITimezoneResponse, void>({
+      query: () => ({ url: "auth/me/timezone", method: "GET" }),
+    }),
   }),
 })
 
@@ -105,4 +113,5 @@ export const {
   useResetPasswordMutation,
   useEmailConfirmMutation,
   useLanguageOptionsQuery,
+  useTimezoneQuery,
 } = authApi

@@ -24,11 +24,13 @@ import ProfileSettingsScreen from "src/features/HomeScreens/SettingsScreen/Profi
 import AccountSettingsScreen from "src/features/HomeScreens/SettingsScreen/AccountSettingsScreens"
 import ChangeEmailScreen from "src/features/HomeScreens/SettingsScreen/AccountSettingsScreens/ChangeEmailScreen"
 import ChangePasswordScreen from "src/features/HomeScreens/SettingsScreen/AccountSettingsScreens/ChangePasswordScreen"
+import { useTimezoneQuery } from "src/api/auth/authApi"
 
 const Stack = createNativeStackNavigator()
 
 const Navigation: React.FC = () => {
   const { refetch: authMeRefetch } = useAuthMeQuery()
+  const { refetch: timezoneRefetch } = useTimezoneQuery()
 
   const getRoute = async () => {
     const accessToken = await Keychain.getGenericPassword({
@@ -38,10 +40,11 @@ const Navigation: React.FC = () => {
 
     if (accessToken) {
       const updatedAuthMeData = await authMeRefetch().unwrap()
+      const updatedTimezoneData = await timezoneRefetch().unwrap()
       const initialCheck =
         updatedAuthMeData?.firstName &&
         updatedAuthMeData?.lastName &&
-        updatedAuthMeData?.gmtDelta
+        updatedTimezoneData?.id
           ? ScreensEnum.MAIN
           : ScreensEnum.SETUP_PROFILE
 

@@ -21,7 +21,7 @@ import { useAuthMeQuery } from "src/api/userApi/userApi"
 import DetailsEventModal from "src/modals/DetailsEventModal"
 import moment from "moment"
 
-const today = moment().format('YYYY-MM-DD');
+const today = moment().format("YYYY-MM-DD")
 
 const CalendarScreen = () => {
   const { selectedDay } = useAppSelector((state) => state.calendar)
@@ -29,7 +29,7 @@ const CalendarScreen = () => {
   const sheetScheduleRef = useRef<BottomSheetMethods>(null)
   const [eventId, setEventId] = React.useState(0)
   const [handleEventTime, setCustomEventTime] = React.useState("")
-  const [scrollOffsetMinutes, setScrollOffsetMinutes] = useState(0);
+  const [scrollOffsetMinutes, setScrollOffsetMinutes] = useState(0)
 
   const {
     data: calendarEventsData,
@@ -41,16 +41,15 @@ const CalendarScreen = () => {
 
   useEffect(() => {
     if (today === selectedDay) {
-      const now = moment();
-      const startOfDay = moment().startOf('day');
-      const minutesElapsed = now.diff(startOfDay, 'minutes');
+      const now = moment()
+      const startOfDay = moment().startOf("day")
+      const minutesElapsed = now.diff(startOfDay, "minutes")
 
       setScrollOffsetMinutes(minutesElapsed * 0.7)
     } else {
       setScrollOffsetMinutes(0)
     }
-
-  }, [selectedDay]);
+  }, [selectedDay])
 
   const resetEventId = () => {
     setEventId(0)
@@ -129,8 +128,8 @@ const CalendarScreen = () => {
                 participantStatus === "accept"
                   ? colors.ghostWhite
                   : participantStatus === "decline"
-                    ? colors.placeholder
-                    : event.color,
+                  ? colors.placeholder
+                  : event.color,
             },
           ]}
         >
@@ -146,8 +145,8 @@ const CalendarScreen = () => {
                 participantStatus === "accept"
                   ? colors.ghostWhite
                   : participantStatus === "decline"
-                    ? colors.placeholder
-                    : event.color,
+                  ? colors.placeholder
+                  : event.color,
             },
           ]}
         >
@@ -163,7 +162,8 @@ const CalendarScreen = () => {
   }
 
   const onPressEvent = (e: any) => {
-    setEventId(e?.id)
+    console.log(e, "e")
+
     handleOpenDetailsModal(e?.id)
   }
 
@@ -211,8 +211,8 @@ const CalendarScreen = () => {
                   participantStatus === "accept"
                     ? event.color
                     : participantStatus === "decline"
-                      ? colors.placeholder
-                      : event.color,
+                    ? colors.placeholder
+                    : event.color,
               },
             ]
           }}

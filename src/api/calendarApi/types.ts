@@ -126,3 +126,26 @@ export interface IPutCalendarEventsRequest extends IPostCalendarEventsRequest {
 }
 
 export interface IPutCalendarEventsResponse {}
+
+export interface ITimezone {
+  id: number
+  isDst: boolean
+  value: string
+  text: string
+  gmtDelta: number
+  abbreviation: string
+  utc: string[]
+  __entity: string
+}
+
+export interface ITimezoneResponse extends ITimezone {}
+
+export interface ITimezoneOptionsResponse {
+  data: ITimezone[]
+}
+
+export interface ITimezoneOptionsRequest {
+  page: string
+  limit: string
+  term: string
+}

@@ -21,7 +21,7 @@ export const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    height: screenHeight * 0.67,
+    height: screenHeight * 0.75,
     marginBottom: moderateScale(10),
   },
   message: {

@@ -9,6 +9,8 @@ import {
   IPostCalendarEventsResponse,
   IPutCalendarEventsRequest,
   IPutCalendarEventsResponse,
+  ITimezoneOptionsRequest,
+  ITimezoneOptionsResponse,
 } from "./types"
 
 export const calendarApi = createApi({
@@ -107,6 +109,15 @@ export const calendarApi = createApi({
         method: "GET",
       }),
     }),
+    getCalendarTimezones: builder.query<
+      ITimezoneOptionsResponse,
+      ITimezoneOptionsRequest
+    >({
+      query: ({ page, limit, term }) => ({
+        url: `calendar/timezone-options?page=${page}&limit=${limit}&term=${term}`,
+        method: "GET",
+      }),
+    }),
   }),
 })
 
@@ -114,6 +125,7 @@ export const {
   useUpdateEventMutation,
   useDeleteEventMutation,
   useCreateEventMutation,
+  useGetCalendarTimezonesQuery,
   useCreateInstantEventMutation,
   useGetCalendarEventsQuery,
   useGetCalendarEventDetailsQuery,

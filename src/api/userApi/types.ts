@@ -44,7 +44,7 @@ export interface IUpdateAuthMeRequest {
   firstName?: string
   lastName?: string
   language?: number
-  gmtDelta?: number | string
+  timezone?: number
   email?: string
   password?: string
   oldPassword?: string

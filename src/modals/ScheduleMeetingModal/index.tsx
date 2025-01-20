@@ -16,6 +16,7 @@ import {
   useCreateEventMutation,
   useGetCalendarEventDetailsQuery,
   useGetCalendarRecentQuery,
+  useGetCalendarTimezonesQuery,
   useUpdateEventMutation,
 } from "src/api/calendarApi/calendarApi"
 import Toast from "react-native-toast-message"
@@ -26,8 +27,9 @@ import { styles } from "./styles"
 import colors from "src/assets/colors"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
 import { DateTimeFormatEnum } from "@utils/enums"
-import { timezones } from "@utils/timezones"
 import { timeRounder } from "@utils/utils"
+import { ITimezone } from "src/api/calendarApi/types"
+import { useTimezoneQuery } from "src/api/auth/authApi"
 
 interface IFormValues {
   date: string
@@ -72,6 +74,17 @@ const ScheduleMeetingModal = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [createEvent, { isLoading: isCreateEventLoading }] =
     useCreateEventMutation()
+
+  const { data: timezone } = useTimezoneQuery()
+  const { data: timezones } = useGetCalendarTimezonesQuery({
+    page: "1",
+    limit: "100",
+    term: "",
+  })
+  const timezoneOptions = timezones?.data?.map((item: ITimezone) => ({
+    label: item.text,
+    value: item.id.toString(),
+  }))
 
   const { data: eventDetailsData, refetch: eventDetailsRefetch } =
     useGetCalendarEventDetailsQuery({ id: eventId || 0 }, { skip: !eventId })
@@ -125,7 +138,7 @@ const ScheduleMeetingModal = ({
     date: defaultDate,
     startDate: defaultTimeStart,
     endDate: defaultTimeEnd,
-    timezone: (eventId && eventDetailsData?.gmtDelta.toString()) || "",
+    timezone: timezone?.id.toString() || "",
     participants: (eventId && eventParticipants) || [],
     color: (eventId && eventDetailsData?.color) || "",
     description: (eventId && eventDetailsData?.description) || "",
@@ -353,7 +366,7 @@ const ScheduleMeetingModal = ({
                         onChangeText={(val) =>
                           handleChange("timezone")(val as string)
                         }
-                        dropdownData={timezones}
+                        dropdownData={timezoneOptions}
                         error={touched.timezone && errors.timezone}
                       />
                       <TouchableOpacity

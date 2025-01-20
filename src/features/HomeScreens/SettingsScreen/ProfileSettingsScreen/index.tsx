@@ -2,7 +2,6 @@ import { Icon, CustomButton } from "@components"
 import { useNavigation } from "@react-navigation/native"
 import { isIOS } from "@utils/platformChecker"
 import { helpers } from "@utils/theme"
-import { timezones } from "@utils/timezones"
 import { Formik, FormikProps } from "formik"
 import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -20,7 +19,10 @@ import ImagePicker from "src/components/ImagePicker"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { Image as ImageType } from "react-native-image-crop-picker"
 import { styles } from "./styles"
-import { useLanguageOptionsQuery } from "src/api/auth/authApi"
+import { useLanguageOptionsQuery, useTimezoneQuery } from "src/api/auth/authApi"
+import { useGetCalendarTimezonesQuery } from "src/api/calendarApi/calendarApi"
+import { ITimezone } from "src/api/calendarApi/types"
+import { validationProfileSettingsSchema } from "@utils/validationSchemas"
 
 interface IFormValues {
   photo: string
@@ -39,16 +41,29 @@ const ProfileSettingsScreen = () => {
   const [selectedFile, setSelectedFile] = useState<ImageType | null>(null)
   const [isUploadPhotoLoading, setIsUploadPhotoLoading] = useState(false)
   const [isModalVisible, setIsModalVisible] = useState(false)
+  const [isPhotoChanged, setIsPhotoChanged] = useState(false)
 
   const { data: authMeData, refetch: authMeRefetch } = useAuthMeQuery()
+  const { data: timezoneData } = useTimezoneQuery()
+  const { data: timezones } = useGetCalendarTimezonesQuery({
+    page: "1",
+    limit: "100",
+    term: "",
+  })
+
   const [mediaUpload] = useMediaUploadMutation()
   const [updateAuthMe, { isLoading: isUpdateAuthMeLoading }] =
     useUpdateAuthMeMutation()
 
   const { data: languageOptions } = useLanguageOptionsQuery()
+
   const languagesDropdown = languageOptions?.map((item) => ({
     label: item.name,
     value: String(item.id),
+  }))
+  const timezoneOptions = timezones?.data?.map((item: ITimezone) => ({
+    label: item.text,
+    value: item.id.toString(),
   }))
 
   const handleImagePicker = async (image: ImageType) => {
@@ -70,6 +85,7 @@ const ProfileSettingsScreen = () => {
           //@ts-ignore
           uploadResponse?.data?.id || uploadResponse?.data?.[0]?.id
         )
+        setIsPhotoChanged(true)
       }
     } catch (err) {
       console.error("Error during file selection or upload:", err)
@@ -77,22 +93,21 @@ const ProfileSettingsScreen = () => {
       setIsUploadPhotoLoading(false)
     }
   }
-
   const handleUpdateProfile = async (values: IFormValues) => {
     try {
       const res = await updateAuthMe({
         firstName: values.firstName,
         lastName: values.lastName,
-        gmtDelta: +values.gmtDelta,
+        timezone: +values.gmtDelta,
         language: +values.language,
-        photo: values.photo,
+        photo: isPhotoChanged ? values.photo : authMeData?.photo?.id,
       }).unwrap()
       authMeRefetch()
       Toast.show({
         type: "success",
         text1: t("ProfileUpdated"),
       })
-      goBack();
+      goBack()
     } catch (error: any) {
       console.log(error, "error handleUpdateProfile")
       Toast.show({
@@ -133,8 +148,9 @@ const ProfileSettingsScreen = () => {
                 lastName: authMeData?.lastName || "",
                 //@ts-ignore
                 language: authMeData?.language?.id || "",
-                gmtDelta: authMeData?.gmtDelta || "",
+                gmtDelta: timezoneData?.id || "",
               }}
+              validationSchema={validationProfileSettingsSchema}
               onSubmit={handleUpdateProfile}
             >
               {({ handleChange, handleBlur, values, errors, touched }) => (
@@ -209,8 +225,9 @@ const ProfileSettingsScreen = () => {
                     onBlur={handleBlur("language")}
                   />
                   <CustomInput
+                    dropdownPosition="top"
                     inputType="dropdown"
-                    dropdownData={timezones}
+                    dropdownData={timezoneOptions}
                     label={t("Timezone")}
                     value={String(values.gmtDelta)}
                     onChangeText={(val) =>

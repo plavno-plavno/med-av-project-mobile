@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next"
-import { View, Text, Image } from "react-native"
+import { View, Text, Image, ActivityIndicator } from "react-native"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { styles } from "./styles"
 import CustomInput from "src/components/CustomInput"
@@ -14,7 +14,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { helpers } from "@utils/theme"
 import { isIOS } from "@utils/platformChecker"
 import { useMediaUploadMutation } from "src/api/mediaApi/mediaApi"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import Toast from "react-native-toast-message"
 import { moderateScale } from "react-native-size-matters"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
@@ -22,7 +22,10 @@ import { useNavigation } from "@react-navigation/native"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import ImagePicker from "src/components/ImagePicker"
 import { Image as ImageType } from "react-native-image-crop-picker"
-import { timezones } from "@utils/timezones"
+import { useGetCalendarTimezonesQuery } from "src/api/calendarApi/calendarApi"
+import { ITimezone } from "src/api/calendarApi/types"
+import { screenHeight } from "@utils/screenResponsive"
+import { useTimezoneQuery } from "src/api/auth/authApi"
 
 interface IFormValues {
   photo: string
@@ -35,12 +38,18 @@ const SetupProfileScreen = () => {
   const navigation = useNavigation<ROUTES>()
   const { t } = useTranslation()
   const formikRef = React.useRef<FormikProps<IFormValues>>(null)
-  const [selectedFile, setSelectedFile] = useState<ImageType | null>(null)
+  const [selectedFile, setSelectedFile] = useState<any>(null)
   const [isUploadPhotoLoading, setIsUploadPhotoLoading] = useState(false)
   const [isModalVisible, setIsModalVisible] = useState(false)
-  const [isPhotoChanged, setIsPhotoChanged] = useState(false);
+  const [isPhotoChanged, setIsPhotoChanged] = useState(false)
 
   const { data: authMeData, refetch: authMeRefetch } = useAuthMeQuery()
+  const { data: timezone, isLoading: isTimezoneLoading } = useTimezoneQuery()
+  const { data: timezones } = useGetCalendarTimezonesQuery({
+    page: "1",
+    limit: "100",
+    term: "",
+  })
   const [mediaUpload] = useMediaUploadMutation()
   const [updateAuthMe, { isLoading: isUpdateAuthMeLoading }] =
     useUpdateAuthMeMutation()
@@ -58,13 +67,13 @@ const SetupProfileScreen = () => {
           prefix: "avatar",
           postfix: "avatar",
           tag: "avatar",
-        })        
+        })
         setFieldValue(
           "photo",
           //@ts-ignore
           uploadResponse?.data?.id || uploadResponse?.data?.[0]?.id
         )
-        setIsPhotoChanged(true);
+        setIsPhotoChanged(true)
       }
     } catch (err) {
       console.error("Error during file selection or upload:", err)
@@ -78,7 +87,7 @@ const SetupProfileScreen = () => {
       const res = await updateAuthMe({
         firstName: values.firstName,
         lastName: values.lastName,
-        gmtDelta: +values.gmtDelta,
+        timezone: +values.gmtDelta,
         photo: isPhotoChanged ? values.photo : authMeData?.photo?.id,
       }).unwrap()
       authMeRefetch()
@@ -89,12 +98,26 @@ const SetupProfileScreen = () => {
       navigation.navigate(ScreensEnum.MAIN)
     } catch (error: any) {
       console.log(error, "error handleUpdateProfile")
-      Toast.show({
-        type: "error",
-        text1: error?.data?.message,
-      })
+      if (error?.data?.message) {
+        Toast.show({
+          type: "error",
+          text1: error?.data?.message,
+        })
+      }
     }
   }
+
+  const timezoneOptions = timezones?.data?.map((item: ITimezone) => ({
+    label: item.text,
+    value: item.id.toString(),
+  }))
+
+  useEffect(() => {
+    if (authMeData?.photo?.link) {
+      setSelectedFile(authMeData?.photo)
+    }
+  }, [authMeData])
+  console.log(timezone, "timezone")
 
   return (
     <>
@@ -116,11 +139,10 @@ const SetupProfileScreen = () => {
               innerRef={formikRef}
               enableReinitialize
               initialValues={{
-                photo: authMeData?.photo?.id || "",
+                photo: authMeData?.photo?.link || "",
                 firstName: authMeData?.firstName || "",
                 lastName: authMeData?.lastName || "",
-                // gmtDelta: getCustomTimezoneDisplay() || "",
-                gmtDelta: authMeData?.gmtDelta || "",
+                gmtDelta: "",
               }}
               validationSchema={validationSetupProfileSchema}
               onSubmit={handleUpdateProfile}
@@ -128,9 +150,11 @@ const SetupProfileScreen = () => {
               {({ handleChange, handleBlur, values, errors, touched }) => (
                 <View style={styles.container}>
                   <View style={styles.photoContainer}>
-                    {selectedFile ? (
+                    {selectedFile?.path || selectedFile?.link ? (
                       <Image
-                        source={{ uri: selectedFile?.path }}
+                        source={{
+                          uri: selectedFile?.path || selectedFile?.link,
+                        }}
                         style={{ width: 80, height: 80, borderRadius: 40 }}
                       />
                     ) : (
@@ -146,7 +170,7 @@ const SetupProfileScreen = () => {
                         onPress={() => setIsModalVisible(true)}
                         style={helpers.width60Percent}
                       />
-                      {authMeData?.photo && selectedFile && (
+                      {selectedFile && (
                         <CustomButton
                           text={t("Delete")}
                           style={helpers.width35Percent}
@@ -155,43 +179,54 @@ const SetupProfileScreen = () => {
                       )}
                     </View>
                   </View>
-                  {!authMeData?.firstName && (
-                    <CustomInput
-                      label={t("FirstName")}
-                      value={values.firstName}
-                      placeholder={t("EnterYourFirstName")}
-                      onChangeText={(val) =>
-                        handleChange("firstName")(val as string)
-                      }
-                      onBlur={handleBlur("firstName")}
-                      error={touched.firstName && errors.firstName}
+                  {isTimezoneLoading ? (
+                    <ActivityIndicator
+                      size={"small"}
+                      style={{ marginTop: screenHeight * 0.2 }}
                     />
-                  )}
-                  {!authMeData?.lastName && (
-                    <CustomInput
-                      label={t("LastName")}
-                      placeholder={t("EnterYourLastName")}
-                      value={values.lastName}
-                      onChangeText={(val) =>
-                        handleChange("lastName")(val as string)
-                      }
-                      onBlur={handleBlur("lastName")}
-                      error={touched.lastName && errors.lastName}
-                    />
-                  )}
+                  ) : (
+                    <>
+                      {!authMeData?.firstName && (
+                        <CustomInput
+                          label={t("FirstName")}
+                          value={values.firstName}
+                          placeholder={t("EnterYourFirstName")}
+                          onChangeText={(val) =>
+                            handleChange("firstName")(val as string)
+                          }
+                          onBlur={handleBlur("firstName")}
+                          error={touched.firstName && errors.firstName}
+                        />
+                      )}
+                      {!authMeData?.lastName && (
+                        <CustomInput
+                          label={t("LastName")}
+                          placeholder={t("EnterYourLastName")}
+                          value={values.lastName}
+                          onChangeText={(val) =>
+                            handleChange("lastName")(val as string)
+                          }
+                          onBlur={handleBlur("lastName")}
+                          error={touched.lastName && errors.lastName}
+                        />
+                      )}
 
-                  <CustomInput
-                    inputType="dropdown"
-                    dropdownData={timezones}
-                    label={t("Timezone")}
-                    placeholder={t("EnterYourTimezone")}
-                    value={values.gmtDelta.toString()}
-                    onChangeText={(val) =>
-                      handleChange("gmtDelta")(val as string)
-                    }
-                    onBlur={handleBlur("gmtDelta")}
-                    error={touched.gmtDelta && errors.gmtDelta}
-                  />
+                      {!timezone?.id && (
+                        <CustomInput
+                          inputType="dropdown"
+                          dropdownData={timezoneOptions}
+                          label={t("Timezone")}
+                          placeholder={t("EnterYourTimezone")}
+                          value={values.gmtDelta.toString()}
+                          onChangeText={(val) =>
+                            handleChange("gmtDelta")(val as string)
+                          }
+                          onBlur={handleBlur("gmtDelta")}
+                          error={touched.gmtDelta && errors.gmtDelta}
+                        />
+                      )}
+                    </>
+                  )}
                 </View>
               )}
             </Formik>

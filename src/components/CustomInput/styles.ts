@@ -1,10 +1,14 @@
 import { StyleSheet } from "react-native"
 import colors from "../../assets/colors"
 import { moderateScale } from "react-native-size-matters"
-import { fontFamilies, fontWeights } from "../../utils/theme"
+import { fontFamilies, fontWeights, helpers } from "../../utils/theme"
 
 export const styles = StyleSheet.create({
   container: {},
+  containerStyle: {
+    ...helpers.rounded12,
+    marginBottom: moderateScale(6),
+  },
   label: {
     ...fontFamilies.interManropeSemiBold16,
     ...fontWeights.fontWeight500,
