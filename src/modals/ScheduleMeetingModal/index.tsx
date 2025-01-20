@@ -1,5 +1,11 @@
 import React, { useState } from "react"
-import { View, Text, ScrollView, TouchableOpacity } from "react-native"
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Keyboard,
+} from "react-native"
 import { useTranslation } from "react-i18next"
 import { helpers } from "@utils/theme"
 import { Formik, FormikProps } from "formik"
@@ -281,6 +287,9 @@ const ScheduleMeetingModal = ({
           style={[helpers.flexGrow1]}
           bounces={false}
           enableOnAndroid
+          onScrollBeginDrag={() => {
+            Keyboard.dismiss()
+          }}
           enableAutomaticScroll
           showsVerticalScrollIndicator={false}
           extraScrollHeight={screenHeight * 0.2}
