@@ -18,7 +18,6 @@ import {
 import CustomInput from "src/components/CustomInput"
 import ImagePicker from "src/components/ImagePicker"
 import ScreenWrapper from "src/components/ScreenWrapper"
-import { ROUTES } from "src/navigation/RoutesTypes"
 import { Image as ImageType } from "react-native-image-crop-picker"
 import { styles } from "./styles"
 import { useLanguageOptionsQuery } from "src/api/auth/authApi"
@@ -34,7 +33,6 @@ interface IFormValues {
 }
 
 const ProfileSettingsScreen = () => {
-  const navigation = useNavigation<ROUTES>()
   const { t } = useTranslation()
   const { goBack } = useNavigation()
   const formikRef = React.useRef<FormikProps<IFormValues>>(null)
@@ -94,9 +92,13 @@ const ProfileSettingsScreen = () => {
         type: "success",
         text1: t("ProfileUpdated"),
       })
-      navigation.navigate(goBack())
-    } catch (error) {
+      goBack();
+    } catch (error: any) {
       console.log(error, "error handleUpdateProfile")
+      Toast.show({
+        type: "error",
+        text1: error?.data?.message,
+      })
     }
   }
 

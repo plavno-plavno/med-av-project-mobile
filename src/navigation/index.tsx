@@ -41,8 +41,7 @@ const Navigation: React.FC = () => {
       const initialCheck =
         updatedAuthMeData?.firstName &&
         updatedAuthMeData?.lastName &&
-        updatedAuthMeData?.gmtDelta &&
-        updatedAuthMeData?.photo
+        updatedAuthMeData?.gmtDelta
           ? ScreensEnum.MAIN
           : ScreensEnum.SETUP_PROFILE
 

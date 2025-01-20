@@ -38,6 +38,7 @@ const SetupProfileScreen = () => {
   const [selectedFile, setSelectedFile] = useState<ImageType | null>(null)
   const [isUploadPhotoLoading, setIsUploadPhotoLoading] = useState(false)
   const [isModalVisible, setIsModalVisible] = useState(false)
+  const [isPhotoChanged, setIsPhotoChanged] = useState(false);
 
   const { data: authMeData, refetch: authMeRefetch } = useAuthMeQuery()
   const [mediaUpload] = useMediaUploadMutation()
@@ -57,12 +58,13 @@ const SetupProfileScreen = () => {
           prefix: "avatar",
           postfix: "avatar",
           tag: "avatar",
-        })
+        })        
         setFieldValue(
           "photo",
           //@ts-ignore
           uploadResponse?.data?.id || uploadResponse?.data?.[0]?.id
         )
+        setIsPhotoChanged(true);
       }
     } catch (err) {
       console.error("Error during file selection or upload:", err)
@@ -77,7 +79,7 @@ const SetupProfileScreen = () => {
         firstName: values.firstName,
         lastName: values.lastName,
         gmtDelta: +values.gmtDelta,
-        photo: values.photo,
+        photo: isPhotoChanged ? values.photo : authMeData?.photo?.id,
       }).unwrap()
       authMeRefetch()
       Toast.show({
@@ -85,8 +87,12 @@ const SetupProfileScreen = () => {
         text1: t("ProfileUpdated"),
       })
       navigation.navigate(ScreensEnum.MAIN)
-    } catch (error) {
+    } catch (error: any) {
       console.log(error, "error handleUpdateProfile")
+      Toast.show({
+        type: "error",
+        text1: error?.data?.message,
+      })
     }
   }
 

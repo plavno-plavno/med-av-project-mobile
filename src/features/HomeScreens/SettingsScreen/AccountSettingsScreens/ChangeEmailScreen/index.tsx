@@ -57,8 +57,12 @@ const ChangeEmailScreen = () => {
         text1: t("EmailChanged"),
       })
       handleLogout()
-    } catch (error) {
+    } catch (error: any) {
       console.log(error, "error handleUpdateProfile")
+      Toast.show({
+        type: "error",
+        text1: error?.data?.message,
+      })
     }
   }
 

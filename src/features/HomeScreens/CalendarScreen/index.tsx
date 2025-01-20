@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   Calendar,
   CalendarTouchableOpacityProps,
@@ -19,7 +19,9 @@ import ScheduleMeetingModal from "src/modals/ScheduleMeetingModal"
 import { Portal } from "react-native-portalize"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
 import DetailsEventModal from "src/modals/DetailsEventModal"
-import { moderateScale } from "react-native-size-matters"
+import moment from "moment"
+
+const today = moment().format('YYYY-MM-DD');
 
 const CalendarScreen = () => {
   const { selectedDay } = useAppSelector((state) => state.calendar)
@@ -27,6 +29,7 @@ const CalendarScreen = () => {
   const sheetScheduleRef = useRef<BottomSheetMethods>(null)
   const [eventId, setEventId] = React.useState(0)
   const [handleEventTime, setCustomEventTime] = React.useState("")
+  const [scrollOffsetMinutes, setScrollOffsetMinutes] = useState(0);
 
   const {
     data: calendarEventsData,
@@ -35,6 +38,19 @@ const CalendarScreen = () => {
   } = useGetCalendarEventsQuery()
 
   const { data: authMeData } = useAuthMeQuery()
+
+  useEffect(() => {
+    if (today === selectedDay) {
+      const now = moment();
+      const startOfDay = moment().startOf('day');
+      const minutesElapsed = now.diff(startOfDay, 'minutes');
+
+      setScrollOffsetMinutes(minutesElapsed * 0.7)
+    } else {
+      setScrollOffsetMinutes(0)
+    }
+
+  }, [selectedDay]);
 
   const resetEventId = () => {
     setEventId(0)
@@ -113,8 +129,8 @@ const CalendarScreen = () => {
                 participantStatus === "accept"
                   ? colors.ghostWhite
                   : participantStatus === "decline"
-                  ? colors.placeholder
-                  : event.color,
+                    ? colors.placeholder
+                    : event.color,
             },
           ]}
         >
@@ -130,8 +146,8 @@ const CalendarScreen = () => {
                 participantStatus === "accept"
                   ? colors.ghostWhite
                   : participantStatus === "decline"
-                  ? colors.placeholder
-                  : event.color,
+                    ? colors.placeholder
+                    : event.color,
             },
           ]}
         >
@@ -168,13 +184,12 @@ const CalendarScreen = () => {
           height={100}
           mode={"day"}
           ampm
-          minHour={7}
           onPressCell={(e) => handleCreateEvent(e as any)}
           onPressEvent={onPressEvent}
           swipeEnabled={false}
           overlapOffset={screenWidth * 0.1}
           date={new Date(selectedDay)}
-          scrollOffsetMinutes={240}
+          scrollOffsetMinutes={scrollOffsetMinutes}
           renderEvent={renderEvent}
           renderHeader={() => {
             return <WeekDays />
@@ -196,8 +211,8 @@ const CalendarScreen = () => {
                   participantStatus === "accept"
                     ? event.color
                     : participantStatus === "decline"
-                    ? colors.placeholder
-                    : event.color,
+                      ? colors.placeholder
+                      : event.color,
               },
             ]
           }}
