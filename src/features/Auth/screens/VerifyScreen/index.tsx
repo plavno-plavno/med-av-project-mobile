@@ -30,11 +30,8 @@ const VerifyScreen = () => {
     useResendEmailMutation()
 
   const handleResendEmail = async ({ email }: { email: string }) => {
-    console.log(email, "EMAIL")
-
     try {
-      const res = await resendEmail({ email }).unwrap();
-      console.log(res, "res login")
+      const res = await resendEmail({ email }).unwrap()
     } catch (error) {
       console.log(error, "error handleResendEmail")
     }

@@ -117,7 +117,6 @@ const SetupProfileScreen = () => {
       setSelectedFile(authMeData?.photo)
     }
   }, [authMeData])
-  console.log(timezone, "timezone")
 
   return (
     <>

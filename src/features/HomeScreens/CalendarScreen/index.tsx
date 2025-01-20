@@ -162,8 +162,6 @@ const CalendarScreen = () => {
   }
 
   const onPressEvent = (e: any) => {
-    console.log(e, "e")
-
     handleOpenDetailsModal(e?.id)
   }
 

@@ -40,7 +40,6 @@ const CreatePasswordScreen = () => {
         hash,
         password: confirmPassword,
       }).unwrap()
-      console.log(res, "res onSignUpPress")
       Toast.show({
         type: "success",
         text1: t("Success"),

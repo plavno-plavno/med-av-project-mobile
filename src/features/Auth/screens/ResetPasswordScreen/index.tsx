@@ -40,7 +40,6 @@ const ResetPasswordScreen = () => {
         password: confirmPassword,
         hash,
       }).unwrap()
-      console.log(res, "res onResetPassword")
 
       Toast.show({
         type: "success",
