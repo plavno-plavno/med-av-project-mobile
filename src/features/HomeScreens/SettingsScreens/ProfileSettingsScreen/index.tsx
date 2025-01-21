@@ -44,7 +44,7 @@ const ProfileSettingsScreen = () => {
   const [isPhotoChanged, setIsPhotoChanged] = useState(false)
 
   const { data: authMeData, refetch: authMeRefetch } = useAuthMeQuery()
-  const { data: timezoneData } = useTimezoneQuery()
+  const { data: timezoneData, refetch: timezoneRefetch } = useTimezoneQuery()
   const { data: timezones } = useGetCalendarTimezonesQuery({
     page: "1",
     limit: "100",
@@ -93,6 +93,7 @@ const ProfileSettingsScreen = () => {
       setIsUploadPhotoLoading(false)
     }
   }
+
   const handleUpdateProfile = async (values: IFormValues) => {
     try {
       const res = await updateAuthMe({
@@ -103,6 +104,7 @@ const ProfileSettingsScreen = () => {
         photo: isPhotoChanged ? values.photo : authMeData?.photo?.id,
       }).unwrap()
       authMeRefetch()
+      timezoneRefetch()
       Toast.show({
         type: "success",
         text1: t("ProfileUpdated"),
