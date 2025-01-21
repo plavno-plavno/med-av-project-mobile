@@ -1,3 +1,4 @@
+import { DateTimeFormatEnum } from "@utils/enums"
 import { fontFamilies, fontWeights } from "@utils/theme"
 import moment from "moment"
 import { useTranslation } from "react-i18next"
@@ -6,16 +7,25 @@ import { moderateScale } from "react-native-size-matters"
 import colors from "src/assets/colors"
 import { Icon } from "src/components/Icon"
 import { useAppDispatch, useAppSelector } from "src/hooks/redux"
-import { changeWeek } from "src/redux/slices/calendarSlice/calendarSlice"
+import {
+  changeWeek,
+  setSelectedDay,
+} from "src/redux/slices/calendarSlice/calendarSlice"
 
 const MonthsToggler = () => {
   const dispatch = useAppDispatch()
   const { t } = useTranslation()
 
-  const { currentDate } = useAppSelector((state) => state.calendar)
+  const { selectedDay, currentDate } = useAppSelector((state) => state.calendar)
 
-  const handleChangeWeek = (direction: string) => {
+  const handleChangeWeek = (direction: "next" | "prev") => {
+    const daysToAdjust = direction === "next" ? 7 : -7
+    const newDate = moment(selectedDay)
+      .add(daysToAdjust, "days")
+      .format(DateTimeFormatEnum.YYYYMMDD)
+
     dispatch(changeWeek(direction))
+    dispatch(setSelectedDay(newDate))
   }
 
   return (
