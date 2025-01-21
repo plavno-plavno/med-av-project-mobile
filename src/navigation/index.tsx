@@ -38,29 +38,34 @@ const Navigation: React.FC = () => {
   const { refetch: timezoneRefetch } = useTimezoneQuery()
 
   const getRoute = async () => {
-    const accessToken = await Keychain.getGenericPassword({
-      service: "accessToken",
-    })
-    console.log(accessToken, "accessToken")
+    try {
+      const accessToken = await Keychain.getGenericPassword({
+        service: "accessToken",
+      })
+      if (accessToken) {
+        const updatedAuthMeData = await authMeRefetch().unwrap()
+        const updatedTimezoneData = await timezoneRefetch().unwrap()
+        const initialCheck =
+          updatedAuthMeData?.firstName &&
+            updatedAuthMeData?.lastName &&
+            updatedTimezoneData?.id
+            ? ScreensEnum.MAIN
+            : ScreensEnum.SETUP_PROFILE
 
-    if (accessToken) {
-      const updatedAuthMeData = await authMeRefetch().unwrap()
-      const updatedTimezoneData = await timezoneRefetch().unwrap()
-      const initialCheck =
-        updatedAuthMeData?.firstName &&
-        updatedAuthMeData?.lastName &&
-        updatedTimezoneData?.id
-          ? ScreensEnum.MAIN
-          : ScreensEnum.SETUP_PROFILE
-
-      RootNavigation.navigate(initialCheck)
-    } else {
+        RootNavigation.navigate(initialCheck)
+      } else {
+        RootNavigation.navigate(ScreensEnum.ONBOARDING)
+      }
+    } catch (error) {
+      console.log(error, 'error getRoute');
+      await Keychain.resetGenericPassword({ service: "accessToken" })
+      await Keychain.resetGenericPassword({ service: "refreshToken" })
       RootNavigation.navigate(ScreensEnum.ONBOARDING)
+    } finally {
+      setTimeout(() => {
+        SplashScreen.hide()
+      }, 500)
     }
-
-    setTimeout(() => {
-      SplashScreen.hide()
-    }, 500)
   }
 
   useEffect(() => {

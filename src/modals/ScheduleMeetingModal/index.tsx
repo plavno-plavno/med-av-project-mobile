@@ -55,6 +55,7 @@ interface IScheduleMeetingModal {
   sheetRef: React.RefObject<BottomSheetMethods>
   eventId?: number
   refetch?: () => void
+  scrollRef: React.RefObject<KeyboardAwareScrollView>
 }
 
 interface IDatePickerState {
@@ -71,6 +72,7 @@ const ScheduleMeetingModal = ({
   eventId,
   handleGoModalBack,
   refetch,
+  scrollRef,
 }: IScheduleMeetingModal) => {
   const { t } = useTranslation()
   const { currentDate } = useAppSelector((state) => state.calendar)
@@ -285,6 +287,7 @@ const ScheduleMeetingModal = ({
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="always"
           style={[helpers.flexGrow1]}
+          ref={scrollRef}
           bounces={false}
           enableOnAndroid
           onScrollBeginDrag={() => {

@@ -17,18 +17,23 @@
                         <rect key="frame" x="0.0" y="0.0" width="440" height="956"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="SplashScreen" translatesAutoresizingMaskIntoConstraints="NO" id="f9k-X3-Vgz">
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="SplashScreen" translatesAutoresizingMaskIntoConstraints="NO" id="f9k-X3-Vgz">
                                 <rect key="frame" x="0.0" y="0.0" width="440" height="956"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="f9k-X3-Vgz" firstAttribute="trailing" secondItem="Bcu-3y-fUS" secondAttribute="trailing" id="5yu-6X-dTx"/>
+                            <constraint firstItem="f9k-X3-Vgz" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="71i-nm-YDf"/>
+                            <constraint firstItem="f9k-X3-Vgz" firstAttribute="leading" secondItem="Bcu-3y-fUS" secondAttribute="leading" id="J8Z-No-FBB"/>
+                            <constraint firstAttribute="bottom" secondItem="f9k-X3-Vgz" secondAttribute="bottom" id="ag5-Bf-l4o"/>
+                        </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="51.81818181818182" y="374.05857740585776"/>
+            <point key="canvasLocation" x="50.45454545454546" y="373.43096234309627"/>
         </scene>
     </scenes>
     <resources>

@@ -11,7 +11,6 @@ export const styles = StyleSheet.create({
   container: {
     height: screenHeight * 0.83,
     backgroundColor: colors.white,
-    gap: moderateScale(24),
   },
   title: {
     ...fontFamilies.interManropeSemiBold24,
@@ -19,7 +18,7 @@ export const styles = StyleSheet.create({
     color: colors.charcoal,
   },
   content: {
-    flexGrow: 1,
+    flexShrink: 1,
     marginBottom: moderateScale(10),
   },
   message: {

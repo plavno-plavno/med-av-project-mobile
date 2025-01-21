@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import {
   Calendar,
   CalendarTouchableOpacityProps,
@@ -20,6 +20,7 @@ import { Portal } from "react-native-portalize"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
 import DetailsEventModal from "src/modals/DetailsEventModal"
 import moment from "moment"
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 
 const today = moment().format("YYYY-MM-DD")
 
@@ -30,6 +31,7 @@ const CalendarScreen = () => {
   const [eventId, setEventId] = React.useState(0)
   const [handleEventTime, setCustomEventTime] = React.useState("")
   const [scrollOffsetMinutes, setScrollOffsetMinutes] = useState(0)
+  const scrollRef = useRef<KeyboardAwareScrollView>(null)
 
   const {
     data: calendarEventsData,
@@ -67,6 +69,7 @@ const CalendarScreen = () => {
 
   const handleOpenScheduleModal = () => {
     sheetScheduleRef.current?.open()
+    scrollRef?.current?.scrollToPosition(0, 0, true)
   }
 
   const handleCloseScheduleModal = () => {
@@ -158,6 +161,7 @@ const CalendarScreen = () => {
   const handleCreateEvent = (e: string) => {
     setCustomEventTime(e)
     sheetScheduleRef.current?.open()
+    scrollRef?.current?.scrollToPosition(0, 0, true)
   }
 
   const onPressEvent = (e: any) => {
@@ -229,6 +233,7 @@ const CalendarScreen = () => {
           sheetRef={sheetScheduleRef}
           eventId={eventId}
           refetch={calendarEventsRefetch}
+          scrollRef={scrollRef}
         />
       </Portal>
     </>

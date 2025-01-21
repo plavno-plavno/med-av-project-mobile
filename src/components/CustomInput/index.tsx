@@ -41,6 +41,7 @@ interface CustomInputProps {
   onFocus?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
   onBlur?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
   style?: StyleProp<ViewStyle>
+  numberOfLines?: number;
 }
 
 export interface Input {
@@ -69,6 +70,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
       onFocus: propOnFocus,
       onBlur: propOnBlur,
       style,
+      numberOfLines,
       ...rest
     },
     ref
@@ -94,6 +96,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
               handleBlur={handleBlur}
               keyboardType={keyboardType}
               styles={[styles.input, styles.textInput]}
+              numberOfLines={numberOfLines}
               {...rest}
             />
           )
@@ -179,6 +182,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
                 handleFocus={handleFocus}
                 handleBlur={handleBlur}
                 keyboardType={keyboardType}
+                numberOfLines={numberOfLines}
                 {...rest}
               />
             </>
@@ -206,6 +210,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
               handleBlur={handleBlur}
               keyboardType={keyboardType}
               styles={[styles.input, styles.textAreaInput]}
+              numberOfLines={numberOfLines}
               {...rest}
             />
           )

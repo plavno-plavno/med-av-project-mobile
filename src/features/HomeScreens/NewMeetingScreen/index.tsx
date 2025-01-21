@@ -14,6 +14,7 @@ import { useNavigation } from "@react-navigation/native"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import { useCreateInstantEventMutation } from "src/api/calendarApi/calendarApi"
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 
 type ParamList = {
   Detail: {
@@ -27,6 +28,7 @@ const NewMeetingScreen = () => {
   const { t } = useTranslation()
   const naviqation = useNavigation<ROUTES>()
   const sheetRef = useRef<BottomSheetMethods>(null)
+  const scrollRef = useRef<KeyboardAwareScrollView>(null)
 
   const [createInstantEvent, { isLoading: isCreateInstantEventLoading }] =
     useCreateInstantEventMutation()
@@ -36,6 +38,7 @@ const NewMeetingScreen = () => {
 
   const onOpen = () => {
     sheetRef.current?.open()
+    scrollRef?.current?.scrollToPosition(0, 0, true)
   }
   const onCreateInstantEvent = async () => {
     try {
@@ -47,7 +50,7 @@ const NewMeetingScreen = () => {
       console.log(error)
     }
   }
-
+  
   return (
     <>
       <ScreenWrapper title={t("NewMeeting")} isCenterTitle>
@@ -76,6 +79,7 @@ const NewMeetingScreen = () => {
           onClose={onClose}
           sheetRef={sheetRef}
           eventId={0}
+          scrollRef={scrollRef}
         />
       </Portal>
     </>

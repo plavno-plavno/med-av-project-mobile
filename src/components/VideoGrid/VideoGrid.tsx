@@ -36,7 +36,7 @@ const VideoGrid = ({ remoteStreams, localStream, isVideoOff }: any) => {
           style={[
             styles.overflowTile,
             styles.video,
-            getGridStyle({ total: remoteStreams.length, idx: index }),
+            getGridStyle({ total: remoteStreams?.length || 0, idx: index }),
           ]}
         >
           <Text style={styles.overflowText}>
@@ -55,7 +55,7 @@ const VideoGrid = ({ remoteStreams, localStream, isVideoOff }: any) => {
           <View
             style={[
               styles.cameraOffContainer,
-              getGridStyle({ total: remoteStreams.length }),
+              getGridStyle({ total: remoteStreams?.length || 0 }),
               styles.video,
             ]}
           >
@@ -67,7 +67,7 @@ const VideoGrid = ({ remoteStreams, localStream, isVideoOff }: any) => {
             streamURL={mediaStream?.toURL?.()}
             style={[
               styles.video,
-              getGridStyle({ total: remoteStreams.length, idx: index }),
+              getGridStyle({ total: remoteStreams?.length || 0, idx: index }),
             ]}
             objectFit="cover"
           />
@@ -83,13 +83,13 @@ const VideoGrid = ({ remoteStreams, localStream, isVideoOff }: any) => {
         <RTCView
           streamURL={localStream?.toURL?.()}
           mirror={true}
-          style={[getGridStyle({ total: remoteStreams.length }), styles.video]}
+          style={[getGridStyle({ total: remoteStreams?.length || 0 }), styles.video]}
         />
       ) : (
         <View
           style={[
             styles.cameraOffContainer,
-            getGridStyle({ total: remoteStreams.length }),
+            getGridStyle({ total: remoteStreams?.length || 0 }),
             styles.video,
           ]}
         >
@@ -98,7 +98,7 @@ const VideoGrid = ({ remoteStreams, localStream, isVideoOff }: any) => {
       )}
       {/* Віддалені потоки */}
       {Object.values(remoteStreams).map((item, index) =>
-        renderStream(item, index, remoteStreams.length)
+        renderStream(item, index, remoteStreams?.length || 0)
       )}
     </View>
   )
