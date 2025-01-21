@@ -14,6 +14,7 @@ export enum ScreensEnum {
   ACCOUNT_SETTINGS = "ACCOUNT_SETTINGS",
   CHANGE_EMAIL = "CHANGE_EMAIL",
   CHANGE_PASSWORD = "CHANGE_PASSWORD",
+  MY_RECORDS = "MY_RECORDS",
   // Bottom tab routes
   MAIN = "MAIN",
   CALENDAR = "Calendar",

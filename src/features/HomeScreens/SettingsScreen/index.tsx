@@ -55,7 +55,9 @@ const SettingsScreen = () => {
     {
       title: t("MyRecordings"),
       icon: "myRecordings",
-      onPress: () => {},
+      onPress: () => {
+        navigation.navigate(ScreensEnum.MY_RECORDS, {})
+      },
     },
     {
       title: t("HelpCenter"),

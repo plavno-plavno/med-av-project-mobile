@@ -25,6 +25,7 @@ import AccountSettingsScreen from "src/features/HomeScreens/SettingsScreen/Accou
 import ChangeEmailScreen from "src/features/HomeScreens/SettingsScreen/AccountSettingsScreens/ChangeEmailScreen"
 import ChangePasswordScreen from "src/features/HomeScreens/SettingsScreen/AccountSettingsScreens/ChangePasswordScreen"
 import { useTimezoneQuery } from "src/api/auth/authApi"
+import MyRecordsScreen from "src/features/HomeScreens/SettingsScreen/MyRecordsScreen"
 
 const Stack = createNativeStackNavigator()
 
@@ -164,6 +165,10 @@ const Navigation: React.FC = () => {
         <Stack.Screen
           name={ScreensEnum.CHANGE_PASSWORD}
           component={ChangePasswordScreen}
+        />
+        <Stack.Screen
+          name={ScreensEnum.MY_RECORDS}
+          component={MyRecordsScreen}
         />
 
         <Stack.Screen name={ScreensEnum.MEETING} component={MeetingScreen} />
