@@ -14,7 +14,7 @@ const colors = {
   violet: "#722ED1",
   rose: "#EB2F95",
   steelGray: "#798189",
-
+  pumpkin: "#FEF8E8",
   blackOpacity06: "rgba(0, 0, 0, 0.6)",
   blackOpacity08: "#192027E0",
 
@@ -28,6 +28,7 @@ const colors = {
   errorLight: "#FCEDEE",
   alertWarning: "#DFAA21",
   successGreen: "#5EC18E",
+  successGreenLight: "#5EC18E1A",
   whiteGray02: "#F8F8F8",
 }
 

@@ -20,12 +20,15 @@ import SetupProfileScreen from "src/features/Auth/screens/SetupProfileScreen"
 import MeetingDetailsScreen from "src/features/MeetingScreens/MeetingDetailsScreen"
 import MeetingScreen from "src/features/MeetingScreens/MeetingScreen"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
-import ProfileSettingsScreen from "src/features/HomeScreens/SettingsScreen/ProfileSettingsScreen"
-import AccountSettingsScreen from "src/features/HomeScreens/SettingsScreen/AccountSettingsScreens"
-import ChangeEmailScreen from "src/features/HomeScreens/SettingsScreen/AccountSettingsScreens/ChangeEmailScreen"
-import ChangePasswordScreen from "src/features/HomeScreens/SettingsScreen/AccountSettingsScreens/ChangePasswordScreen"
+import ProfileSettingsScreen from "src/features/HomeScreens/SettingsScreens/ProfileSettingsScreen"
+import AccountSettingsScreen from "src/features/HomeScreens/SettingsScreens/AccountSettingsScreens/AccountSettingScreen"
+import ChangeEmailScreen from "src/features/HomeScreens/SettingsScreens/AccountSettingsScreens/ChangeEmailScreen"
+import ChangePasswordScreen from "src/features/HomeScreens/SettingsScreens/AccountSettingsScreens/ChangePasswordScreen"
 import { useTimezoneQuery } from "src/api/auth/authApi"
-import MyRecordsScreen from "src/features/HomeScreens/SettingsScreen/MyRecordsScreen"
+import MyRecordsScreen from "src/features/HomeScreens/SettingsScreens/MyRecordsScreen"
+import FAQScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/FAQScreen"
+import HelpCenterScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/HelpCenterScreen"
+import MyRequestsScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/MyRequestsScreen"
 
 const Stack = createNativeStackNavigator()
 
@@ -169,6 +172,15 @@ const Navigation: React.FC = () => {
         <Stack.Screen
           name={ScreensEnum.MY_RECORDS}
           component={MyRecordsScreen}
+        />
+        <Stack.Screen name={ScreensEnum.FAQ} component={FAQScreen} />
+        <Stack.Screen
+          name={ScreensEnum.HELP_CENTER}
+          component={HelpCenterScreen}
+        />
+        <Stack.Screen
+          name={ScreensEnum.MY_REQUESTS}
+          component={MyRequestsScreen}
         />
 
         <Stack.Screen name={ScreensEnum.MEETING} component={MeetingScreen} />

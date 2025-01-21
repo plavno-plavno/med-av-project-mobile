@@ -15,6 +15,11 @@ export enum ScreensEnum {
   CHANGE_EMAIL = "CHANGE_EMAIL",
   CHANGE_PASSWORD = "CHANGE_PASSWORD",
   MY_RECORDS = "MY_RECORDS",
+  HELP_CENTER = "HELP_CENTER",
+  MY_REQUESTS = "MY_REQUESTS",
+  FAQ = "FAQ",
+  // TERMS_OF_USE = "TERMS_OF_USE",
+  // PRIVACY_POLICY = "PRIVACY_POLICY",
   // Bottom tab routes
   MAIN = "MAIN",
   CALENDAR = "Calendar",

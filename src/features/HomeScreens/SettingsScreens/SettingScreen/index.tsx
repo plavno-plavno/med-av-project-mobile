@@ -17,6 +17,7 @@ import colors from "src/assets/colors"
 import { fontFamilies, fontWeights, helpers } from "@utils/theme"
 import { moderateScale } from "react-native-size-matters"
 import { useTranslation } from "react-i18next"
+import NavigationItem from "src/components/NavigationItem"
 
 const SettingsScreen = () => {
   const { t } = useTranslation()
@@ -40,42 +41,38 @@ const SettingsScreen = () => {
   const profileMenu = [
     {
       title: t("ProfileSettings"),
-      icon: "profileSettings",
+      leftIcon: "profileSettings" as IconName,
+      rightIcon: "chevronRight" as IconName,
       onPress: () => {
         navigation.navigate(ScreensEnum.PROFILE_SETTINGS, {})
       },
     },
     {
       title: t("AccountSettings"),
-      icon: "accountSettings",
+      leftIcon: "accountSettings" as IconName,
+      rightIcon: "chevronRight" as IconName,
       onPress: () => {
         navigation.navigate(ScreensEnum.ACCOUNT_SETTINGS, {})
       },
     },
     {
       title: t("MyRecordings"),
-      icon: "myRecordings",
+      leftIcon: "myRecordings" as IconName,
+      rightIcon: "chevronRight" as IconName,
       onPress: () => {
         navigation.navigate(ScreensEnum.MY_RECORDS, {})
       },
     },
     {
       title: t("HelpCenter"),
-      icon: "helpCenter",
-      onPress: () => {},
+      leftIcon: "helpCenter" as IconName,
+      rightIcon: "chevronRight" as IconName,
+      onPress: () => {
+        navigation.navigate(ScreensEnum.HELP_CENTER, {})
+      },
     },
   ]
-  const renderItem = ({ item }: { item: any }) => {
-    return (
-      <TouchableOpacity style={styles.menuItem} onPress={item.onPress}>
-        <View style={[helpers.flexRow, helpers.gap8]}>
-          <Icon name={item.icon} />
-          <Text style={styles.menuTitle}>{item.title}</Text>
-        </View>
-        <Icon name={"chevronRight"} />
-      </TouchableOpacity>
-    )
-  }
+
   return (
     <ProfileWrapper>
       <View style={styles.container}>
@@ -83,11 +80,11 @@ const SettingsScreen = () => {
           contentContainerStyle={[helpers.gap8, helpers.mt20]}
           data={profileMenu}
           keyExtractor={(item) => item.title}
-          renderItem={renderItem}
+          renderItem={({ item }) => <NavigationItem {...item} />}
         />
         <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
           <Icon name="logout" />
-          <Text style={styles.menuTitle}>{t("Logout")}</Text>
+          <Text style={styles.text}>{t("Logout")}</Text>
         </TouchableOpacity>
       </View>
     </ProfileWrapper>
@@ -100,15 +97,7 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: moderateScale(20),
   },
-  menuItem: {
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexDirection: "row",
-    backgroundColor: colors.aquaHaze,
-    borderRadius: moderateScale(16),
-    padding: moderateScale(16),
-  },
-  menuTitle: {
+  text: {
     ...fontFamilies.interManropeSemiBold16,
     ...fontWeights.fontWeight500,
     color: colors.charcoal,

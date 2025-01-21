@@ -571,6 +571,9 @@ export const helpers = StyleSheet.create({
   gap16: {
     gap: moderateScale(16),
   },
+  gap20: {
+    gap: moderateScale(20),
+  },
   gap24: {
     gap: moderateScale(24),
   },

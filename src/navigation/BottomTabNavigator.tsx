@@ -6,10 +6,10 @@ import { Icon } from "@components"
 import { fontFamilies, fontWeights } from "@utils/theme"
 import { ScreensEnum } from "./ScreensEnum"
 import CalendarScreen from "src/features/HomeScreens/CalendarScreen"
-import SettingsScreen from "src/features/HomeScreens/SettingsScreen"
 import { moderateScale } from "react-native-size-matters"
 import NewMeetingScreen from "src/features/HomeScreens/NewMeetingScreen"
 import { isIOS } from "@utils/platformChecker"
+import SettingsScreen from "src/features/HomeScreens/SettingsScreens/SettingScreen"
 
 interface RouteTypes {
   key: string
