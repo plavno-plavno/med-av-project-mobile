@@ -18,6 +18,7 @@ export enum ScreensEnum {
   HELP_CENTER = "HELP_CENTER",
   MY_REQUESTS = "MY_REQUESTS",
   FAQ = "FAQ",
+  CONTACT_SUPPORT = "CONTACT_SUPPORT",
   // TERMS_OF_USE = "TERMS_OF_USE",
   // PRIVACY_POLICY = "PRIVACY_POLICY",
   // Bottom tab routes

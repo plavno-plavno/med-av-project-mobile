@@ -80,7 +80,9 @@ const HelpCenterScreen = () => {
           style={{ bottom: moderateScale(30) }}
           text={t("ContactSupport")}
           rightIcon={"nextArrow"}
-          onPress={() => {}}
+          onPress={() => {
+            navigation.navigate(ScreensEnum.CONTACT_SUPPORT, {})
+          }}
         />
       </ScreenWrapper>
     </>

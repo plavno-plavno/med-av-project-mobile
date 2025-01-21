@@ -80,46 +80,53 @@ const MeetingChatModal = ({
         style={styles.bottomSheet}
         disableBodyPanning
         disableKeyboardHandling
+        keyboardBehavior="interactive"
       >
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="always"
-          bounces={false}
+          bounces={true}
           enableOnAndroid
           enableAutomaticScroll
           showsVerticalScrollIndicator={false}
-          style={helpers.flexGrow1}
         >
           <View style={styles.container}>
-            <ModalHeader title={t("Chat")} sheetRef={sheetRef} />
-            <ScrollView style={styles.content}>
-              {renderedMessages.map((msg, idx) => (
-                <View style={styles.message} key={idx}>
-                  <View style={[helpers.flexRowCenter, helpers.gap4]}>
-                    <Text style={styles.messageText}>{msg.userName}</Text>
+            <View style={[helpers.ph20, helpers.flex1]}>
+              <ModalHeader title={t("Chat")} sheetRef={sheetRef} />
+              <ScrollView style={styles.content}>
+                {renderedMessages.map((msg, idx) => (
+                  <View style={styles.message} key={idx}>
+                    <View style={[helpers.flexRowCenter, helpers.gap4]}>
+                      <Text style={styles.messageText}>{msg.userName}</Text>
+                      <Text
+                        style={[
+                          styles.messageText,
+                          { color: colors.cadetGrey },
+                        ]}
+                      >
+                        {msg.time}
+                      </Text>
+                    </View>
                     <Text
-                      style={[styles.messageText, { color: colors.cadetGrey }]}
+                      style={[styles.messageText, { color: colors.midGrey }]}
                     >
-                      {msg.time}
+                      {msg.message}
                     </Text>
                   </View>
-                  <Text style={[styles.messageText, { color: colors.midGrey }]}>
-                    {msg.message}
-                  </Text>
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-          <View style={styles.messageInputContainer}>
-            <CustomInput
-              placeholder={t("WriteAMessage")}
-              style={styles.messageInput}
-              inputType="text"
-              value={message}
-              onChangeText={(val) => setMessage(val as string)}
-            />
-            <TouchableOpacity onPress={handleSendMessage}>
-              <Icon name="sendMessage" />
-            </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+            <View style={styles.messageInputContainer}>
+              <CustomInput
+                placeholder={t("WriteAMessage")}
+                style={styles.messageInput}
+                inputType="text"
+                value={message}
+                onChangeText={(val) => setMessage(val as string)}
+              />
+              <TouchableOpacity onPress={handleSendMessage}>
+                <Icon name="sendMessage" />
+              </TouchableOpacity>
+            </View>
           </View>
         </KeyboardAwareScrollView>
       </BottomSheet>

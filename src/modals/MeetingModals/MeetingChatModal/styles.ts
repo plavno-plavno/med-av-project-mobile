@@ -9,8 +9,7 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   container: {
-    flex: 1,
-    paddingHorizontal: moderateScale(20),
+    height: screenHeight * 0.83,
     backgroundColor: colors.white,
     gap: moderateScale(24),
   },
@@ -20,8 +19,7 @@ export const styles = StyleSheet.create({
     color: colors.charcoal,
   },
   content: {
-    flex: 1,
-    height: screenHeight * 0.75,
+    flexGrow: 1,
     marginBottom: moderateScale(10),
   },
   message: {

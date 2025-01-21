@@ -29,6 +29,7 @@ import MyRecordsScreen from "src/features/HomeScreens/SettingsScreens/MyRecordsS
 import FAQScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/FAQScreen"
 import HelpCenterScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/HelpCenterScreen"
 import MyRequestsScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/MyRequestsScreen"
+import ContactSupportScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/ContactSupportScreen"
 
 const Stack = createNativeStackNavigator()
 
@@ -181,6 +182,10 @@ const Navigation: React.FC = () => {
         <Stack.Screen
           name={ScreensEnum.MY_REQUESTS}
           component={MyRequestsScreen}
+        />
+        <Stack.Screen
+          name={ScreensEnum.CONTACT_SUPPORT}
+          component={ContactSupportScreen}
         />
 
         <Stack.Screen name={ScreensEnum.MEETING} component={MeetingScreen} />
