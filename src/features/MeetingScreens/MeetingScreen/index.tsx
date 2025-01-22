@@ -13,16 +13,20 @@ import VideoGrid from "src/components/VideoGrid/VideoGrid"
 import ParticipantsModal from "src/modals/MeetingModals/ParticipantsModal"
 import { useRoute, RouteProp } from "@react-navigation/native"
 import SubtitlesModal from "src/modals/MeetingModals/SubtitlesModal"
+import { Toast } from "react-native-toast-message/lib/src/Toast"
+import { useTranslation } from "react-i18next"
 
 type ParamList = {
   Detail: {
     isCreatorMode?: boolean
     title?: string
     hash?: string
+    instanceMeetingOwner?: boolean
   }
 }
 
 const MeetingScreen = () => {
+  const { t } = useTranslation()
   const {
     localStream,
     remoteStreams,
@@ -39,6 +43,7 @@ const MeetingScreen = () => {
     toggleSpeaker,
     messages,
     sendMessage,
+    isScreenShare,
   } = useWebRtc()
 
   useStatusBar("light-content", colors.dark)
@@ -46,7 +51,7 @@ const MeetingScreen = () => {
   const [isCaptionOn, setIsCaptionOn] = React.useState(false)
   const [subtitleLanguage, setSubtitleLanguage] = React.useState("")
   const route = useRoute<RouteProp<ParamList, "Detail">>()
-  const { isCreatorMode, title, hash } = route.params
+  const { isCreatorMode, title, hash, instanceMeetingOwner } = route.params
 
   const sheetChatRef = useRef<BottomSheetMethods>(null)
   const sheetCatiptionsRef = useRef<BottomSheetMethods>(null)
@@ -76,7 +81,14 @@ const MeetingScreen = () => {
     },
     {
       name: "screenRecordStart",
-      onPress: () => {},
+      onPress: () => {
+        instanceMeetingOwner
+          ? ""
+          : Toast.show({
+              type: "error",
+              text1: t("OnlyCreatorCanStartScreenRecording"),
+            })
+      },
     },
   ]
   //TODO: add actions
@@ -131,6 +143,7 @@ const MeetingScreen = () => {
             localStream={localStream}
             isVideoOff={isVideoOff}
             isMuted={isMuted}
+            isScreenShare={isScreenShare}
           />
         </View>
         <View>

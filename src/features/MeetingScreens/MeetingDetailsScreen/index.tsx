@@ -84,6 +84,7 @@ const MeetingDetailsScreen = () => {
                 isVideoOff: isVideoOff,
                 isCreatorMode: isCreatorMode,
                 title: title,
+                instanceMeetingOwner: true,
               })
               startCall()
             }}

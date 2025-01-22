@@ -110,6 +110,7 @@
   "NoData": "No Data",
   "SelectTopic": "Select Topic",
   "SendRequest": "Send Request",
+  "OnlyCreatorCanStartScreenRecording": "Only creator can start screen recording",
   "AccountSettings": "Account Settings",
   "EmailChanged": "E-mail changed! Please Log In with a new e-mail.",
   "MyRecordings": "My Recordings",

@@ -5,11 +5,18 @@ import { View, StyleSheet, Text, ViewStyle } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import { MediaStream, RTCView } from "react-native-webrtc"
 import colors from "src/assets/colors"
+import { Icon } from "@components"
 
-const VideoGrid = ({ remoteStreams, localStream, isVideoOff }: any) => {
+const VideoGrid = ({
+  remoteStreams,
+  localStream,
+  isVideoOff,
+  isMuted,
+  isScreenShare,
+}: any) => {
   const { t } = useTranslation()
+  console.log(remoteStreams, "remoteStreams")
 
-  const isScreenShare = true
   const getGridStyle = ({
     idx,
     total,
@@ -47,11 +54,12 @@ const VideoGrid = ({ remoteStreams, localStream, isVideoOff }: any) => {
     }
 
     const mediaStream = new MediaStream()
-    if (item.videoTrack) mediaStream.addTrack(item.videoTrack)
-    if (item.audioTrack) mediaStream.addTrack(item.audioTrack)
+    if (item?.videoTrack) mediaStream.addTrack(item?.videoTrack)
+    if (item?.audioTrack) mediaStream.addTrack(item?.audioTrack)
+
     return (
       <>
-        {!!item?.videoTrack?._muted ? (
+        {(!item?.userId && isVideoOff) || !!item?.videoTrack?._muted ? (
           <View
             style={[
               styles.cameraOffContainer,
@@ -59,12 +67,22 @@ const VideoGrid = ({ remoteStreams, localStream, isVideoOff }: any) => {
               styles.video,
             ]}
           >
-            <Text style={styles.cameraOffText}>{t("CameraIsOff")}</Text>
+            {!!item?.audioTrack ||
+              (isMuted && (
+                <Icon
+                  name="microMuted"
+                  style={{
+                    position: "absolute",
+                    top: moderateScale(12),
+                    right: moderateScale(12),
+                  }}
+                />
+              ))}
+            <Icon name="avatarEmpty" />
           </View>
         ) : (
           <RTCView
-            key={index}
-            streamURL={mediaStream?.toURL?.()}
+            streamURL={item?.toURL?.() || mediaStream?.toURL?.()}
             style={[
               styles.video,
               getGridStyle({ total: remoteStreams?.length || 0, idx: index }),
@@ -78,26 +96,7 @@ const VideoGrid = ({ remoteStreams, localStream, isVideoOff }: any) => {
 
   return (
     <View style={styles.container}>
-      {/* Локальний потік */}
-      {localStream && !isVideoOff ? (
-        <RTCView
-          streamURL={localStream?.toURL?.()}
-          mirror={true}
-          style={[getGridStyle({ total: remoteStreams?.length || 0 }), styles.video]}
-        />
-      ) : (
-        <View
-          style={[
-            styles.cameraOffContainer,
-            getGridStyle({ total: remoteStreams?.length || 0 }),
-            styles.video,
-          ]}
-        >
-          <Text style={styles.cameraOffText}>{t("CameraIsOff")}</Text>
-        </View>
-      )}
-      {/* Віддалені потоки */}
-      {Object.values(remoteStreams).map((item, index) =>
+      {Object.values([localStream, ...remoteStreams]).map((item, index) =>
         renderStream(item, index, remoteStreams?.length || 0)
       )}
     </View>

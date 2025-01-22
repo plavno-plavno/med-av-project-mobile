@@ -71,6 +71,7 @@ const useWebRtc = (isPreview?: boolean) => {
   const [isVideoOff, setIsVideoOff] = useState(
     route.params?.isVideoOff || false
   )
+  const [isScreenShare, setIsScreenShare] = useState(false)
   const [isSpeakerOn, setIsSpeakerOn] = useState(false)
   const [isCameraSwitched, setIsCameraSwitched] = useState(false)
 
@@ -138,9 +139,7 @@ const useWebRtc = (isPreview?: boolean) => {
         "user-joined",
         async ({ userId }: { userId: number }) => await handleUserJoined(userId)
       )
-      socket.on("screen-share-updated", () =>
-        console.log("screen-share-updated")
-      )
+      socket.on("screen-share-updated", (e) => setIsScreenShare(e?.isSharing))
       socket.on("chat-message", handleChatMessage)
       socket.on("transceiver-info", handleTransceiver)
       socket.on("client-disconnected", ({ userId }: { userId: number }) => {
@@ -539,6 +538,7 @@ const useWebRtc = (isPreview?: boolean) => {
     isSpeakerOn,
     isCameraSwitched,
     roomId,
+    isScreenShare,
   }
 }
 
