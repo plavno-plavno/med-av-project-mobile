@@ -4,24 +4,36 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { FlatList, StyleSheet, Text, View } from "react-native"
 import { moderateScale } from "react-native-size-matters"
+import { useGetFaqQuestionsQuery } from "src/api/helpCenterApi/helpCenterApi"
 import colors from "src/assets/colors"
 import NavigationItem from "src/components/NavigationItem"
 import ScreenWrapper from "src/components/ScreenWrapper"
 
 const FAQScreen = () => {
   const { t } = useTranslation()
+  const [expandedQuestionId, setExpandedQuestionId] = useState<number | null>(
+    null
+  )
 
-  const [questions, setQuestions] = useState([
-    {
-      leftIcon: "faq" as IconName,
-      rightIcon: "plusButton" as IconName,
-      title: "What is the AI in your software?",
-      description:
-        "The AI in Medical employs deep learning techniques, including advanced speech recognition and natural language processing algorithms. These algorithms enable Medical to understand and accurately transcribe medical dictations. The AI continuously learns and improves its performance as healthcare professionals use the platform.",
-      onPress: () => {},
-      isExpanded: false,
+  const { data: faqQuestions } = useGetFaqQuestionsQuery({
+    limit: 10,
+    page: 1,
+  })
+
+  const questions = faqQuestions?.data.map((item) => ({
+    id: item.id,
+    leftIcon: "faq" as IconName,
+    rightIcon:
+      expandedQuestionId === item.id
+        ? ("minusButton" as IconName)
+        : ("plusButton" as IconName),
+    title: item.question,
+    description: item.answer,
+    onPress: () => {
+      setExpandedQuestionId((prevId) => (prevId === item.id ? null : item.id))
     },
-  ])
+    isExpanded: expandedQuestionId === item.id,
+  }))
 
   return (
     <ScreenWrapper
@@ -32,7 +44,6 @@ const FAQScreen = () => {
     >
       <View style={[helpers.flex1, helpers.gap20]}>
         <Text style={styles.title}>{t("PersonalQuestions")}</Text>
-        {/* //TODO: Connect API */}
         <FlatList
           data={questions}
           keyExtractor={(item) => item.title}

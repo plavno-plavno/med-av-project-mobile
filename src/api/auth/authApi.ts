@@ -3,7 +3,6 @@ import { baseQuery } from ".."
 import {
   IEmailLoginResponse,
   ILoginRequest,
-  ISingUpResponse,
   ISingUpRequest,
   IResetPasswordResponse,
   IResetPasswordRequest,
@@ -14,11 +13,7 @@ import {
   IEmailConfirm,
   ILanguageOptions,
 } from "./types"
-import {
-  ITimezone,
-  ITimezoneOptionsResponse,
-  ITimezoneResponse,
-} from "../calendarApi/types"
+import { ITimezoneResponse } from "../calendarApi/types"
 
 export const authApi = createApi({
   baseQuery: baseQuery,

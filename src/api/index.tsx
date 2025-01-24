@@ -10,9 +10,9 @@ import Config from "react-native-config"
 import * as Keychain from "react-native-keychain"
 import { Mutex } from "async-mutex"
 
-const baseURL = Config.BASE_API_URL;
-const ENV = Config.ENV;
-console.log(ENV, 'ENVENVENVENVENVENVENVENV');
+const baseURL = Config.BASE_API_URL
+const ENV = Config.ENV
+console.log(ENV, "ENVENVENVENVENVENVENVENV")
 
 const mutex = new Mutex()
 
@@ -59,8 +59,8 @@ export const baseQueryWithReAuth: BaseQueryFn<
           await Keychain.setGenericPassword(
             "accessToken",
             refreshResult?.data?.token,
-            {service: 'accessToken'},
-          );
+            { service: "accessToken" }
+          )
           await Keychain.setGenericPassword(
             "refreshToken",
             refreshResult.data.refreshToken,
@@ -113,4 +113,3 @@ export const refreshTokenQuery = async (
     extraOptions
   )
 }
-
