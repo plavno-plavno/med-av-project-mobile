@@ -181,15 +181,16 @@ const ProfileSettingsScreen = () => {
                     >
                       <CustomButton
                         isLoading={isUploadPhotoLoading}
-                        text={t("Upload")}
+                        text={t("UploadPhoto")}
                         type="secondary"
                         onPress={() => setIsModalVisible(true)}
-                        style={helpers.width60Percent}
+                        style={styles.uploadButton}
                       />
                       {values.photo && (
                         <CustomButton
+                          type="secondary"
                           text={t("Delete")}
-                          style={helpers.width35Percent}
+                          style={styles.deleteButton}
                           onPress={handleDeleteAvatar}
                         />
                       )}

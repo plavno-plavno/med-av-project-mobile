@@ -23,7 +23,7 @@ const colors = {
   lavenderMist: "#E6EAED",
 
   backgroundGrey: "#F3FAFA",
-
+  softPeach: "#ECEEF0",
   alertRed: "#E44E58",
   errorLight: "#FCEDEE",
   alertWarning: "#DFAA21",

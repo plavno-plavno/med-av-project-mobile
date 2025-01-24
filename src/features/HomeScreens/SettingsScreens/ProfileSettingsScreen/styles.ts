@@ -16,7 +16,19 @@ export const styles = StyleSheet.create({
   },
   photoContainer: {
     alignItems: "center",
-    gap: moderateScale(16),
+    gap: moderateScale(10),
     flexDirection: "row",
+  },
+  uploadButton: {
+    width: "60%",
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.borderGrey,
+    borderRadius: moderateScale(32),
+  },
+  deleteButton: {
+    width: "35%",
+    backgroundColor: colors.softPeach,
+    borderRadius: moderateScale(32),
   },
 })
