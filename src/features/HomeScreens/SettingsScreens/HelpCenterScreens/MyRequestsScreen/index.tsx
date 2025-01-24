@@ -1,5 +1,6 @@
 import { DateTimeFormatEnum } from "@utils/enums"
 import { isIOS } from "@utils/platformChecker"
+import { helpers } from "@utils/theme"
 import { t } from "i18next"
 import moment from "moment"
 import { FlatList } from "react-native"
@@ -27,10 +28,11 @@ const MyRequestsScreen = () => {
         <NoData />
       ) : (
         <FlatList
+          contentContainerStyle={helpers.gap8}
           data={requestData?.data}
           renderItem={({ item }) => (
             <RequestTopicItem
-              title="Request Topic Name"
+              title={item?.category?.name}
               date={moment(item?.createdAt).format(DateTimeFormatEnum.DDMMYYYY)}
               status={item?.status?.name}
               count={item?.unreadCount}

@@ -112,8 +112,10 @@ export interface IPostCalendarEventsRequest {
   endDate?: string
   startDate?: string
   title?: string
+  timezone?: {
+    id: number | string
+  }
   participants?: string[]
-  gmtDelta?: number
   status?: string
 }
 

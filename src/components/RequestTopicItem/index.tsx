@@ -56,7 +56,7 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: moderateScale(16),
     padding: moderateScale(16),
-    boxShadow: "0px 0px 24px 0px rgba(46, 57, 70, 0.08)",
+    boxShadow: "0px 0px 10px 0px rgba(46, 57, 70, 0.08)",
   },
   infoContainer: {
     flexDirection: "row",

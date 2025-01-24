@@ -122,7 +122,8 @@ const ScheduleMeetingModal = ({
         .format(DateTimeFormatEnum.hhmmA)
 
   const defaultDate =
-    moment(handleEventTime).format(DateTimeFormatEnum.DDMMYYYY) ||
+    (handleEventTime &&
+      moment(handleEventTime).format(DateTimeFormatEnum.DDMMYYYY)) ||
     moment(eventDetailsData?.startDate).format(DateTimeFormatEnum.DDMMYYYY) ||
     currentDate.format(DateTimeFormatEnum.DDMMYYYY)
 
@@ -229,30 +230,31 @@ const ScheduleMeetingModal = ({
       const date = moment(values.date.split("-").reverse().join("-")).format(
         DateTimeFormatEnum.YYYYMMDD
       )
-      const payload: { date?: string } & Omit<IFormValues, "date"> = {
+      const payload = {
         ...values,
         startDate:
           date +
-          " " +
-          moment(values.startDate, [DateTimeFormatEnum.hhmmA])
-            .subtract(values.timezone, "hours")
-            .format(DateTimeFormatEnum.HHmmss),
+          "T" +
+          moment(values.startDate, [DateTimeFormatEnum.hhmmA]).format(
+            DateTimeFormatEnum.HHmmss
+          ),
         endDate:
           date +
-          " " +
-          moment(values.endDate, [DateTimeFormatEnum.hhmmA])
-            .subtract(values.timezone, "hours")
-            .format(DateTimeFormatEnum.HHmmss),
-        timezone: Number(values.timezone),
-      }
-      delete payload.date
+          "T" +
+          moment(values.endDate, [DateTimeFormatEnum.hhmmA]).format(
+            DateTimeFormatEnum.HHmmss
+          ),
+        timezone: { id: Number(values.timezone) },
+      } as const
+
+      const { date: _, ...payloadWithoutDate } = payload
 
       let res
       if (isEditMode) {
-        res = await updateEvent({ ...payload, id: eventId }).unwrap()
+        res = await updateEvent({ ...payloadWithoutDate, id: eventId }).unwrap()
         eventDetailsRefetch()
       } else {
-        res = await createEvent(payload).unwrap()
+        res = await createEvent(payloadWithoutDate).unwrap()
       }
 
       if (res) {
