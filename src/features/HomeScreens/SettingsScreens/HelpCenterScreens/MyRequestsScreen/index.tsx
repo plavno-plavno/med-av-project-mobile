@@ -1,10 +1,21 @@
+import { DateTimeFormatEnum } from "@utils/enums"
 import { isIOS } from "@utils/platformChecker"
 import { t } from "i18next"
+import moment from "moment"
+import { FlatList } from "react-native"
 import { moderateScale } from "react-native-size-matters"
+import { useGetRequestQuery } from "src/api/helpCenterApi/helpCenterApi"
+import NoData from "src/components/NoData"
 import RequestTopicItem from "src/components/RequestTopicItem"
 import ScreenWrapper from "src/components/ScreenWrapper"
 
 const MyRequestsScreen = () => {
+  const { data: requestData, isLoading: requestLoading } = useGetRequestQuery({
+    limit: 10,
+    page: 1,
+  })
+  console.log(requestData, "requestData")
+
   return (
     <ScreenWrapper
       isBackButton
@@ -12,14 +23,21 @@ const MyRequestsScreen = () => {
       isCenterTitle
       keyboardVerticalOffset={isIOS() ? moderateScale(-100) : undefined}
     >
-      <>
-        <RequestTopicItem
-          title="Request Topic Name"
-          date="05.08.2024"
-          status="resolved"
-          count={1}
+      {!requestData ? (
+        <NoData />
+      ) : (
+        <FlatList
+          data={requestData?.data}
+          renderItem={({ item }) => (
+            <RequestTopicItem
+              title="Request Topic Name"
+              date={moment(item?.createdAt).format(DateTimeFormatEnum.DDMMYYYY)}
+              status={item?.status?.name}
+              count={item?.unreadCount}
+            />
+          )}
         />
-      </>
+      )}
     </ScreenWrapper>
   )
 }

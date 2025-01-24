@@ -12,7 +12,24 @@ export interface FaqEntity {
   __entity: string
 }
 
-export interface IGetFaqQuestionsParams {
-  limit: number
+export interface IBaseParams {
   page: number
+  limit: number
 }
+
+export interface IGetHelpTopicsResponse {
+  data: HelpTopicEntity[]
+  total: number
+  page: string
+  limit: string
+}
+
+export interface HelpTopicEntity {
+  id: number
+  name: string
+  __entity: string
+}
+
+export interface IGetFaqQuestionsParams extends IBaseParams {}
+export interface IGetHelpTopicsParams extends IBaseParams {}
+export interface IGetRequestParams extends IBaseParams {}

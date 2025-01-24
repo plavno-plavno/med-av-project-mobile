@@ -40,7 +40,7 @@ import { useTimezoneQuery } from "src/api/auth/authApi"
 interface IFormValues {
   date: string
   title: string
-  timezone: string
+  timezone: string | number
   startDate: string
   endDate: string
   participants: string[]
@@ -229,7 +229,7 @@ const ScheduleMeetingModal = ({
       const date = moment(values.date.split("-").reverse().join("-")).format(
         DateTimeFormatEnum.YYYYMMDD
       )
-      const payload = {
+      const payload: { date?: string } & Omit<IFormValues, "date"> = {
         ...values,
         startDate:
           date +
@@ -243,8 +243,9 @@ const ScheduleMeetingModal = ({
           moment(values.endDate, [DateTimeFormatEnum.hhmmA])
             .subtract(values.timezone, "hours")
             .format(DateTimeFormatEnum.HHmmss),
-        gmtDelta: Number(values.timezone),
+        timezone: Number(values.timezone),
       }
+      delete payload.date
 
       let res
       if (isEditMode) {
@@ -374,7 +375,7 @@ const ScheduleMeetingModal = ({
                         inputType="dropdown"
                         required
                         label="Timezone"
-                        value={values.timezone}
+                        value={String(values.timezone)}
                         onChangeText={(val) =>
                           handleChange("timezone")(val as string)
                         }
