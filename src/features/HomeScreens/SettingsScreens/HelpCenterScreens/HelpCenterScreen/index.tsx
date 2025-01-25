@@ -5,6 +5,7 @@ import { helpers } from "@utils/theme"
 import { useTranslation } from "react-i18next"
 import { FlatList, View } from "react-native"
 import { moderateScale } from "react-native-size-matters"
+import { useGetMessageCountQuery } from "src/api/helpCenterApi/helpCenterApi"
 import NavigationItem from "src/components/NavigationItem"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { ROUTES } from "src/navigation/RoutesTypes"
@@ -14,9 +15,11 @@ const HelpCenterScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<ROUTES>()
 
+  const { data: messageCount } = useGetMessageCountQuery()
+
   const helpCenterTopics = [
     {
-      title: t("MyRequests"),
+      title: t("MyRequests") + ` (${messageCount})`,
       leftIcon: "myRequest" as IconName,
       rightIcon: "chevronRight" as IconName,
       onPress: () => {

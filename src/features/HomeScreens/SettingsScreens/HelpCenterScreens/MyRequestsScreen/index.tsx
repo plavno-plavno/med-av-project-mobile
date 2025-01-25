@@ -6,6 +6,7 @@ import moment from "moment"
 import { FlatList } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import { useGetRequestQuery } from "src/api/helpCenterApi/helpCenterApi"
+import Loading from "src/components/Loading"
 import NoData from "src/components/NoData"
 import RequestTopicItem from "src/components/RequestTopicItem"
 import ScreenWrapper from "src/components/ScreenWrapper"
@@ -24,11 +25,21 @@ const MyRequestsScreen = () => {
       isCenterTitle
       keyboardVerticalOffset={isIOS() ? moderateScale(-100) : undefined}
     >
-      {!requestData ? (
+      {requestLoading ? (
+        <Loading />
+      ) : !requestData ? (
         <NoData />
       ) : (
         <FlatList
-          contentContainerStyle={helpers.gap8}
+          scrollEnabled
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[
+            helpers.gap8,
+            {
+              paddingTop: moderateScale(3),
+              paddingBottom: moderateScale(20),
+            },
+          ]}
           data={requestData?.data}
           renderItem={({ item }) => (
             <RequestTopicItem

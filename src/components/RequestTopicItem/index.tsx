@@ -19,6 +19,7 @@ const RequestTopicItem = ({
     status === "resolved" ? colors.successGreenLight : colors.pumpkin
   const statusTextColor =
     status === "resolved" ? colors.successGreen : colors.alertWarning
+
   return (
     <View style={styles.container}>
       <Text numberOfLines={1} style={styles.title}>
@@ -27,7 +28,7 @@ const RequestTopicItem = ({
       <View style={styles.infoContainer}>
         <Text style={styles.dateText}>{date}</Text>
         <View style={[helpers.flexRow, helpers.gap12]}>
-          {count && <Text style={styles.countText}>{count}</Text>}
+          {!!count && <Text style={styles.countText}>{count}</Text>}
           <Icon name="chevronRight" />
         </View>
       </View>
@@ -52,11 +53,21 @@ export default RequestTopicItem
 
 export const styles = StyleSheet.create({
   container: {
+    width: "98%",
+    alignSelf: "center",
     gap: moderateScale(4),
     backgroundColor: colors.white,
     borderRadius: moderateScale(16),
     padding: moderateScale(16),
-    boxShadow: "0px 0px 10px 0px rgba(46, 57, 70, 0.08)",
+
+    shadowColor: "#2E3946",
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 5,
   },
   infoContainer: {
     flexDirection: "row",
@@ -76,7 +87,6 @@ export const styles = StyleSheet.create({
   statusText: {
     ...fontFamilies.interManropeRegular14,
     ...fontWeights.fontWeight400,
-    color: colors.cadetGrey,
     borderRadius: moderateScale(8),
     paddingHorizontal: moderateScale(8),
     paddingVertical: moderateScale(7),
@@ -90,5 +100,6 @@ export const styles = StyleSheet.create({
     width: moderateScale(20),
     height: moderateScale(20),
     textAlign: "center",
+    lineHeight: moderateScale(20), // Ensures the text is vertically centered
   },
 })

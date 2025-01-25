@@ -38,8 +38,6 @@ const CalendarScreen = () => {
     refetch: calendarEventsRefetch,
     isLoading: isCalendarEventsLoading,
   } = useGetCalendarEventsQuery()
-  console.log(calendarEventsData, "calendarEventsData")
-  console.log(eventId, "eventId")
 
   const { data: authMeData } = useAuthMeQuery()
 

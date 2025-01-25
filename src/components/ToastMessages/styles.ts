@@ -20,7 +20,7 @@ export const styles = StyleSheet.create({
     boxShadow: "0px 4px 32px 0px #17393B29",
   },
   toastText: {
-    maxWidth: "80%",
+    maxWidth: "75%",
     ...fontFamilies.interManropeSemiBold14,
     ...fontWeights.fontWeight500,
     color: colors.charcoal,

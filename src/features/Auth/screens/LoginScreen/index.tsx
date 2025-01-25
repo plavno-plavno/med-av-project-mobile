@@ -39,6 +39,7 @@ const LoginScreen = () => {
         email: values.email,
         password: values.password,
       }).unwrap()
+      console.log(res?.token, "accessToken")
       await Keychain.setGenericPassword("accessToken", res?.token, {
         service: "accessToken",
       })

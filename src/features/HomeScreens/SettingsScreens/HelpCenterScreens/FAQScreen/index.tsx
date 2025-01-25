@@ -6,6 +6,7 @@ import { FlatList, StyleSheet, Text, View } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import { useGetFaqQuestionsQuery } from "src/api/helpCenterApi/helpCenterApi"
 import colors from "src/assets/colors"
+import Loading from "src/components/Loading"
 import NavigationItem from "src/components/NavigationItem"
 import ScreenWrapper from "src/components/ScreenWrapper"
 
@@ -15,10 +16,11 @@ const FAQScreen = () => {
     null
   )
 
-  const { data: faqQuestions } = useGetFaqQuestionsQuery({
-    limit: 10,
-    page: 1,
-  })
+  const { data: faqQuestions, isLoading: faqQuestionsLoading } =
+    useGetFaqQuestionsQuery({
+      limit: 10,
+      page: 1,
+    })
 
   const questions = faqQuestions?.data.map((item) => ({
     id: item.id,
@@ -44,11 +46,15 @@ const FAQScreen = () => {
     >
       <View style={[helpers.flex1, helpers.gap20]}>
         <Text style={styles.title}>{t("PersonalQuestions")}</Text>
-        <FlatList
-          data={questions}
-          keyExtractor={(item) => item.title}
-          renderItem={({ item }) => <NavigationItem {...item} />}
-        />
+        {faqQuestionsLoading ? (
+          <Loading />
+        ) : (
+          <FlatList
+            data={questions}
+            keyExtractor={(item) => item.title}
+            renderItem={({ item }) => <NavigationItem {...item} />}
+          />
+        )}
       </View>
     </ScreenWrapper>
   )

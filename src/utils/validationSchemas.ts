@@ -95,3 +95,11 @@ export const validationProfileSettingsSchema = Yup.object().shape({
   gmtDelta: Yup.string().required("Timezone is required"),
   language: Yup.string().required("Language is required"),
 })
+
+export const validationContactSupportSchema = Yup.object().shape({
+  topic: Yup.string().required("Topic is required"),
+  message: Yup.string()
+    .min(10, "Message must be at least 10 characters")
+    .max(240, "Message must be at most 240 characters")
+    .required("Message is required"),
+})

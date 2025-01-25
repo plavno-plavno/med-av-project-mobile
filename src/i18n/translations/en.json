@@ -83,6 +83,8 @@
   "FirstName": "First Name",
   "LastName": "Last Name",
   "Timezone": "Timezone",
+  "ChooseTopic": "Choose Topic",
+  "TopicAdded": "Request sent! We’ll back to you with answer shortly",
   "Upload": "Upload",
   "EnterYourFirstName": "Enter your first name",
   "EnterYourLastName": "Enter your last name",

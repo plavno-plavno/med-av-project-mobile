@@ -40,7 +40,8 @@ export const styles = StyleSheet.create({
   },
   textAreaInput: {
     height: moderateScale(150),
-    paddingHorizontal: moderateScale(12),
+    paddingLeft: moderateScale(12),
+    paddingRight: moderateScale(30),
     paddingVertical: moderateScale(12),
   },
   dropdownStyle: {

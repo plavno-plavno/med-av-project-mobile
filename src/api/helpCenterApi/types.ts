@@ -30,6 +30,20 @@ export interface HelpTopicEntity {
   __entity: string
 }
 
+export interface IGetTopicsResponse {
+  data: HelpTopicEntity[]
+  total: number
+  page: string
+  limit: string
+}
+
 export interface IGetFaqQuestionsParams extends IBaseParams {}
 export interface IGetHelpTopicsParams extends IBaseParams {}
 export interface IGetRequestParams extends IBaseParams {}
+export interface IGetTopicsParams extends IBaseParams {}
+export interface IAddTopicRequest {
+  message: string
+  category: {
+    id: number
+  }
+}

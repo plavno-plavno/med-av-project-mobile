@@ -311,7 +311,7 @@ const ScheduleMeetingModal = ({
                   ]}
                 >
                   {isEditMode && (
-                    <Icon name={"backArrow"} onPress={handleGoModalBack} />
+                    <Icon name={"backArrowGray"} onPress={handleGoModalBack} />
                   )}
                   <Text style={styles.title}>
                     {isEditMode ? t("EditDetails") : t("ScheduleMeeting")}
@@ -326,6 +326,8 @@ const ScheduleMeetingModal = ({
 
             <Formik
               enableReinitialize
+              validateOnChange
+              validateOnBlur
               innerRef={formikRef}
               initialValues={initialValues}
               validationSchema={validationCreateEventSchema}

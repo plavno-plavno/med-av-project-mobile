@@ -1,12 +1,14 @@
 import { createApi } from "@reduxjs/toolkit/query/react"
 import { baseQueryWithReAuth } from ".."
 import {
+  IAddTopicRequest,
   IBaseParams,
   IFaqQuestionsResponse,
   IGetFaqQuestionsParams,
   IGetHelpTopicsParams,
   IGetHelpTopicsResponse,
   IGetRequestParams,
+  IGetTopicsResponse,
 } from "./types"
 
 export const helpCenterApi = createApi({
@@ -34,17 +36,33 @@ export const helpCenterApi = createApi({
         method: "GET",
       }),
     }),
-    // getRequestUnreadCount: builder.query<any, any>({
-    //   query: ({ id }: any) => ({
-    //     url: `help?id=${id}`,
-    //     method: "GET",
-    //   }),
-    // }),
+    getMessageCount: builder.query<any, void>({
+      query: () => ({
+        url: `help/message-count`,
+        method: "GET",
+      }),
+    }),
+    getTopics: builder.query<IGetTopicsResponse, IGetHelpTopicsParams>({
+      query: ({ limit, page }: IBaseParams) => ({
+        url: `help/topic?limit=${limit}&page=${page}`,
+        method: "GET",
+      }),
+    }),
+    addTopic: builder.mutation<any, IAddTopicRequest>({
+      query: ({ message, category }) => ({
+        url: `help/request`,
+        method: "POST",
+        body: { message, category },
+      }),
+    }),
   }),
 })
 
 export const {
+  useAddTopicMutation,
   useGetFaqQuestionsQuery,
   useGetHelpTopicsQuery,
   useGetRequestQuery,
+  useGetMessageCountQuery,
+  useGetTopicsQuery,
 } = helpCenterApi

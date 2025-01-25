@@ -51,44 +51,40 @@ const ScreenWrapper: React.FC<Props> = memo(
 
     return (
       <>
-        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-          <KeyboardAvoidingView
-            behavior="padding"
-            style={helpers.flex1}
-            keyboardVerticalOffset={keyboardVerticalOffset}
-          >
-            <SafeAreaView style={{ backgroundColor }} edges={["top"]} />
-            <View style={[styles.container, { backgroundColor }]}>
-              <StatusBar barStyle={statusBarColor} />
+        <KeyboardAvoidingView
+          behavior="padding"
+          style={helpers.flex1}
+          keyboardVerticalOffset={keyboardVerticalOffset}
+        >
+          <SafeAreaView style={{ backgroundColor }} edges={["top"]} />
+          <View style={[styles.container, { backgroundColor }]}>
+            <StatusBar barStyle={statusBarColor} />
 
-              {onboardingScreen && (
-                <View style={styles.onboarding_container}>
-                  <Icon name="onboardingLogo" />
-                </View>
-              )}
-
-              {title && (
-                <View
-                  style={[styles.navigation_container, { backgroundColor }]}
-                >
-                  {isBackButton ? (
-                    <BackButton handleBackButtonPress={handleBackButtonPress} />
-                  ) : (
-                    <View style={styles.empty_view} />
-                  )}
-                  <Text style={styles.title}>{title}</Text>
-                  {isCenterTitle && <View style={styles.empty_view} />}
-                </View>
-              )}
-
-              {isCalendarScreen && <MonthsToggler />}
-
-              <View style={[styles.childrenContainer, childrenStyle]}>
-                {children}
+            {onboardingScreen && (
+              <View style={styles.onboarding_container}>
+                <Icon name="onboardingLogo" />
               </View>
+            )}
+
+            {title && (
+              <View style={[styles.navigation_container, { backgroundColor }]}>
+                {isBackButton ? (
+                  <BackButton handleBackButtonPress={handleBackButtonPress} />
+                ) : (
+                  <View style={styles.empty_view} />
+                )}
+                <Text style={styles.title}>{title}</Text>
+                {isCenterTitle && <View style={styles.empty_view} />}
+              </View>
+            )}
+
+            {isCalendarScreen && <MonthsToggler />}
+
+            <View style={[styles.childrenContainer, childrenStyle]}>
+              {children}
             </View>
-          </KeyboardAvoidingView>
-        </TouchableWithoutFeedback>
+          </View>
+        </KeyboardAvoidingView>
       </>
     )
   }

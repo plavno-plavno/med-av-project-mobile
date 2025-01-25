@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
@@ -18,11 +19,15 @@ import { fontFamilies, fontWeights, helpers } from "@utils/theme"
 import { moderateScale } from "react-native-size-matters"
 import { useTranslation } from "react-i18next"
 import NavigationItem from "src/components/NavigationItem"
+import { useGetMessageCountQuery } from "src/api/helpCenterApi/helpCenterApi"
 
 const SettingsScreen = () => {
   const { t } = useTranslation()
-  const [logout] = useLogoutMutation()
   const navigation = useNavigation<ROUTES>()
+
+  const [logout] = useLogoutMutation()
+  const { data: messageCount, isLoading: isMessageCountLoading } =
+    useGetMessageCountQuery()
 
   const handleLogout = async () => {
     try {
@@ -64,7 +69,7 @@ const SettingsScreen = () => {
       },
     },
     {
-      title: t("HelpCenter"),
+      title: t("HelpCenter") + ` (${messageCount || 0})`,
       leftIcon: "helpCenter" as IconName,
       rightIcon: "chevronRight" as IconName,
       onPress: () => {
