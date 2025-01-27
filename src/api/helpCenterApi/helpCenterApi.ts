@@ -4,34 +4,30 @@ import {
   IAddTopicRequest,
   IBaseParams,
   IFaqQuestionsResponse,
-  IGetFaqQuestionsParams,
-  IGetHelpTopicsParams,
   IGetHelpTopicsResponse,
-  IGetRequestParams,
   IGetTopicsResponse,
+  IRecordingsEntity,
+  IRecordingsEntityResponse,
 } from "./types"
 
 export const helpCenterApi = createApi({
   baseQuery: baseQueryWithReAuth,
   reducerPath: "helpCenterApi",
   endpoints: (builder) => ({
-    getFaqQuestions: builder.query<
-      IFaqQuestionsResponse,
-      IGetFaqQuestionsParams
-    >({
-      query: ({ limit, page }: IBaseParams) => ({
+    getFaqQuestions: builder.query<IFaqQuestionsResponse, IBaseParams>({
+      query: ({ limit, page }) => ({
         url: `faq?limit=${limit}&page=${page}`,
         method: "GET",
       }),
     }),
-    getHelpTopics: builder.query<IGetHelpTopicsResponse, IGetHelpTopicsParams>({
-      query: ({ limit, page }: IBaseParams) => ({
+    getHelpTopics: builder.query<IGetHelpTopicsResponse, IBaseParams>({
+      query: ({ limit, page }) => ({
         url: `help/topics?limit=${limit}&page=${page}`,
         method: "GET",
       }),
     }),
-    getRequest: builder.query<any, IGetRequestParams>({
-      query: ({ limit, page }: IBaseParams) => ({
+    getRequest: builder.query<any, IBaseParams>({
+      query: ({ limit, page }) => ({
         url: `help?limit=${limit}&page=${page}`,
         method: "GET",
       }),
@@ -42,8 +38,8 @@ export const helpCenterApi = createApi({
         method: "GET",
       }),
     }),
-    getTopics: builder.query<IGetTopicsResponse, IGetHelpTopicsParams>({
-      query: ({ limit, page }: IBaseParams) => ({
+    getTopics: builder.query<IGetTopicsResponse, IBaseParams>({
+      query: ({ limit, page }) => ({
         url: `help/topic?limit=${limit}&page=${page}`,
         method: "GET",
       }),
@@ -55,10 +51,32 @@ export const helpCenterApi = createApi({
         body: { message, category },
       }),
     }),
+    //RECORDINGS
+    getRecordings: builder.query<IRecordingsEntityResponse, IBaseParams>({
+      query: ({ limit, page }) => ({
+        url: `recordings?limit=${limit}&page=${page}`,
+        method: "GET",
+      }),
+    }),
+    removeRecordings: builder.mutation<void, { id: number }>({
+      query: ({ id }) => ({
+        url: `recordings/${id}`,
+        method: "DELETE",
+      }),
+    }),
+    downloadRecordings: builder.mutation<void, { id: number }>({
+      query: ({ id }) => ({
+        url: `recordings/download/${id}`,
+        method: "GET",
+      }),
+    }),
   }),
 })
 
 export const {
+  useDownloadRecordingsMutation,
+  useGetRecordingsQuery,
+  useRemoveRecordingsMutation,
   useAddTopicMutation,
   useGetFaqQuestionsQuery,
   useGetHelpTopicsQuery,

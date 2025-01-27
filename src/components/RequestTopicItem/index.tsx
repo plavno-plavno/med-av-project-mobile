@@ -66,7 +66,7 @@ export const styles = StyleSheet.create({
       height: 0,
     },
     shadowOpacity: 0.15,
-    shadowRadius: 5,
+    shadowRadius: 3,
     elevation: 5,
   },
   infoContainer: {

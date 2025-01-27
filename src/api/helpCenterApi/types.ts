@@ -1,8 +1,24 @@
-export interface IFaqQuestionsResponse {
-  data: FaqEntity[]
+// Shared Interfaces for Pagination and Base Params
+export interface IBaseParams {
+  page: number
+  limit: number
+}
+
+export interface IPaginatedResponse<T> {
+  data: T[]
   total: number
   page: string
   limit: string
+}
+
+export interface IRecordingsEntityResponse
+  extends IPaginatedResponse<IRecordingsEntity> {}
+
+export interface IRecordingsEntity {
+  id: number
+  title: string
+  duration: string
+  time: string
 }
 
 export interface FaqEntity {
@@ -12,17 +28,7 @@ export interface FaqEntity {
   __entity: string
 }
 
-export interface IBaseParams {
-  page: number
-  limit: number
-}
-
-export interface IGetHelpTopicsResponse {
-  data: HelpTopicEntity[]
-  total: number
-  page: string
-  limit: string
-}
+export interface IFaqQuestionsResponse extends IPaginatedResponse<FaqEntity> {}
 
 export interface HelpTopicEntity {
   id: number
@@ -30,17 +36,12 @@ export interface HelpTopicEntity {
   __entity: string
 }
 
-export interface IGetTopicsResponse {
-  data: HelpTopicEntity[]
-  total: number
-  page: string
-  limit: string
-}
+export interface IGetHelpTopicsResponse
+  extends IPaginatedResponse<HelpTopicEntity> {}
 
-export interface IGetFaqQuestionsParams extends IBaseParams {}
-export interface IGetHelpTopicsParams extends IBaseParams {}
-export interface IGetRequestParams extends IBaseParams {}
-export interface IGetTopicsParams extends IBaseParams {}
+export interface IGetTopicsResponse
+  extends IPaginatedResponse<HelpTopicEntity> {}
+
 export interface IAddTopicRequest {
   message: string
   category: {

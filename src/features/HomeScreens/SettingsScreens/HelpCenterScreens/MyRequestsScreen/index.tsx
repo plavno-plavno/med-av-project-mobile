@@ -16,7 +16,6 @@ const MyRequestsScreen = () => {
     limit: 10,
     page: 1,
   })
-  console.log(requestData, "requestData")
 
   return (
     <ScreenWrapper

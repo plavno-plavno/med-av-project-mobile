@@ -2,17 +2,25 @@ import { Icon } from "@components"
 import { fontFamilies, fontWeights, helpers } from "@utils/theme"
 import { StyleSheet, Text, View } from "react-native"
 import { moderateScale } from "react-native-size-matters"
+import {
+  useDownloadRecordingsMutation,
+  useRemoveRecordingsMutation,
+} from "src/api/helpCenterApi/helpCenterApi"
 import colors from "src/assets/colors"
 
 const RecordingCard = ({
+  id,
   title,
   duration,
   time,
 }: {
+  id: number
   title: string
   duration: string
   time: string
 }) => {
+  const [removeRecordings] = useRemoveRecordingsMutation()
+  const [downloadRecordings] = useDownloadRecordingsMutation()
   return (
     <View style={styles.container}>
       <View style={styles.infoContainer}>
@@ -23,8 +31,11 @@ const RecordingCard = ({
         <Text style={styles.timeText}>{time}</Text>
       </View>
       <View style={[helpers.flexRow, helpers.gap12]}>
-        <Icon name="deleteAccount" />
-        <Icon name="download" />
+        <Icon
+          name="deleteAccount"
+          onPress={() => removeRecordings({ id: 1 })}
+        />
+        <Icon name="download" onPress={() => downloadRecordings({ id: 1 })} />
       </View>
     </View>
   )
