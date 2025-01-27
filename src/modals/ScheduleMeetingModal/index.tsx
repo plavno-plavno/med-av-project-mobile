@@ -48,6 +48,8 @@ interface IFormValues {
   description: string
 }
 
+const DEFAULT_COLOR = colors.lightAqua
+
 interface IScheduleMeetingModal {
   onClose: () => void
   handleEventTime?: string
@@ -149,7 +151,7 @@ const ScheduleMeetingModal = ({
     endDate: defaultTimeEnd,
     timezone: timezone?.id.toString() || "",
     participants: (eventId && eventParticipants) || [],
-    color: (eventId && eventDetailsData?.color) || "",
+    color: (eventId && eventDetailsData?.color) || DEFAULT_COLOR,
     description: (eventId && eventDetailsData?.description) || "",
   }
 
