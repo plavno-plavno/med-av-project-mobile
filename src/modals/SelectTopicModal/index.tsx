@@ -31,6 +31,11 @@ const SelectTopicModal = ({ sheetRef, formikRef, setTopicId }: any) => {
     },
   }))
 
+  const modalHeight =
+    topicsList?.length && topicsList?.length > 10
+      ? screenHeight * 0.9
+      : 250 + (topicsList?.length || 1) * 56
+
   const onModalClose = () => {
     formikRef.current?.setFieldValue("topic", selectedTopic?.name || "")
     setTopicId(selectedTopic?.id || null)
@@ -40,7 +45,7 @@ const SelectTopicModal = ({ sheetRef, formikRef, setTopicId }: any) => {
   return (
     <BottomSheet
       ref={sheetRef}
-      height={screenHeight * 0.9}
+      height={modalHeight}
       backdropMaskColor={colors.blackOpacity08}
       style={styles.bottomSheet}
       disableBodyPanning
@@ -49,15 +54,20 @@ const SelectTopicModal = ({ sheetRef, formikRef, setTopicId }: any) => {
       <View style={styles.container}>
         <ModalHeader title={t("SelectTopic")} sheetRef={sheetRef} />
         <FlatList
-          contentContainerStyle={{ gap: 1 }}
+          scrollEnabled
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1, gap: 1 }}
           data={topicsList}
           renderItem={({ item }) => <TopicItem topic={item} />}
-        />
-        <CustomButton
-          type="primary"
-          text={t("Select")}
-          onPress={onModalClose}
-          style={styles.button}
+          keyExtractor={(item) => item.id.toString()}
+          ListFooterComponent={
+            <CustomButton
+              type="primary"
+              text={t("Select")}
+              onPress={onModalClose}
+              style={styles.button}
+            />
+          }
         />
       </View>
     </BottomSheet>
@@ -79,5 +89,6 @@ export const styles = StyleSheet.create({
   },
   button: {
     width: "100%",
+    marginTop: moderateScale(40),
   },
 })

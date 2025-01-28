@@ -25,6 +25,7 @@ const RequestTopicItem = ({
   const navigation = useNavigation<ROUTES>()
 
   const [getHelp, { data: helpData }] = useLazyGetHelpQuery()
+
   const statusBackgroundColor =
     status === "resolved" ? colors.successGreenLight : colors.pumpkin
   const statusTextColor =
@@ -32,10 +33,10 @@ const RequestTopicItem = ({
 
   const handlePress = () => {
     getHelp({ id })
-    navigation.navigate(ScreensEnum.MY_REQUEST_DETAILS, { helpData })
+    navigation.navigate(ScreensEnum.MY_REQUEST_DETAILS, {
+      id: helpData?.id,
+    })
   }
-
-  console.log(helpData, "helpData")
 
   return (
     <TouchableOpacity onPress={handlePress} style={styles.container}>

@@ -63,7 +63,11 @@ const SetupProfileScreen = () => {
 
       if (image) {
         const uploadResponse = await mediaUpload({
-          files: image,
+          file: {
+            uri: image.path,
+            name: image.filename || `photo_${Date.now()}.jpg`,
+            type: image.mime,
+          },
           prefix: "avatar",
           postfix: "avatar",
           tag: "avatar",

@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   StyleSheet,
   TouchableOpacity,
@@ -15,6 +16,8 @@ interface IChatInput {
   setMessage: (message: string) => void
   handleSendMessage: () => void
   isAddButton?: boolean
+  onPressAddButton?: () => void
+  isLoading?: boolean
 }
 
 const ChatInput = ({
@@ -22,6 +25,8 @@ const ChatInput = ({
   setMessage,
   handleSendMessage,
   isAddButton,
+  isLoading,
+  onPressAddButton,
 }: IChatInput) => {
   const { t } = useTranslation()
   return (
@@ -31,7 +36,7 @@ const ChatInput = ({
     >
       <View style={styles.messageInputContainer}>
         {isAddButton && (
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => onPressAddButton?.()}>
             <Icon name="addButton" />
           </TouchableOpacity>
         )}
@@ -44,8 +49,12 @@ const ChatInput = ({
           numberOfLines={1}
         />
 
-        <TouchableOpacity onPress={handleSendMessage}>
-          <Icon name="sendMessage" />
+        <TouchableOpacity onPress={handleSendMessage} disabled={!message}>
+          {isLoading ? (
+            <ActivityIndicator size="small" />
+          ) : (
+            <Icon name="sendMessage" opacity={message ? 1 : 0.5} />
+          )}
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>

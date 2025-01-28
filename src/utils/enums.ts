@@ -5,4 +5,5 @@ export enum DateTimeFormatEnum {
   YYYYMMDD = "YYYY-MM-DD",
   ddddMMMMD = "dddd, MMMM D",
   HHmmss = "HH:mm:ss",
+  HHmm = "HH:mm",
 }

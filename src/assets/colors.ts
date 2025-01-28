@@ -17,6 +17,9 @@ const colors = {
   pumpkin: "#FEF8E8",
   blackOpacity06: "rgba(0, 0, 0, 0.6)",
   blackOpacity08: "#192027E0",
+  darkGreen: "#005A60",
+  lightGreen: "#E9F5F6",
+  lightGray: "#D5D7DA",
 
   placeholder: "#9BA0A6",
   borderGrey: "#EAEEF2",

@@ -50,9 +50,9 @@ export interface IAddTopicRequest {
 }
 
 export interface IAddMessageRequest {
-  message: string
+  message?: string
   requestId: number
-  file: {
-    id: number
+  file?: {
+    id: string | null
   }
 }

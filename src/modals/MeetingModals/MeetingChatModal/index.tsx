@@ -73,7 +73,6 @@ const MeetingChatModal = ({
       scrollViewRef.current?.scrollToEnd()
     }
   }, [renderedMessages])
-
   const handleSendMessage = async () => {
     if (message.trim()) {
       await sendMessage({ message })

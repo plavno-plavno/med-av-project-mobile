@@ -56,7 +56,12 @@ export const helpCenterApi = createApi({
       query: ({ message, file, requestId }) => ({
         url: `help/message/${requestId}`,
         method: "POST",
-        body: { message, file },
+        body: {
+          message,
+          file: {
+            id: file?.id,
+          },
+        },
       }),
     }),
     getHelp: builder.query<any, { id: number }>({
@@ -89,6 +94,7 @@ export const helpCenterApi = createApi({
 
 export const {
   useLazyGetHelpQuery,
+  useGetHelpQuery,
   useDownloadRecordingsMutation,
   useGetRecordingsQuery,
   useRemoveRecordingsMutation,
