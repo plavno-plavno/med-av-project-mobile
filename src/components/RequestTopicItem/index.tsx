@@ -1,27 +1,44 @@
 import { Icon } from "@components"
+import navigation from "@navigation"
+import { useNavigation } from "@react-navigation/native"
 import { fontFamilies, fontWeights, helpers } from "@utils/theme"
-import { StyleSheet, Text, View } from "react-native"
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { moderateScale } from "react-native-size-matters"
+import { useLazyGetHelpQuery } from "src/api/helpCenterApi/helpCenterApi"
 import colors from "src/assets/colors"
+import { ROUTES } from "src/navigation/RoutesTypes"
+import { ScreensEnum } from "src/navigation/ScreensEnum"
 
 const RequestTopicItem = ({
   title,
   date,
   status,
   count,
+  id,
 }: {
   title: string
   date: string
   status: string
   count?: number
+  id: number
 }) => {
+  const navigation = useNavigation<ROUTES>()
+
+  const [getHelp, { data: helpData }] = useLazyGetHelpQuery()
   const statusBackgroundColor =
     status === "resolved" ? colors.successGreenLight : colors.pumpkin
   const statusTextColor =
     status === "resolved" ? colors.successGreen : colors.alertWarning
 
+  const handlePress = () => {
+    getHelp({ id })
+    navigation.navigate(ScreensEnum.MY_REQUEST_DETAILS, { helpData })
+  }
+
+  console.log(helpData, "helpData")
+
   return (
-    <View style={styles.container}>
+    <TouchableOpacity onPress={handlePress} style={styles.container}>
       <Text numberOfLines={1} style={styles.title}>
         {title}
       </Text>
@@ -45,7 +62,7 @@ const RequestTopicItem = ({
           {status}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   )
 }
 

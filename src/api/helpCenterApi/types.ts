@@ -48,3 +48,11 @@ export interface IAddTopicRequest {
     id: number
   }
 }
+
+export interface IAddMessageRequest {
+  message: string
+  requestId: number
+  file: {
+    id: number
+  }
+}

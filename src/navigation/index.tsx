@@ -28,9 +28,9 @@ import { useTimezoneQuery } from "src/api/auth/authApi"
 import MyRecordsScreen from "src/features/HomeScreens/SettingsScreens/MyRecordsScreen"
 import FAQScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/FAQScreen"
 import HelpCenterScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/HelpCenterScreen"
-import MyRequestsScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/MyRequestsScreen"
 import ContactSupportScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/ContactSupportScreen"
-
+import MyRequestsScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/MyRequestsScreens/MyRequestsScreen"
+import MyRequestsDetailsScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/MyRequestsScreens/MyRequestsDetailsScreen"
 const Stack = createNativeStackNavigator()
 
 const Navigation: React.FC = () => {
@@ -47,8 +47,8 @@ const Navigation: React.FC = () => {
         const updatedTimezoneData = await timezoneRefetch().unwrap()
         const initialCheck =
           updatedAuthMeData?.firstName &&
-            updatedAuthMeData?.lastName &&
-            updatedTimezoneData?.id
+          updatedAuthMeData?.lastName &&
+          updatedTimezoneData?.id
             ? ScreensEnum.MAIN
             : ScreensEnum.SETUP_PROFILE
 
@@ -57,7 +57,7 @@ const Navigation: React.FC = () => {
         RootNavigation.navigate(ScreensEnum.ONBOARDING)
       }
     } catch (error) {
-      console.log(error, 'error getRoute');
+      console.log(error, "error getRoute")
       await Keychain.resetGenericPassword({ service: "accessToken" })
       await Keychain.resetGenericPassword({ service: "refreshToken" })
       RootNavigation.navigate(ScreensEnum.ONBOARDING)
@@ -189,10 +189,14 @@ const Navigation: React.FC = () => {
           component={MyRequestsScreen}
         />
         <Stack.Screen
+          name={ScreensEnum.MY_REQUEST_DETAILS}
+          component={MyRequestsDetailsScreen}
+        />
+
+        <Stack.Screen
           name={ScreensEnum.CONTACT_SUPPORT}
           component={ContactSupportScreen}
         />
-
         <Stack.Screen name={ScreensEnum.MEETING} component={MeetingScreen} />
         <Stack.Screen name={ScreensEnum.MAIN} component={BottomTabNavigator} />
       </Stack.Navigator>

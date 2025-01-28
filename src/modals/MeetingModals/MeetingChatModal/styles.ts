@@ -30,17 +30,4 @@ export const styles = StyleSheet.create({
     ...fontWeights.fontWeight400,
     color: colors.charcoal,
   },
-  messageTime: {},
-  messageInputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: moderateScale(8),
-    borderTopWidth: 1,
-    borderTopColor: colors.borderGrey,
-    paddingHorizontal: moderateScale(20),
-    paddingVertical: moderateScale(8),
-  },
-  messageInput: {
-    flex: 1,
-  },
 })

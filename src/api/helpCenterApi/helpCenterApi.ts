@@ -1,6 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react"
 import { baseQueryWithReAuth } from ".."
 import {
+  IAddMessageRequest,
   IAddTopicRequest,
   IBaseParams,
   IFaqQuestionsResponse,
@@ -51,6 +52,19 @@ export const helpCenterApi = createApi({
         body: { message, category },
       }),
     }),
+    addMessage: builder.mutation<any, IAddMessageRequest>({
+      query: ({ message, file, requestId }) => ({
+        url: `help/message/${requestId}`,
+        method: "POST",
+        body: { message, file },
+      }),
+    }),
+    getHelp: builder.query<any, { id: number }>({
+      query: ({ id }) => ({
+        url: `help/${id}`,
+        method: "GET",
+      }),
+    }),
     //RECORDINGS
     getRecordings: builder.query<IRecordingsEntityResponse, IBaseParams>({
       query: ({ limit, page }) => ({
@@ -74,10 +88,12 @@ export const helpCenterApi = createApi({
 })
 
 export const {
+  useLazyGetHelpQuery,
   useDownloadRecordingsMutation,
   useGetRecordingsQuery,
   useRemoveRecordingsMutation,
   useAddTopicMutation,
+  useAddMessageMutation,
   useGetFaqQuestionsQuery,
   useGetHelpTopicsQuery,
   useGetRequestQuery,

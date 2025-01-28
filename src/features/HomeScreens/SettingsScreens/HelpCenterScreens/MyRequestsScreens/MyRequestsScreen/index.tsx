@@ -42,6 +42,7 @@ const MyRequestsScreen = () => {
           data={requestData?.data}
           renderItem={({ item }) => (
             <RequestTopicItem
+              id={item?.id}
               title={item?.category?.name}
               date={moment(item?.createdAt).format(DateTimeFormatEnum.DDMMYYYY)}
               status={item?.status?.name}
