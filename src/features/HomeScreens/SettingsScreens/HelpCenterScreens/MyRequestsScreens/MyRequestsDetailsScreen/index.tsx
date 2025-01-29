@@ -20,7 +20,7 @@ import {
   View,
 } from "react-native"
 import { moderateScale } from "react-native-size-matters"
-import ReactNativeBlobUtil from 'react-native-blob-util'
+import ReactNativeBlobUtil from "react-native-blob-util"
 import {
   useAddMessageMutation,
   useGetHelpQuery,
@@ -33,12 +33,13 @@ import ScreenWrapper from "src/components/ScreenWrapper"
 import DocumentPicker from "react-native-document-picker"
 import { useMediaUploadMutation } from "src/api/mediaApi/mediaApi"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
-import Share from 'react-native-share';
-import RNFS, {DocumentDirectoryPath, DownloadDirectoryPath} from 'react-native-fs'
+import Share from "react-native-share"
+import RNFS from "react-native-fs"
+import useWebSocket from "src/socket/socket"
 
 const MyRequestsDetailsScreen = () => {
-  const { t } = useTranslation()
   const route = useRoute()
+  const { t } = useTranslation()
   const { id } = route.params as { id: any }
 
   const { data: authMe } = useAuthMeQuery()
@@ -111,17 +112,17 @@ const MyRequestsDetailsScreen = () => {
   }
 
   const requestStoragePermission = async () => {
-    if (!isAndroid()) return true;
-  
-    const androidVersion = Platform.Version;
+    if (!isAndroid()) return true
+
+    const androidVersion = Platform.Version
     if (Number(androidVersion) >= 30) {
       // Android 11+ (Scoped Storage)
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-      );
-  
+      )
+
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        return true;
+        return true
       } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
         Alert.alert(
           "Permission Required",
@@ -130,17 +131,17 @@ const MyRequestsDetailsScreen = () => {
             { text: "Cancel", style: "cancel" },
             { text: "Open Settings", onPress: () => Linking.openSettings() },
           ]
-        );
+        )
       }
-      return false;
+      return false
     } else {
       // Android 9 and below
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
-      );
-  
+      )
+
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        return true;
+        return true
       } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
         Alert.alert(
           "Permission Required",
@@ -149,67 +150,66 @@ const MyRequestsDetailsScreen = () => {
             { text: "Cancel", style: "cancel" },
             { text: "Open Settings", onPress: () => Linking.openSettings() },
           ]
-        );
+        )
       }
-      return false;
+      return false
     }
-  };
+  }
 
   const onDocumentPress = async (item: any) => {
     try {
       if (isAndroid()) {
-        const hasPermission = await requestStoragePermission();
+        const hasPermission = await requestStoragePermission()
         if (!hasPermission) {
-          return;
+          return
         }
       }
-  
-      const fileName = item?.file?.name || "downloaded_file";
-      const fileUrl = item?.file?.link;
-  
+
+      const fileName = item?.file?.name || "downloaded_file"
+      const fileUrl = item?.file?.link
+
       if (!fileUrl) {
-        Alert.alert("Error", "File URL is missing.");
-        return;
+        Alert.alert("Error", "File URL is missing.")
+        return
       }
-  
+
       const filePath = isAndroid()
         ? `${RNFS.DownloadDirectoryPath}/${fileName}`
-        : `${RNFS.DocumentDirectoryPath}/${fileName}`;
-  
+        : `${RNFS.DocumentDirectoryPath}/${fileName}`
+
       // Download the file
       const downloadResult = await RNFS.downloadFile({
         fromUrl: fileUrl,
         toFile: filePath,
-      }).promise;
-  
+      }).promise
+
       if (downloadResult.statusCode !== 200) {
-        throw new Error("File download failed");
+        throw new Error("File download failed")
       }
-  
+
       // Ensure the file exists after downloading
-      const fileExists = await RNFS.exists(filePath);
+      const fileExists = await RNFS.exists(filePath)
       if (!fileExists) {
-        throw new Error("File not saved successfully");
+        throw new Error("File not saved successfully")
       }
-  
+
       if (isAndroid()) {
         ReactNativeBlobUtil.fs
           .scanFile([{ path: filePath, mime: item.file?.fileType }])
           .then(() => console.log("File scanned successfully"))
-          .catch((err) => console.error("Error scanning file:", err));
+          .catch((err) => console.error("Error scanning file:", err))
       }
-  
+
       // Share or save the file
       Share.open({
         url: `file://${filePath}`,
         title: "Save or Share",
-      }).catch((error) => console.error("Error sharing file:", error));
-  
+      }).catch((error) => console.error("Error sharing file:", error))
     } catch (error: any) {
-      console.error("Error saving file:", error?.message || error);
-      Alert.alert("Download Failed", error?.message || "Something went wrong.");
+      console.error("Error saving file:", error?.message || error)
+      Alert.alert("Download Failed", error?.message || "Something went wrong.")
     }
-  };
+  }
 
   const renderItem = ({ item, index }: { item: any; index: number }) => {
     const isDocument = item?.file
@@ -220,8 +220,8 @@ const MyRequestsDetailsScreen = () => {
     const isNewDay =
       !prevMessageDate || !messageDate.isSame(prevMessageDate, "day")
 
-      const avatar = item?.createdBy?.photo?.link
-      const isSupport = item?.createdBy?.email !== authMe?.email
+    const avatar = item?.createdBy?.photo?.link
+    const isSupport = item?.createdBy?.email !== authMe?.email
 
     return (
       <View>
@@ -295,6 +295,8 @@ const MyRequestsDetailsScreen = () => {
       </View>
     )
   }
+
+  useWebSocket(refetch)
 
   useEffect(() => {
     if (data?.messages?.length) {

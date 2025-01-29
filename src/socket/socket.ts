@@ -1,23 +1,18 @@
-import { useEffect, useState } from 'react';
-import { useAppDispatch } from '../hooks/redux';
-import { useGetMessageCountQuery } from 'src/api/helpCenterApi/helpCenterApi';
+import { useEffect, useState, useRef } from "react"
 import * as Keychain from "react-native-keychain"
-import { io } from 'socket.io-client';
+import { io, Socket } from "socket.io-client"
 
-const useWebSocket = () => {
-  const dispatch = useAppDispatch();
-
-  const { data, refetch } = useGetMessageCountQuery()
-  const [token, setToken] = useState('');
+const useWebSocket = (refetch: () => void) => {
+  const [token, setToken] = useState<string | null>(null)
+  const socketRef = useRef<Socket | null>(null)
 
   const getToken = async () => {
     const credentials = await Keychain.getGenericPassword({
       service: "accessToken",
     })
     if (credentials) {
-      setToken(credentials.password);
+      setToken(credentials.password)
     }
-    return ""
   }
 
   useEffect(() => {
@@ -25,31 +20,51 @@ const useWebSocket = () => {
   }, [])
 
   useEffect(() => {
-    if (token) {
-      const createSocketConnection = () => {
-        const socket = io("https://khutba-media-server.plavno.io:7000/", {
-          auth: { token },
-        })
-        socket.onAny((eventName: any, args: any) => {
-          console.log(`new message : ${eventName} !!!!`, args)
-        })
-        socket.on("support", (event) => {
-          const message = JSON.parse(event.data);
-          console.log('Received message:', message);
-          if (message.event === 'newMessage') {
-            console.log('New chat instance:', message);
-            // dispatch(setNewMessagesCount({ chat_id: message?.chat_id, count: message?.count }));
-            
-            } if (message.readAllMessages) {
-              // dispatch(setNewMessagesCount({}));
-            }
-        })
-      };
+    if (!token) return
 
-      // Initial WebSocket connection
-      createSocketConnection();
+    socketRef.current = io(
+      "https://khutba-media-server.plavno.io:7000/support",
+      {
+        query: { token }, // Передаємо токен у query
+        auth: { token },
+        extraHeaders: { Authorization: `Bearer ${token}` }, // А також у заголовках
+      }
+    )
+
+    const socket = socketRef.current
+
+    console.log("🔌 Connected to WebSocket:", socket)
+
+    socket.onAny((event, ...args) => {
+      console.log(`📡 Event received: ${event}`, args)
+    })
+
+    socket.on("newMessage", (chatId) => {
+      console.log("📩 New message in chat:", chatId)
+      refetch()
+    })
+
+    socket.on("readAllMessages", (isRead) => {
+      console.log("✅ All messages read:", isRead)
+      if (isRead) {
+        // Тут можна оновити стан, щоб сховати значок непрочитаних повідомлень
+      }
+    })
+
+    socket.on("newRequest", (isNewRequest) => {
+      console.log("🆕 New chat request:", isNewRequest)
+      if (isNewRequest) {
+        // Тут можна оновити індикатор нових запитів
+      }
+    })
+
+    return () => {
+      console.log("🔌 Disconnecting from WebSocket")
+      socket.disconnect()
     }
-  }, [token]);
-};
+  }, [token])
 
-export default useWebSocket;
+  return { socket: socketRef.current }
+}
+
+export default useWebSocket

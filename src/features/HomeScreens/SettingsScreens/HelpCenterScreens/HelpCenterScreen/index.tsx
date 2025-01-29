@@ -1,21 +1,24 @@
 import { CustomButton } from "@components"
-import { useNavigation } from "@react-navigation/native"
+import { useFocusEffect, useNavigation } from "@react-navigation/native"
 import { isIOS } from "@utils/platformChecker"
 import { helpers } from "@utils/theme"
+import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { FlatList, View } from "react-native"
+import { ActivityIndicator } from "react-native-paper"
 import { moderateScale } from "react-native-size-matters"
 import { useGetMessageCountQuery } from "src/api/helpCenterApi/helpCenterApi"
 import NavigationItem from "src/components/NavigationItem"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
+import useWebSocket from "src/socket/socket"
 
 const HelpCenterScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<ROUTES>()
 
-  const { data: messageCount } = useGetMessageCountQuery()
+  const { data: messageCount, refetch, isLoading } = useGetMessageCountQuery()
 
   const helpCenterTopics = [
     {
@@ -53,42 +56,52 @@ const HelpCenterScreen = () => {
       },
     },
   ]
+
+  useWebSocket(refetch)
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch()
+    }, [])
+  )
   return (
-    <>
-      <ScreenWrapper
-        isBackButton
-        title={t("HelpCenter")}
-        isCenterTitle
-        keyboardVerticalOffset={isIOS() ? moderateScale(-100) : undefined}
-      >
-        <View style={[helpers.flex1, helpers.gap20]}>
-          <View>
-            <FlatList
-              contentContainerStyle={[helpers.gap8]}
-              data={helpCenterTopics}
-              keyExtractor={(item) => item.title}
-              renderItem={({ item }) => <NavigationItem {...item} />}
-            />
-          </View>
-          <View>
+    <ScreenWrapper
+      isBackButton
+      title={t("HelpCenter")}
+      isCenterTitle
+      keyboardVerticalOffset={isIOS() ? moderateScale(-100) : undefined}
+    >
+      <View style={[helpers.flex1, helpers.gap20]}>
+        <View>
+          <FlatList
+            contentContainerStyle={[helpers.gap8]}
+            data={helpCenterTopics}
+            keyExtractor={(item) => item.title}
+            renderItem={({ item }) => <NavigationItem {...item} />}
+          />
+        </View>
+        <View>
+          {!isLoading ? (
+            <ActivityIndicator size={"small"} />
+          ) : (
             <FlatList
               contentContainerStyle={[helpers.gap8]}
               data={privacyPolicyTopics}
               keyExtractor={(item) => item.title}
               renderItem={({ item }) => <NavigationItem {...item} />}
             />
-          </View>
+          )}
         </View>
-        <CustomButton
-          style={{ bottom: moderateScale(30) }}
-          text={t("ContactSupport")}
-          rightIcon={"nextArrow"}
-          onPress={() => {
-            navigation.navigate(ScreensEnum.CONTACT_SUPPORT, {})
-          }}
-        />
-      </ScreenWrapper>
-    </>
+      </View>
+      <CustomButton
+        style={{ bottom: moderateScale(30) }}
+        text={t("ContactSupport")}
+        rightIcon={"nextArrow"}
+        onPress={() => {
+          navigation.navigate(ScreensEnum.CONTACT_SUPPORT, {})
+        }}
+      />
+    </ScreenWrapper>
   )
 }
 

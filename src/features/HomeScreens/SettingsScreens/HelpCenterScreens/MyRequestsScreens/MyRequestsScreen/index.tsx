@@ -1,9 +1,10 @@
+import { useFocusEffect } from "@react-navigation/native"
 import { DateTimeFormatEnum } from "@utils/enums"
 import { isIOS } from "@utils/platformChecker"
 import { helpers } from "@utils/theme"
 import { t } from "i18next"
 import moment from "moment"
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import { FlatList } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import { useGetRequestQuery } from "src/api/helpCenterApi/helpCenterApi"
@@ -11,17 +12,26 @@ import Loading from "src/components/Loading"
 import NoData from "src/components/NoData"
 import RequestTopicItem from "src/components/RequestTopicItem"
 import ScreenWrapper from "src/components/ScreenWrapper"
+import useWebSocket from "src/socket/socket"
 
 const MyRequestsScreen = () => {
-  const { data: requestData, isLoading: requestLoading, refetch } = useGetRequestQuery({
+  const {
+    data: requestData,
+    isLoading: requestLoading,
+    refetch,
+  } = useGetRequestQuery({
     limit: 50,
     page: 1,
   })
 
-  useEffect(() => {
-    refetch();
-  }, [])
-  
+  useWebSocket(refetch)
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch()
+    }, [])
+  )
+
   return (
     <ScreenWrapper
       isBackButton

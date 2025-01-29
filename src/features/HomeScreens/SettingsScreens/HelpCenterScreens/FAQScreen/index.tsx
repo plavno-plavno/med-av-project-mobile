@@ -56,7 +56,7 @@ const FAQScreen = () => {
             renderItem={({ item }) => (
               <NavigationItem
                 {...item}
-                customStyle={{ height: moderateScale(64) }}
+                customStyle={{ minHeight: moderateScale(64) }}
               />
             )}
           />
