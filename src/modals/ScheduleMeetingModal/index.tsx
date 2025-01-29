@@ -229,23 +229,24 @@ const ScheduleMeetingModal = ({
 
   const handleSubmitForm = async (values: IFormValues) => {
     try {
-      const date = moment(values.date.split("-").reverse().join("-")).format(
-        DateTimeFormatEnum.YYYYMMDD
+      const formattedDate = moment(values.date, "DD-MM-YYYY").format(
+        "YYYY-MM-DD"
       )
+
+      const startDate = moment(
+        `${formattedDate} ${values.startDate}`,
+        "YYYY-MM-DD hh:mm A"
+      ).toISOString()
+
+      const endDate = moment(
+        `${formattedDate} ${values.endDate}`,
+        "YYYY-MM-DD hh:mm A"
+      ).toISOString()
+
       const payload = {
         ...values,
-        startDate:
-          date +
-          "T" +
-          moment(values.startDate, [DateTimeFormatEnum.hhmmA]).format(
-            DateTimeFormatEnum.HHmmss
-          ),
-        endDate:
-          date +
-          "T" +
-          moment(values.endDate, [DateTimeFormatEnum.hhmmA]).format(
-            DateTimeFormatEnum.HHmmss
-          ),
+        startDate,
+        endDate,
         timezone: { id: Number(values.timezone) },
       } as const
 
