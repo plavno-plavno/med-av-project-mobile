@@ -1,10 +1,9 @@
 import { Icon } from "@components"
-import navigation from "@navigation"
 import { useNavigation } from "@react-navigation/native"
 import { fontFamilies, fontWeights, helpers } from "@utils/theme"
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { moderateScale } from "react-native-size-matters"
-import { useLazyGetHelpQuery } from "src/api/helpCenterApi/helpCenterApi"
+import { useGetHelpQuery } from "src/api/helpCenterApi/helpCenterApi"
 import colors from "src/assets/colors"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
@@ -24,7 +23,7 @@ const RequestTopicItem = ({
 }) => {
   const navigation = useNavigation<ROUTES>()
 
-  const [getHelp, { data: helpData }] = useLazyGetHelpQuery()
+  const { data: helpData } = useGetHelpQuery({id})
 
   const statusBackgroundColor =
     status === "resolved" ? colors.successGreenLight : colors.pumpkin
@@ -32,7 +31,6 @@ const RequestTopicItem = ({
     status === "resolved" ? colors.successGreen : colors.alertWarning
 
   const handlePress = () => {
-    getHelp({ id })
     navigation.navigate(ScreensEnum.MY_REQUEST_DETAILS, {
       id: helpData?.id,
     })

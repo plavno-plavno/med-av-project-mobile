@@ -1,6 +1,6 @@
 import { useRoute } from "@react-navigation/native"
 import { DateTimeFormatEnum } from "@utils/enums"
-import { isIOS } from "@utils/platformChecker"
+import { isAndroid, isIOS } from "@utils/platformChecker"
 import { fontWeights, helpers } from "@utils/theme"
 import { fontFamilies } from "@utils/theme"
 import moment from "moment"
@@ -8,15 +8,19 @@ import React, { useEffect, useRef } from "react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
+  Alert,
   FlatList,
   Image,
   Linking,
+  PermissionsAndroid,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native"
 import { moderateScale } from "react-native-size-matters"
+import ReactNativeBlobUtil from 'react-native-blob-util'
 import {
   useAddMessageMutation,
   useGetHelpQuery,
@@ -29,6 +33,8 @@ import ScreenWrapper from "src/components/ScreenWrapper"
 import DocumentPicker from "react-native-document-picker"
 import { useMediaUploadMutation } from "src/api/mediaApi/mediaApi"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
+import Share from 'react-native-share';
+import RNFS, {DocumentDirectoryPath, DownloadDirectoryPath} from 'react-native-fs'
 
 const MyRequestsDetailsScreen = () => {
   const { t } = useTranslation()
@@ -46,9 +52,6 @@ const MyRequestsDetailsScreen = () => {
 
   const [mediaUpload, { isLoading: isMediaUploadLoading }] =
     useMediaUploadMutation()
-
-  const avatar = data?.createdBy?.photo?.link
-  const isSupport = data?.createdBy?.email !== authMe?.email
 
   const [message, setMessage] = useState("")
   const [fileId, setFileId] = useState<string | null>(null)
@@ -107,9 +110,106 @@ const MyRequestsDetailsScreen = () => {
     }
   }
 
-  const onDocumentPress = (item: any) => {
-    Linking.openURL(item?.file?.link)
-  }
+  const requestStoragePermission = async () => {
+    if (!isAndroid()) return true;
+  
+    const androidVersion = Platform.Version;
+    if (Number(androidVersion) >= 30) {
+      // Android 11+ (Scoped Storage)
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
+      );
+  
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        return true;
+      } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
+        Alert.alert(
+          "Permission Required",
+          "Media storage permission is needed to download files. Please enable it in your settings.",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Open Settings", onPress: () => Linking.openSettings() },
+          ]
+        );
+      }
+      return false;
+    } else {
+      // Android 9 and below
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+      );
+  
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        return true;
+      } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
+        Alert.alert(
+          "Permission Required",
+          "Storage permission is needed to download files. Please enable it in your settings.",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Open Settings", onPress: () => Linking.openSettings() },
+          ]
+        );
+      }
+      return false;
+    }
+  };
+
+  const onDocumentPress = async (item: any) => {
+    try {
+      if (isAndroid()) {
+        const hasPermission = await requestStoragePermission();
+        if (!hasPermission) {
+          return;
+        }
+      }
+  
+      const fileName = item?.file?.name || "downloaded_file";
+      const fileUrl = item?.file?.link;
+  
+      if (!fileUrl) {
+        Alert.alert("Error", "File URL is missing.");
+        return;
+      }
+  
+      const filePath = isAndroid()
+        ? `${RNFS.DownloadDirectoryPath}/${fileName}`
+        : `${RNFS.DocumentDirectoryPath}/${fileName}`;
+  
+      // Download the file
+      const downloadResult = await RNFS.downloadFile({
+        fromUrl: fileUrl,
+        toFile: filePath,
+      }).promise;
+  
+      if (downloadResult.statusCode !== 200) {
+        throw new Error("File download failed");
+      }
+  
+      // Ensure the file exists after downloading
+      const fileExists = await RNFS.exists(filePath);
+      if (!fileExists) {
+        throw new Error("File not saved successfully");
+      }
+  
+      if (isAndroid()) {
+        ReactNativeBlobUtil.fs
+          .scanFile([{ path: filePath, mime: item.file?.fileType }])
+          .then(() => console.log("File scanned successfully"))
+          .catch((err) => console.error("Error scanning file:", err));
+      }
+  
+      // Share or save the file
+      Share.open({
+        url: `file://${filePath}`,
+        title: "Save or Share",
+      }).catch((error) => console.error("Error sharing file:", error));
+  
+    } catch (error: any) {
+      console.error("Error saving file:", error?.message || error);
+      Alert.alert("Download Failed", error?.message || "Something went wrong.");
+    }
+  };
 
   const renderItem = ({ item, index }: { item: any; index: number }) => {
     const isDocument = item?.file
@@ -119,6 +219,9 @@ const MyRequestsDetailsScreen = () => {
 
     const isNewDay =
       !prevMessageDate || !messageDate.isSame(prevMessageDate, "day")
+
+      const avatar = item?.createdBy?.photo?.link
+      const isSupport = item?.createdBy?.email !== authMe?.email
 
     return (
       <View>

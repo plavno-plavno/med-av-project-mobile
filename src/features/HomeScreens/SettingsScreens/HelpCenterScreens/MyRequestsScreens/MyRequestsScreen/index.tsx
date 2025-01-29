@@ -3,6 +3,7 @@ import { isIOS } from "@utils/platformChecker"
 import { helpers } from "@utils/theme"
 import { t } from "i18next"
 import moment from "moment"
+import { useEffect } from "react"
 import { FlatList } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import { useGetRequestQuery } from "src/api/helpCenterApi/helpCenterApi"
@@ -12,11 +13,15 @@ import RequestTopicItem from "src/components/RequestTopicItem"
 import ScreenWrapper from "src/components/ScreenWrapper"
 
 const MyRequestsScreen = () => {
-  const { data: requestData, isLoading: requestLoading } = useGetRequestQuery({
-    limit: 10,
+  const { data: requestData, isLoading: requestLoading, refetch } = useGetRequestQuery({
+    limit: 50,
     page: 1,
   })
 
+  useEffect(() => {
+    refetch();
+  }, [])
+  
   return (
     <ScreenWrapper
       isBackButton
@@ -26,7 +31,7 @@ const MyRequestsScreen = () => {
     >
       {requestLoading ? (
         <Loading />
-      ) : !requestData ? (
+      ) : !requestData?.data?.length ? (
         <NoData />
       ) : (
         <FlatList

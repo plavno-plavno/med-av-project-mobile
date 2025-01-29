@@ -93,7 +93,6 @@ export const helpCenterApi = createApi({
 })
 
 export const {
-  useLazyGetHelpQuery,
   useGetHelpQuery,
   useDownloadRecordingsMutation,
   useGetRecordingsQuery,

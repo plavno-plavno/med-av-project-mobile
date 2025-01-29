@@ -1,4 +1,4 @@
-import React, { useMemo } from "react"
+import React, { useEffect, useMemo, useRef } from "react"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { useTranslation } from "react-i18next"
 import { useEmailLoginMutation, useTimezoneQuery } from "src/api/auth/authApi"
@@ -14,8 +14,10 @@ import { useNavigation } from "@react-navigation/native"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import * as Keychain from "react-native-keychain"
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
-import { isIOS } from "@utils/platformChecker"
+import { isAndroid, isIOS } from "@utils/platformChecker"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
+import useKeyboardEvents from "src/hooks/useKeyboardEvents"
+import { moderateScale } from "react-native-size-matters"
 
 interface FormValues {
   email: string
@@ -26,6 +28,8 @@ const LoginScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<ROUTES>()
   const formikRef = React.useRef<FormikProps<FormValues>>(null as any)
+  const { isKeyboardVisible, keyboardHeight } = useKeyboardEvents();
+  const scrollRef = useRef<KeyboardAwareScrollView>(null);
 
   const { refetch: authMeRefetch } = useAuthMeQuery()
   const { refetch: timezoneRefetch } = useTimezoneQuery()
@@ -66,18 +70,26 @@ const LoginScreen = () => {
     }
   }
 
+    useEffect(() => {
+      if (scrollRef.current && isKeyboardVisible && isAndroid()) {
+        scrollRef.current?.scrollForExtraHeightOnAndroid(moderateScale(100))
+      }
+    }, [isKeyboardVisible])
+
   return (
     <ScreenWrapper
       isBackButton
       title={t("LogIn")}
       isCenterTitle
-      keyboardVerticalOffset={isIOS() ? -50 : undefined}
+      keyboardVerticalOffset={isIOS() ? -50 : 0}
     >
       <KeyboardAwareScrollView
+        ref={scrollRef}
         style={helpers.flex1}
         bounces={false}
         enableOnAndroid
         enableAutomaticScroll
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         <Formik

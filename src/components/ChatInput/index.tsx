@@ -10,6 +10,7 @@ import { moderateScale } from "react-native-size-matters"
 import { Icon } from "../Icon"
 import colors from "src/assets/colors"
 import { useTranslation } from "react-i18next"
+import { isIOS } from "@utils/platformChecker"
 
 interface IChatInput {
   message: string
@@ -18,6 +19,7 @@ interface IChatInput {
   isAddButton?: boolean
   onPressAddButton?: () => void
   isLoading?: boolean
+  keyboardVerticalOffset?: number;
 }
 
 const ChatInput = ({
@@ -27,12 +29,13 @@ const ChatInput = ({
   isAddButton,
   isLoading,
   onPressAddButton,
+  keyboardVerticalOffset,
 }: IChatInput) => {
   const { t } = useTranslation()
   return (
     <KeyboardAvoidingView
       behavior="padding"
-      keyboardVerticalOffset={moderateScale(120)}
+      keyboardVerticalOffset={keyboardVerticalOffset || isIOS() ? moderateScale(100) : moderateScale(80)}
     >
       <View style={styles.messageInputContainer}>
         {isAddButton && (

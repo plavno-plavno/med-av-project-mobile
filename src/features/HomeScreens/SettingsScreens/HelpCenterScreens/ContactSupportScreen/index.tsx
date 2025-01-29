@@ -1,3 +1,4 @@
+import React from "react"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { StyleSheet, TouchableOpacity, View } from "react-native"
 import { moderateScale } from "react-native-size-matters"
@@ -60,7 +61,6 @@ const ContactSupportScreen = () => {
       <ScreenWrapper isBackButton title={t("ContactSupport")} isCenterTitle>
         <View style={[helpers.flex1]}>
           <KeyboardAwareScrollView
-            keyboardShouldPersistTaps="always"
             extraScrollHeight={screenHeight * 0.2}
             bounces={false}
             enableOnAndroid
