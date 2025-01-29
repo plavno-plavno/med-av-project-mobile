@@ -123,7 +123,6 @@ const MeetingChatModal = ({
             message={message}
             setMessage={setMessage}
             handleSendMessage={handleSendMessage}
-            keyboardVerticalOffset={-120}
           />
         </View>
       </BottomSheet>

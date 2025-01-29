@@ -19,7 +19,7 @@ interface IChatInput {
   isAddButton?: boolean
   onPressAddButton?: () => void
   isLoading?: boolean
-  keyboardVerticalOffset?: number;
+  keyboardVerticalOffset?: number
 }
 
 const ChatInput = ({
@@ -35,7 +35,11 @@ const ChatInput = ({
   return (
     <KeyboardAvoidingView
       behavior="padding"
-      keyboardVerticalOffset={keyboardVerticalOffset || isIOS() ? moderateScale(100) : moderateScale(80)}
+      keyboardVerticalOffset={
+        keyboardVerticalOffset || isIOS()
+          ? moderateScale(120)
+          : moderateScale(80)
+      }
     >
       <View style={styles.messageInputContainer}>
         {isAddButton && (

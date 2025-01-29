@@ -11,6 +11,7 @@ import {
   Alert,
   FlatList,
   Image,
+  Keyboard,
   Linking,
   PermissionsAndroid,
   Platform,
@@ -211,6 +212,12 @@ const MyRequestsDetailsScreen = () => {
     }
   }
 
+  const handleScroll = () => {
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true })
+    }, 100)
+  }
+
   const renderItem = ({ item, index }: { item: any; index: number }) => {
     const isDocument = item?.file
     const messageDate = moment(item?.createdAt)
@@ -300,18 +307,27 @@ const MyRequestsDetailsScreen = () => {
 
   useEffect(() => {
     if (data?.messages?.length) {
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true })
-      }, 300)
+      handleScroll()
     }
   }, [data?.messages])
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => handleScroll()
+    )
+
+    return () => {
+      keyboardDidShowListener.remove()
+    }
+  }, [])
 
   return (
     <ScreenWrapper
       isBackButton
       title={data?.category?.name || "unknown"}
       isCenterTitle
-      keyboardVerticalOffset={isIOS() ? moderateScale(-100) : undefined}
+      keyboardVerticalOffset={isIOS() ? moderateScale(-120) : undefined}
       childrenStyle={{ paddingHorizontal: moderateScale(0) }}
     >
       <FlatList

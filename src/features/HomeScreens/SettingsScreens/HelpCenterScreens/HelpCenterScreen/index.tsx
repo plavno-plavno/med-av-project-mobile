@@ -81,16 +81,12 @@ const HelpCenterScreen = () => {
           />
         </View>
         <View>
-          {!isLoading ? (
-            <ActivityIndicator size={"small"} />
-          ) : (
-            <FlatList
-              contentContainerStyle={[helpers.gap8]}
-              data={privacyPolicyTopics}
-              keyExtractor={(item) => item.title}
-              renderItem={({ item }) => <NavigationItem {...item} />}
-            />
-          )}
+          <FlatList
+            contentContainerStyle={[helpers.gap8]}
+            data={privacyPolicyTopics}
+            keyExtractor={(item) => item.title}
+            renderItem={({ item }) => <NavigationItem {...item} />}
+          />
         </View>
       </View>
       <CustomButton
