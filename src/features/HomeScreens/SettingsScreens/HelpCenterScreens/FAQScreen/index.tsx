@@ -50,9 +50,15 @@ const FAQScreen = () => {
           <Loading />
         ) : (
           <FlatList
+            contentContainerStyle={helpers.gap8}
             data={questions}
             keyExtractor={(item) => item.title}
-            renderItem={({ item }) => <NavigationItem {...item} />}
+            renderItem={({ item }) => (
+              <NavigationItem
+                {...item}
+                customStyle={{ height: moderateScale(64) }}
+              />
+            )}
           />
         )}
       </View>

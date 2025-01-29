@@ -1,4 +1,10 @@
-import { StyleSheet, Text, TouchableOpacity } from "react-native"
+import {
+  StyleProp,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  ViewStyle,
+} from "react-native"
 
 import { fontFamilies, fontWeights, helpers } from "@utils/theme"
 import { View } from "react-native"
@@ -13,6 +19,7 @@ interface INavigationItem {
   onPress: () => void
   description?: string
   isExpanded?: boolean
+  customStyle?: StyleProp<ViewStyle>
 }
 
 const NavigationItem = ({
@@ -22,9 +29,13 @@ const NavigationItem = ({
   onPress,
   description,
   isExpanded,
+  customStyle,
 }: INavigationItem) => {
   return (
-    <TouchableOpacity onPress={onPress} style={styles.itemContainer}>
+    <TouchableOpacity
+      onPress={onPress}
+      style={[styles.itemContainer, customStyle]}
+    >
       <View style={styles.menuItem}>
         <View style={[helpers.flexRow, helpers.gap8]}>
           <Icon name={leftIcon} />
@@ -41,6 +52,7 @@ export default NavigationItem
 
 export const styles = StyleSheet.create({
   itemContainer: {
+    // height: moderateScale(64),
     backgroundColor: colors.aquaHaze,
     borderRadius: moderateScale(16),
     padding: moderateScale(16),
