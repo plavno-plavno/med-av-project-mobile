@@ -5,7 +5,6 @@ import { helpers } from "@utils/theme"
 import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { FlatList, View } from "react-native"
-import { ActivityIndicator } from "react-native-paper"
 import { moderateScale } from "react-native-size-matters"
 import { useGetMessageCountQuery } from "src/api/helpCenterApi/helpCenterApi"
 import NavigationItem from "src/components/NavigationItem"
@@ -18,7 +17,7 @@ const HelpCenterScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<ROUTES>()
 
-  const { data: messageCount, refetch, isLoading } = useGetMessageCountQuery()
+  const { data: messageCount, refetch } = useGetMessageCountQuery()
 
   const helpCenterTopics = [
     {

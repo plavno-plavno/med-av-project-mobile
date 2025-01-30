@@ -1,15 +1,14 @@
 import {
-  ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native"
-import React from "react"
+import React, { useCallback } from "react"
 import * as Keychain from "react-native-keychain"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
-import { useNavigation } from "@react-navigation/native"
+import { useFocusEffect, useNavigation } from "@react-navigation/native"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import { Icon } from "@components"
 import { useLogoutMutation } from "src/api/userApi/userApi"
@@ -20,14 +19,14 @@ import { moderateScale } from "react-native-size-matters"
 import { useTranslation } from "react-i18next"
 import NavigationItem from "src/components/NavigationItem"
 import { useGetMessageCountQuery } from "src/api/helpCenterApi/helpCenterApi"
+import useWebSocket from "src/socket/socket"
 
 const SettingsScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<ROUTES>()
 
   const [logout] = useLogoutMutation()
-  const { data: messageCount, isLoading: isMessageCountLoading } =
-    useGetMessageCountQuery()
+  const { data: messageCount, refetch } = useGetMessageCountQuery()
 
   const handleLogout = async () => {
     try {
@@ -77,6 +76,14 @@ const SettingsScreen = () => {
       },
     },
   ]
+
+  useWebSocket(refetch)
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch()
+    }, [])
+  )
 
   return (
     <ProfileWrapper>

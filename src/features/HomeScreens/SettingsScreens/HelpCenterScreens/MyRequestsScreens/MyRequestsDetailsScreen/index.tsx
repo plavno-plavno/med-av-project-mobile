@@ -1,10 +1,10 @@
-import { useRoute } from "@react-navigation/native"
+import { useFocusEffect, useRoute } from "@react-navigation/native"
 import { DateTimeFormatEnum } from "@utils/enums"
 import { isAndroid, isIOS } from "@utils/platformChecker"
 import { fontWeights, helpers } from "@utils/theme"
 import { fontFamilies } from "@utils/theme"
 import moment from "moment"
-import React, { useEffect, useRef } from "react"
+import React, { useCallback, useEffect, useRef } from "react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -215,7 +215,7 @@ const MyRequestsDetailsScreen = () => {
   const handleScroll = () => {
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true })
-    }, 100)
+    }, 250)
   }
 
   const renderItem = ({ item, index }: { item: any; index: number }) => {
@@ -321,6 +321,12 @@ const MyRequestsDetailsScreen = () => {
       keyboardDidShowListener.remove()
     }
   }, [])
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch()
+    }, [])
+  )
 
   return (
     <ScreenWrapper

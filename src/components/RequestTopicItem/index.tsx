@@ -23,7 +23,7 @@ const RequestTopicItem = ({
 }) => {
   const navigation = useNavigation<ROUTES>()
 
-  const { data: helpData } = useGetHelpQuery({id})
+  const { data: helpData } = useGetHelpQuery({ id })
 
   const statusBackgroundColor =
     status === "resolved" ? colors.successGreenLight : colors.pumpkin
