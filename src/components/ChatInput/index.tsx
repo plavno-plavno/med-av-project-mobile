@@ -38,7 +38,7 @@ const ChatInput = ({
       keyboardVerticalOffset={
         keyboardVerticalOffset || isIOS()
           ? moderateScale(120)
-          : moderateScale(80)
+          : moderateScale(50)
       }
     >
       <View style={styles.messageInputContainer}>

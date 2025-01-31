@@ -21,7 +21,6 @@ import {
   View,
 } from "react-native"
 import { moderateScale } from "react-native-size-matters"
-import ReactNativeBlobUtil from "react-native-blob-util"
 import {
   useAddMessageMutation,
   useGetHelpQuery,
@@ -35,7 +34,7 @@ import DocumentPicker from "react-native-document-picker"
 import { useMediaUploadMutation } from "src/api/mediaApi/mediaApi"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
 import Share from "react-native-share"
-import RNFS from "react-native-fs"
+import RNFetchBlob from 'react-native-blob-util';
 import useWebSocket from "src/socket/socket"
 
 const MyRequestsDetailsScreen = () => {
@@ -159,58 +158,55 @@ const MyRequestsDetailsScreen = () => {
 
   const onDocumentPress = async (item: any) => {
     try {
-      if (isAndroid()) {
-        const hasPermission = await requestStoragePermission()
-        if (!hasPermission) {
-          return
-        }
-      }
+      const { dirs } = RNFetchBlob.fs;
+      const dirToSave =
+        Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
+      const configfb = {
+        fileCache: true,
+        addAndroidDownloads: {
+          useDownloadManager: true,
+          notification: true,
+          mediaScannable: true,
+          title: `test.pdf`,
+          path: `${dirs.DownloadDir}/test.pdf`,
+        },
+        useDownloadManager: true,
+        notification: true,
+        mediaScannable: true,
+        title: 'test.pdf',
+        path: `${dirToSave}/test.pdf`,
+      };
+      const configOptions = Platform.select({
+        ios: configfb,
+        android: configfb,
+      });
 
-      const fileName = item?.file?.name || "downloaded_file"
-      const fileUrl = item?.file?.link
+      RNFetchBlob.config(configOptions || {})
+        .fetch('GET', item?.file?.link, {})
+        .then(res => {
 
-      if (!fileUrl) {
-        Alert.alert("Error", "File URL is missing.")
-        return
-      }
+          if (Platform.OS === 'ios') {
+            RNFetchBlob.fs.writeFile(configfb.path, res.data, 'base64');
+            RNFetchBlob.ios.previewDocument(configfb.path);
+          }
+          if (isAndroid()) {
+            console.log("file downloaded")
+          }
+        })
+        .catch(e => {
+          console.log('invoice Download==>', e);
+        });
 
-      const filePath = isAndroid()
-        ? `${RNFS.DownloadDirectoryPath}/${fileName}`
-        : `${RNFS.DocumentDirectoryPath}/${fileName}`
-
-      // Download the file
-      const downloadResult = await RNFS.downloadFile({
-        fromUrl: fileUrl,
-        toFile: filePath,
-      }).promise
-
-      if (downloadResult.statusCode !== 200) {
-        throw new Error("File download failed")
-      }
-
-      // Ensure the file exists after downloading
-      const fileExists = await RNFS.exists(filePath)
-      if (!fileExists) {
-        throw new Error("File not saved successfully")
-      }
-
-      if (isAndroid()) {
-        ReactNativeBlobUtil.fs
-          .scanFile([{ path: filePath, mime: item.file?.fileType }])
-          .then(() => console.log("File scanned successfully"))
-          .catch((err) => console.error("Error scanning file:", err))
-      }
-
-      // Share or save the file
       Share.open({
-        url: `file://${filePath}`,
+        url: `file://${item?.file?.link}`,
         title: "Save or Share",
-      }).catch((error) => console.error("Error sharing file:", error))
+      }).catch((error) => console.error("Error sharing file:", error));
+
     } catch (error: any) {
-      console.error("Error saving file:", error?.message || error)
-      Alert.alert("Download Failed", error?.message || "Something went wrong.")
+      console.error("Error saving file:", error?.message || error);
+      Alert.alert("Download Failed", error?.message || "Something went wrong.");
     }
-  }
+  };
 
   const handleScroll = () => {
     setTimeout(() => {

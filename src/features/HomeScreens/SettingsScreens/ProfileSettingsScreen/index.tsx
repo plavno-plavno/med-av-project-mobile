@@ -1,9 +1,9 @@
 import { Icon, CustomButton } from "@components"
-import { useNavigation } from "@react-navigation/native"
+import { useFocusEffect, useNavigation } from "@react-navigation/native"
 import { isIOS } from "@utils/platformChecker"
 import { helpers } from "@utils/theme"
 import { Formik, FormikProps } from "formik"
-import React, { useState } from "react"
+import React, { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { View, Text, Image } from "react-native"
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
@@ -50,6 +50,13 @@ const ProfileSettingsScreen = () => {
     limit: "100",
     term: "",
   })
+
+  useFocusEffect(
+    useCallback(() => {
+      authMeRefetch()
+      timezoneRefetch()
+    }, [])
+  )
 
   const [mediaUpload] = useMediaUploadMutation()
   const [updateAuthMe, { isLoading: isUpdateAuthMeLoading }] =
