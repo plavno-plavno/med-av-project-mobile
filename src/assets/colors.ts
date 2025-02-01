@@ -20,6 +20,8 @@ const colors = {
   darkGreen: "#005A60",
   lightGreen: "#E9F5F6",
   lightGray: "#D5D7DA",
+  lightBlue: "#03a4ab",
+  mint: "rgba(78,183,189,.102)",
 
   placeholder: "#9BA0A6",
   borderGrey: "#EAEEF2",

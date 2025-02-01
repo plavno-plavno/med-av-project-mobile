@@ -8,6 +8,12 @@ import colors from "src/assets/colors"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 
+enum HelpRequestStatusEnum {
+  "New" = "New",
+  "Under Review" = "Under Review",
+  "Resolved" = "Resolved",
+}
+
 const RequestTopicItem = ({
   title,
   date,
@@ -25,10 +31,27 @@ const RequestTopicItem = ({
 
   const { data: helpData } = useGetHelpQuery({ id })
 
-  const statusBackgroundColor =
-    status === "resolved" ? colors.successGreenLight : colors.pumpkin
-  const statusTextColor =
-    status === "resolved" ? colors.successGreen : colors.alertWarning
+  const statusBackgroundColor = () => {
+    switch (status) {
+      case HelpRequestStatusEnum.New:
+        return colors.mint
+      case HelpRequestStatusEnum["Under Review"]:
+        return colors.pumpkin
+      case HelpRequestStatusEnum.Resolved:
+        return colors.successGreenLight
+    }
+  }
+
+  const statusTextColor = () => {
+    switch (status) {
+      case HelpRequestStatusEnum.New:
+        return colors.lightBlue
+      case HelpRequestStatusEnum["Under Review"]:
+        return colors.alertWarning
+      case HelpRequestStatusEnum.Resolved:
+        return colors.successGreen
+    }
+  }
 
   const handlePress = () => {
     navigation.navigate(ScreensEnum.MY_REQUEST_DETAILS, {
@@ -53,8 +76,8 @@ const RequestTopicItem = ({
           style={[
             styles.statusText,
             {
-              backgroundColor: statusBackgroundColor,
-              color: statusTextColor,
+              backgroundColor: statusBackgroundColor(),
+              color: statusTextColor(),
             },
           ]}
         >
