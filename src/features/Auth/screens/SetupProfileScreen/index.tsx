@@ -25,13 +25,14 @@ import { Image as ImageType } from "react-native-image-crop-picker"
 import { useGetCalendarTimezonesQuery } from "src/api/calendarApi/calendarApi"
 import { ITimezone } from "src/api/calendarApi/types"
 import { screenHeight } from "@utils/screenResponsive"
-import { useTimezoneQuery } from "src/api/auth/authApi"
+import { useLanguageOptionsQuery, useTimezoneQuery } from "src/api/auth/authApi"
 
 interface IFormValues {
   photo: string
   firstName: string
   lastName: string
   gmtDelta: string | number
+  language: string
 }
 
 const SetupProfileScreen = () => {
@@ -44,12 +45,19 @@ const SetupProfileScreen = () => {
   const [isPhotoChanged, setIsPhotoChanged] = useState(false)
 
   const { data: authMeData, refetch: authMeRefetch } = useAuthMeQuery()
+  console.log("\x1b[31m%s\x1b[0m", "authMeData", authMeData)
   const { data: timezone, isLoading: isTimezoneLoading } = useTimezoneQuery()
   const { data: timezones } = useGetCalendarTimezonesQuery({
     page: "1",
     limit: "100",
     term: "",
   })
+  const { data: languageOptions } = useLanguageOptionsQuery()
+
+  const languagesDropdown = languageOptions?.map((item) => ({
+    label: item.name,
+    value: String(item.id),
+  }))
   const [mediaUpload] = useMediaUploadMutation()
   const [updateAuthMe, { isLoading: isUpdateAuthMeLoading }] =
     useUpdateAuthMeMutation()
@@ -92,6 +100,7 @@ const SetupProfileScreen = () => {
         firstName: values.firstName,
         lastName: values.lastName,
         timezone: +values.gmtDelta,
+        language: +values.language,
         photo: isPhotoChanged ? values.photo : authMeData?.photo?.id,
       }).unwrap()
       authMeRefetch()
@@ -127,7 +136,7 @@ const SetupProfileScreen = () => {
       <ScreenWrapper
         title={t("SetupProfile")}
         isCenterTitle
-        keyboardVerticalOffset={isIOS() ? moderateScale(-100) : undefined}
+        keyboardVerticalOffset={isIOS() ? moderateScale(-30) : undefined}
       >
         <KeyboardAwareScrollView
           style={helpers.flex1}
@@ -145,6 +154,8 @@ const SetupProfileScreen = () => {
                 photo: authMeData?.photo?.link || "",
                 firstName: authMeData?.firstName || "",
                 lastName: authMeData?.lastName || "",
+                //@ts-ignore
+                language: authMeData?.language?.id || "",
                 gmtDelta: "",
               }}
               validationSchema={validationSetupProfileSchema}
@@ -214,6 +225,19 @@ const SetupProfileScreen = () => {
                         />
                       )}
 
+                      {!authMeData?.language && (
+                        <CustomInput
+                          inputType="dropdown"
+                          dropdownData={languagesDropdown || []}
+                          label={t("DestinationLanguage")}
+                          value={values.language.toString()}
+                          onChangeText={(val) =>
+                            handleChange("language")(val as string)
+                          }
+                          onBlur={handleBlur("language")}
+                          error={touched.language && errors.language}
+                        />
+                      )}
                       {!timezone?.id && (
                         <CustomInput
                           inputType="dropdown"

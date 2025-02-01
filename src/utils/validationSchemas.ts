@@ -88,6 +88,7 @@ export const validationSetupProfileSchema = Yup.object().shape({
   firstName: Yup.string().required("First name is required"),
   lastName: Yup.string().required("Last name is required"),
   gmtDelta: Yup.string().required("Timezone is required"),
+  language: Yup.string().required("Language is required"),
 })
 export const validationProfileSettingsSchema = Yup.object().shape({
   firstName: Yup.string().required("First name is required"),
