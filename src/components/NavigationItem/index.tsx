@@ -52,7 +52,6 @@ export default NavigationItem
 
 export const styles = StyleSheet.create({
   itemContainer: {
-    // height: moderateScale(64),
     backgroundColor: colors.aquaHaze,
     borderRadius: moderateScale(16),
     padding: moderateScale(16),
@@ -64,6 +63,7 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
   },
   menuTitle: {
+    maxWidth: "90%",
     ...fontFamilies.interManropeSemiBold16,
     ...fontWeights.fontWeight500,
     color: colors.charcoal,

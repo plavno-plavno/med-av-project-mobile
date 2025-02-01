@@ -50,6 +50,7 @@ const FAQScreen = () => {
           <Loading />
         ) : (
           <FlatList
+            showsVerticalScrollIndicator={false}
             contentContainerStyle={helpers.gap8}
             data={questions}
             keyExtractor={(item) => item.title}
