@@ -19,7 +19,7 @@ const SelectTopicModal = ({ sheetRef, formikRef, setTopicId }: any) => {
   )
 
   const { data: topics } = useGetTopicsQuery({
-    limit: 10,
+    limit: 100,
     page: 1,
   })
 
