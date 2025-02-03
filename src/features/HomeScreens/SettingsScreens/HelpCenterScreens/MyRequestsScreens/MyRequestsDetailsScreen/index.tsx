@@ -34,7 +34,7 @@ import DocumentPicker from "react-native-document-picker"
 import { useMediaUploadMutation } from "src/api/mediaApi/mediaApi"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
 import Share from "react-native-share"
-import RNFetchBlob from 'react-native-blob-util';
+import RNFetchBlob from "react-native-blob-util"
 import useWebSocket from "src/socket/socket"
 
 const MyRequestsDetailsScreen = () => {
@@ -158,9 +158,9 @@ const MyRequestsDetailsScreen = () => {
 
   const onDocumentPress = async (item: any) => {
     try {
-      const { dirs } = RNFetchBlob.fs;
+      const { dirs } = RNFetchBlob.fs
       const dirToSave =
-        Platform.OS === 'ios' ? dirs.DocumentDir : dirs.DownloadDir;
+        Platform.OS === "ios" ? dirs.DocumentDir : dirs.DownloadDir
       const configfb = {
         fileCache: true,
         addAndroidDownloads: {
@@ -173,40 +173,38 @@ const MyRequestsDetailsScreen = () => {
         useDownloadManager: true,
         notification: true,
         mediaScannable: true,
-        title: 'test.pdf',
+        title: "test.pdf",
         path: `${dirToSave}/test.pdf`,
-      };
+      }
       const configOptions = Platform.select({
         ios: configfb,
         android: configfb,
-      });
+      })
 
       RNFetchBlob.config(configOptions || {})
-        .fetch('GET', item?.file?.link, {})
-        .then(res => {
-
-          if (Platform.OS === 'ios') {
-            RNFetchBlob.fs.writeFile(configfb.path, res.data, 'base64');
-            RNFetchBlob.ios.previewDocument(configfb.path);
+        .fetch("GET", item?.file?.link, {})
+        .then((res) => {
+          if (Platform.OS === "ios") {
+            RNFetchBlob.fs.writeFile(configfb.path, res.data, "base64")
+            RNFetchBlob.ios.previewDocument(configfb.path)
           }
           if (isAndroid()) {
             console.log("file downloaded")
           }
         })
-        .catch(e => {
-          console.log('invoice Download==>', e);
-        });
+        .catch((e) => {
+          console.log("invoice Download==>", e)
+        })
 
       Share.open({
         url: `file://${item?.file?.link}`,
         title: "Save or Share",
-      }).catch((error) => console.error("Error sharing file:", error));
-
+      }).catch((error) => console.error("Error sharing file:", error))
     } catch (error: any) {
-      console.error("Error saving file:", error?.message || error);
-      Alert.alert("Download Failed", error?.message || "Something went wrong.");
+      console.error("Error saving file:", error?.message || error)
+      Alert.alert("Download Failed", error?.message || "Something went wrong.")
     }
-  };
+  }
 
   const handleScroll = () => {
     setTimeout(() => {
@@ -223,7 +221,7 @@ const MyRequestsDetailsScreen = () => {
     const isNewDay =
       !prevMessageDate || !messageDate.isSame(prevMessageDate, "day")
 
-    const avatar = item?.createdBy?.photo?.link
+    const avatar = authMe?.photo?.link
     const isSupport = item?.createdBy?.email !== authMe?.email
 
     return (
