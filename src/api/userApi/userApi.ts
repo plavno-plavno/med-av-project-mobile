@@ -39,6 +39,15 @@ export const userApi = createApi({
         },
       }),
     }),
+    changeEmail: builder.mutation<void, { email: string }>({
+      query: ({ email }: { email: string }) => ({
+        url: "auth/me/email/request",
+        method: "PATCH",
+        body: {
+          email,
+        },
+      }),
+    }),
     deleteAuthMe: builder.mutation<void, void>({
       query: () => ({
         url: "auth/me",
@@ -53,6 +62,7 @@ export const userApi = createApi({
 })
 
 export const {
+  useChangeEmailMutation,
   useLogoutMutation,
   useAuthMeQuery,
   useUpdateAuthMeMutation,

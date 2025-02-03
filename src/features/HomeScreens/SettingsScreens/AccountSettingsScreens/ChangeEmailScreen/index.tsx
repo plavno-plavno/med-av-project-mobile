@@ -5,12 +5,17 @@ import * as Keychain from "react-native-keychain"
 import { helpers } from "@utils/theme"
 import React from "react"
 import { useTranslation } from "react-i18next"
-import { Keyboard, StyleSheet, TouchableWithoutFeedback, View } from "react-native"
+import {
+  Keyboard,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import Toast from "react-native-toast-message"
 import {
+  useChangeEmailMutation,
   useLogoutMutation,
-  useUpdateAuthMeMutation,
 } from "src/api/userApi/userApi"
 import CustomInput from "src/components/CustomInput"
 import ScreenWrapper from "src/components/ScreenWrapper"
@@ -29,8 +34,8 @@ const ChangeEmailScreen = () => {
   const formikRef = React.useRef<FormikProps<IFormValues>>(null as any)
   const [logout] = useLogoutMutation()
 
-  const [updateAuthMe, { isLoading: isUpdateAuthMeLoading }] =
-    useUpdateAuthMeMutation()
+  const [changeEmail, { isLoading: isUpdateChangeEmail }] =
+    useChangeEmailMutation()
 
   const handleLogout = async () => {
     try {
@@ -48,7 +53,7 @@ const ChangeEmailScreen = () => {
 
   const handleChangeEmail = async (values: IFormValues) => {
     try {
-      await updateAuthMe({
+      await changeEmail({
         email: values.email,
       }).unwrap()
       Toast.show({
@@ -99,7 +104,7 @@ const ChangeEmailScreen = () => {
         onPress={() => {
           formikRef.current?.submitForm()
         }}
-        isLoading={isUpdateAuthMeLoading}
+        isLoading={isUpdateChangeEmail}
       />
     </ScreenWrapper>
   )
