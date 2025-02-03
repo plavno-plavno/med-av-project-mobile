@@ -3,7 +3,7 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native"
 import { isIOS } from "@utils/platformChecker"
 import { helpers } from "@utils/theme"
 import { Formik, FormikProps } from "formik"
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { View, Text, Image } from "react-native"
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
@@ -68,10 +68,15 @@ const ProfileSettingsScreen = () => {
     label: item.name,
     value: String(item.id),
   }))
-  const timezoneOptions = timezones?.data?.map((item: ITimezone) => ({
-    label: item.text,
-    value: item.id.toString(),
-  }))
+
+  const timezoneOptions = useMemo(() => {
+    return (
+      timezones?.data?.map((item: ITimezone) => ({
+        label: item.text,
+        value: item.id.toString(),
+      })) || []
+    )
+  }, [timezones?.data])
 
   const handleImagePicker = async (image: ImageType) => {
     setIsUploadPhotoLoading(true)
@@ -242,6 +247,7 @@ const ProfileSettingsScreen = () => {
                     dropdownPosition="top"
                     inputType="dropdown"
                     dropdownData={timezoneOptions}
+                    searchField
                     label={t("Timezone")}
                     value={String(values.gmtDelta)}
                     onChangeText={(val) =>

@@ -381,7 +381,8 @@ const ScheduleMeetingModal = ({
                       <CustomInput
                         inputType="dropdown"
                         required
-                        label="Timezone"
+                        searchField
+                        label={t("Timezone")}
                         value={String(values.timezone)}
                         onChangeText={(val) =>
                           handleChange("timezone")(val as string)

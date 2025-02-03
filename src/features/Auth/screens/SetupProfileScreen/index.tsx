@@ -241,6 +241,7 @@ const SetupProfileScreen = () => {
                       {!timezone?.id && (
                         <CustomInput
                           inputType="dropdown"
+                          searchField
                           dropdownData={timezoneOptions}
                           label={t("Timezone")}
                           placeholder={t("EnterYourTimezone")}

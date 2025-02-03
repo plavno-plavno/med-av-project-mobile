@@ -57,6 +57,13 @@ export const styles = StyleSheet.create({
     ...fontWeights.fontWeight400,
     color: colors.placeholder,
   },
+  inputSearchStyle: {
+    paddingHorizontal: moderateScale(6),
+    borderRadius: moderateScale(12),
+    ...fontFamilies.interManropeRegular16,
+    ...fontWeights.fontWeight400,
+    color: colors.midGrey,
+  },
   iconStyle: {
     width: moderateScale(24),
     height: moderateScale(24),

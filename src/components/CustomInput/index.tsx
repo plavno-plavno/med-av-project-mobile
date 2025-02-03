@@ -42,6 +42,7 @@ interface CustomInputProps {
   onBlur?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
   style?: StyleProp<ViewStyle>
   numberOfLines?: number
+  searchField?: boolean
 }
 
 export interface Input {
@@ -61,6 +62,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
       isHidePassword = true,
       keyboardType = "default",
       error,
+      searchField = false,
       dropdownData,
       inputContainerProps,
       required,
@@ -109,15 +111,17 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
               selectedTextProps={{
                 numberOfLines: 1,
               }}
+              search={searchField}
+              inputSearchStyle={styles.inputSearchStyle}
               placeholderStyle={styles.placeholderStyle}
               selectedTextStyle={styles.dropdownStyle}
               containerStyle={styles.containerStyle}
               iconStyle={styles.iconStyle}
+              value={value}
               data={dropdownData || []}
               maxHeight={300}
               labelField="label"
               valueField="value"
-              value={value}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               onChange={(item: any) => {
