@@ -42,10 +42,11 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
   },
   textAreaInput: {
-    height: moderateScale(150),
-    paddingLeft: moderateScale(12),
-    paddingRight: moderateScale(30),
+    minHeight: moderateScale(150),
+    maxHeight: moderateScale(150),
+    paddingHorizontal: moderateScale(12),
     paddingVertical: moderateScale(12),
+    textAlignVertical: 'top',
   },
   dropdownStyle: {
     ...fontFamilies.interManropeRegular16,

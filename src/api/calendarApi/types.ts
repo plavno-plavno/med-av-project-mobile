@@ -2,6 +2,18 @@ export interface IGetCalendarEventDetailsRequest {
   id: number
 }
 
+export interface Timezone {
+  __entity: "Timezone";
+  abbreviation: string;
+  gmtDelta: number;
+  id: number;
+  isDst: boolean;
+  text: string;
+  utc: string[];
+  value: string;
+};
+
+
 export interface IGetCalendarEventDetailsResponse {
   id: number
   startDate: string
@@ -13,6 +25,7 @@ export interface IGetCalendarEventDetailsResponse {
   participants: IParticipants[]
   createdBy: ICreatedBy
   hash: string
+  timezone: Timezone
 }
 
 export interface IRole {

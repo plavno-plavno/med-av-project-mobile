@@ -54,7 +54,7 @@ const MyRequestsScreen = () => {
               paddingBottom: moderateScale(20),
             },
           ]}
-          data={requestData?.data}
+          data={requestData?.data ? [...requestData?.data]?.reverse() : []}
           renderItem={({ item }) => (
             <RequestTopicItem
               id={item?.id}

@@ -81,7 +81,7 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   container: {
-    height: screenHeight * 0.82,
+    height: screenHeight * 0.85,
     justifyContent: "space-between",
     paddingHorizontal: moderateScale(20),
     backgroundColor: colors.white,
@@ -90,5 +90,6 @@ export const styles = StyleSheet.create({
   button: {
     width: "100%",
     marginTop: moderateScale(40),
+    marginBottom: moderateScale(10),
   },
 })

@@ -149,7 +149,7 @@ const ScheduleMeetingModal = ({
     date: defaultDate,
     startDate: defaultTimeStart,
     endDate: defaultTimeEnd,
-    timezone: timezone?.id.toString() || "",
+    timezone: eventDetailsData?.timezone?.id || timezone?.id.toString() || "",
     participants: (eventId && eventParticipants) || [],
     color: (eventId && eventDetailsData?.color) || DEFAULT_COLOR,
     description: (eventId && eventDetailsData?.description) || "",
@@ -381,8 +381,7 @@ const ScheduleMeetingModal = ({
                       <CustomInput
                         inputType="dropdown"
                         required
-                        searchField
-                        label={t("Timezone")}
+                        label="Timezone"
                         value={String(values.timezone)}
                         onChangeText={(val) =>
                           handleChange("timezone")(val as string)
