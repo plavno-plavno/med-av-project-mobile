@@ -5,8 +5,7 @@ import * as Keychain from "react-native-keychain"
 import { helpers } from "@utils/theme"
 import React from "react"
 import { useTranslation } from "react-i18next"
-import { StyleSheet } from "react-native"
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
+import { Keyboard, StyleSheet, TouchableWithoutFeedback, View } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import Toast from "react-native-toast-message"
 import {
@@ -17,7 +16,7 @@ import CustomInput from "src/components/CustomInput"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
-import { Formik, FormikHelpers, FormikProps } from "formik"
+import { Formik, FormikProps } from "formik"
 import { validationEmailSchema } from "@utils/validationSchemas"
 
 interface IFormValues {
@@ -71,33 +70,29 @@ const ChangeEmailScreen = () => {
       isBackButton
       title={t("ChangeE-mail")}
       isCenterTitle
-      keyboardVerticalOffset={isIOS() ? moderateScale(-100) : undefined}
+      keyboardVerticalOffset={isIOS() ? moderateScale(-30) : undefined}
     >
-      <KeyboardAwareScrollView
-        style={helpers.flex1}
-        bounces={false}
-        enableOnAndroid
-        enableAutomaticScroll
-        showsVerticalScrollIndicator={false}
-      >
-        <Formik
-          innerRef={formikRef}
-          initialValues={{ email: "" }}
-          onSubmit={handleChangeEmail}
-          validationSchema={validationEmailSchema}
-          validateOnChange={true}
-        >
-          {({ handleChange, values, errors, touched }) => (
-            <CustomInput
-              label={t("E-mail")}
-              placeholder={t("EnterYourEmail")}
-              value={values.email}
-              onChangeText={(e) => handleChange("email")(e as string)}
-              error={touched.email && errors.email}
-            />
-          )}
-        </Formik>
-      </KeyboardAwareScrollView>
+      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+        <View style={helpers.flex1}>
+          <Formik
+            innerRef={formikRef}
+            initialValues={{ email: "" }}
+            onSubmit={handleChangeEmail}
+            validationSchema={validationEmailSchema}
+            validateOnChange={true}
+          >
+            {({ handleChange, values, errors, touched }) => (
+              <CustomInput
+                label={t("E-mail")}
+                placeholder={t("EnterYourEmail")}
+                value={values.email}
+                onChangeText={(e) => handleChange("email")(e as string)}
+                error={touched.email && errors.email}
+              />
+            )}
+          </Formik>
+        </View>
+      </TouchableWithoutFeedback>
       <CustomButton
         style={{ bottom: moderateScale(30) }}
         text={t("ChangeE-mail")}

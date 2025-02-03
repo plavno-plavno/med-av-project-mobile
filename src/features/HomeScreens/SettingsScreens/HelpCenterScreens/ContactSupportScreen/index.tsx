@@ -50,7 +50,7 @@ const ContactSupportScreen = () => {
         type: "success",
         text1: t("TopicAdded"),
       })
-      navigation.navigate(ScreensEnum.MY_REQUESTS)
+      navigation.replace(ScreensEnum.MY_REQUESTS);
     } catch (error) {
       console.log(error)
     }

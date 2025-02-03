@@ -52,7 +52,7 @@ const ChangePasswordScreen = () => {
   return (
     <ScreenWrapper
       isBackButton
-      title={t("ChangeE-mail")}
+      title={t("ChangePassword")}
       isCenterTitle
       keyboardVerticalOffset={isIOS() ? moderateScale(-100) : undefined}
     >
