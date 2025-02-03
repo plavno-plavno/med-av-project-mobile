@@ -21,6 +21,7 @@ import { useAuthMeQuery } from "src/api/userApi/userApi"
 import DetailsEventModal from "src/modals/DetailsEventModal"
 import moment from "moment"
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
+import { useTimezoneQuery } from "src/api/auth/authApi"
 
 const today = moment().format("YYYY-MM-DD")
 
@@ -40,6 +41,7 @@ const CalendarScreen = () => {
   } = useGetCalendarEventsQuery()
 
   const { data: authMeData } = useAuthMeQuery()
+  const { data: timezone, refetch: timezoneRefetch } = useTimezoneQuery()
 
   useEffect(() => {
     if (today === selectedDay) {
@@ -89,7 +91,7 @@ const CalendarScreen = () => {
     const minute = parsedDate.getUTCMinutes()
 
     // Adjust the hour using gmtDelta
-    const adjustedHour = hour + (authMeData?.gmtDelta || 0)
+    const adjustedHour = hour + (timezone?.gmtDelta || 0)
     return new Date(year, month, day, adjustedHour, minute)
   }
 
@@ -171,6 +173,7 @@ const CalendarScreen = () => {
   useFocusEffect(
     useCallback(() => {
       calendarEventsRefetch()
+      timezoneRefetch()
     }, [])
   )
 
