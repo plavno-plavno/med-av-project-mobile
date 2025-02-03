@@ -24,7 +24,10 @@ export const styles = StyleSheet.create({
     borderRadius: moderateScale(12),
   },
   input: {
+    flexShrink: 1,
+    overflow: "hidden",
     height: moderateScale(48),
+    paddingVertical: moderateScale(12),
     paddingHorizontal: moderateScale(12),
     ...fontFamilies.interManropeRegular16,
     ...fontWeights.fontWeight400,

@@ -32,7 +32,7 @@ interface ICustomInputProps {
   handleBlur?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
   styles?: StyleProp<ViewStyle>
   onKeyPress?: (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => void
-  numberOfLines?: number;
+  numberOfLines?: number
 }
 
 const CustomTextInput = ({

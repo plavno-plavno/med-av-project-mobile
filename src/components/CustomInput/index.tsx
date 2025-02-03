@@ -41,7 +41,7 @@ interface CustomInputProps {
   onFocus?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
   onBlur?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
   style?: StyleProp<ViewStyle>
-  numberOfLines?: number;
+  numberOfLines?: number
 }
 
 export interface Input {
