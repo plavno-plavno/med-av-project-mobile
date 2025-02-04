@@ -18,6 +18,7 @@ import { isAndroid, isIOS } from "@utils/platformChecker"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
 import useKeyboardEvents from "src/hooks/useKeyboardEvents"
 import { moderateScale } from "react-native-size-matters"
+import { getNotificationToken } from "src/notifications/setupNotification"
 
 interface FormValues {
   email: string
@@ -38,6 +39,7 @@ const LoginScreen = () => {
     useEmailLoginMutation()
 
   const handleLogin = async (values: { email: string; password: string }) => {
+    const notificationToken = await getNotificationToken();
     try {
       const res = await emailLogin({
         email: values.email,

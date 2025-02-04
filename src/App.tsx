@@ -8,6 +8,7 @@ import ToastMessage from "./components/ToastMessages"
 import NoConnectionModal from "./modals/NoConnectionModal"
 import { Host } from "react-native-portalize"
 import { LogBox } from "react-native"
+import NotificationController from "./notifications/NotificationController"
 
 LogBox.ignoreAllLogs();
 
@@ -20,6 +21,7 @@ const App = () => {
         </Host>
         <ToastMessage />
         <NoConnectionModal />
+        <NotificationController />
       </Provider>
     </SafeAreaProvider>
   )

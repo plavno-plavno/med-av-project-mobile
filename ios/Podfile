@@ -16,6 +16,10 @@ end
 
 target 'MedAV' do
   config = use_native_modules!
+  pod 'Firebase', :modular_headers => true
+  pod 'FirebaseCoreInternal', :modular_headers => true
+  pod 'GoogleUtilities', :modular_headers => true
+  pod 'FirebaseCore', :modular_headers => true
 
   use_react_native!(
     :path => config[:reactNativePath],
@@ -30,6 +34,10 @@ target 'MedAV' do
 
   target 'MedAVDevelopment' do
     inherit! :complete
+    pod 'Firebase', :modular_headers => true
+    pod 'FirebaseCoreInternal', :modular_headers => true
+    pod 'GoogleUtilities', :modular_headers => true
+    pod 'FirebaseCore', :modular_headers => true
     pod 'ReactNativeIncallManager', :path => '../node_modules/react-native-incall-manager'
   end
 

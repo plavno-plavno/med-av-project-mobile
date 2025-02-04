@@ -1,4 +1,5 @@
 import { PermissionsAndroid, Platform } from 'react-native';
+import messaging from '@react-native-firebase/messaging';
 
 export const requestCameraPermission = async () => {
   if (Platform.OS === 'android') {
@@ -26,3 +27,14 @@ export const requestCameraPermission = async () => {
   }
   return true; // iO
 };
+
+export const requestUserPermission = async () => {
+  const authStatus = await messaging().requestPermission();
+  const enabled =
+    authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+    authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+  if (enabled) {
+    console.log('Authorization status:', authStatus);
+  }
+}

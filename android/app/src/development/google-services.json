@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "899865062191",
+    "project_id": "med-av-dev",
+    "storage_bucket": "med-av-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:899865062191:android:1420a755be8857bc688fda",
+        "android_client_info": {
+          "package_name": "com.MedAVDevelopment"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8Xlp1BWA7Kqgam3ddRuevLwUnO3yevxo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
