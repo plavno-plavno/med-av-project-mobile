@@ -257,6 +257,7 @@ const ProfileSettingsScreen = () => {
           </View>
         </KeyboardAwareScrollView>
         <CustomButton
+          style={{ bottom: moderateScale(10) }}
           text={t("Save")}
           rightIcon={"saveDisk"}
           onPress={() => formikRef.current?.submitForm()}

@@ -75,7 +75,7 @@ const ChangeEmailScreen = () => {
       isBackButton
       title={t("ChangeE-mail")}
       isCenterTitle
-      keyboardVerticalOffset={isIOS() ? moderateScale(-30) : undefined}
+      keyboardVerticalOffset={isIOS() ? moderateScale(-20) : undefined}
     >
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <View style={helpers.flex1}>
@@ -99,7 +99,7 @@ const ChangeEmailScreen = () => {
         </View>
       </TouchableWithoutFeedback>
       <CustomButton
-        style={{ bottom: moderateScale(30) }}
+        style={{ bottom: moderateScale(10) }}
         text={t("ChangeE-mail")}
         onPress={() => {
           formikRef.current?.submitForm()

@@ -59,7 +59,7 @@ const NewMeetingScreen = () => {
             <Icon
               name="meetingLogo"
               width={"100%"}
-              height={moderateScale(250)}
+              height={moderateScale(230)}
             />
             <View>
               <Text style={styles.title}>{t("StartNewMeeting")}</Text>
@@ -98,7 +98,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    justifyContent: "space-between",
     gap: moderateScale(20),
   },
   title: {

@@ -102,9 +102,9 @@ export const helpers = StyleSheet.create({
   },
   absoluteLeftRight20: {
     position: "absolute",
-    left: 20,
-    right: 20,
-    bottom: 10,
+    left: moderateScale(20),
+    right: moderateScale(20),
+    bottom: moderateScale(30),
   },
   absoluteBottom: {
     position: "absolute",
