@@ -142,12 +142,7 @@ const ProfileSettingsScreen = () => {
 
   return (
     <>
-      <ScreenWrapper
-        isBackButton
-        title={t("ProfileSettings")}
-        isCenterTitle
-        keyboardVerticalOffset={isIOS() ? moderateScale(-100) : undefined}
-      >
+      <ScreenWrapper isBackButton title={t("ProfileSettings")} isCenterTitle>
         <KeyboardAwareScrollView
           style={helpers.flex1}
           bounces={false}
@@ -262,7 +257,6 @@ const ProfileSettingsScreen = () => {
           </View>
         </KeyboardAwareScrollView>
         <CustomButton
-          style={{ bottom: moderateScale(30) }}
           text={t("Save")}
           rightIcon={"saveDisk"}
           onPress={() => formikRef.current?.submitForm()}

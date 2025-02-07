@@ -29,8 +29,8 @@ const LoginScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<ROUTES>()
   const formikRef = React.useRef<FormikProps<FormValues>>(null as any)
-  const { isKeyboardVisible, keyboardHeight } = useKeyboardEvents();
-  const scrollRef = useRef<KeyboardAwareScrollView>(null);
+  const { isKeyboardVisible } = useKeyboardEvents()
+  const scrollRef = useRef<KeyboardAwareScrollView>(null)
 
   const { refetch: authMeRefetch } = useAuthMeQuery()
   const { refetch: timezoneRefetch } = useTimezoneQuery()
@@ -39,7 +39,7 @@ const LoginScreen = () => {
     useEmailLoginMutation()
 
   const handleLogin = async (values: { email: string; password: string }) => {
-    const notificationToken = await getNotificationToken();
+    const notificationToken = await getNotificationToken()
     try {
       const res = await emailLogin({
         email: values.email,
@@ -72,18 +72,18 @@ const LoginScreen = () => {
     }
   }
 
-    useEffect(() => {
-      if (scrollRef.current && isKeyboardVisible && isAndroid()) {
-        scrollRef.current?.scrollForExtraHeightOnAndroid(moderateScale(100))
-      }
-    }, [isKeyboardVisible])
+  useEffect(() => {
+    if (scrollRef.current && isKeyboardVisible && isAndroid()) {
+      scrollRef.current?.scrollForExtraHeightOnAndroid(moderateScale(100))
+    }
+  }, [isKeyboardVisible])
 
   return (
     <ScreenWrapper
       isBackButton
       title={t("LogIn")}
       isCenterTitle
-      keyboardVerticalOffset={isIOS() ? -50 : 0}
+      keyboardVerticalOffset={isIOS() ? moderateScale(-50) : 0}
     >
       <KeyboardAwareScrollView
         ref={scrollRef}

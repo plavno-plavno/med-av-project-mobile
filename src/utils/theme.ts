@@ -100,6 +100,12 @@ export const helpers = StyleSheet.create({
     bottom: 10,
     left: 16,
   },
+  absoluteLeftRight20: {
+    position: "absolute",
+    left: 20,
+    right: 20,
+    bottom: 10,
+  },
   absoluteBottom: {
     position: "absolute",
     bottom: 10,
@@ -395,6 +401,9 @@ export const helpers = StyleSheet.create({
   flexCenter: {
     alignItems: "center",
     justifyContent: "center",
+  },
+  flexBetween: {
+    justifyContent: "space-between",
   },
   height20: {
     height: moderateScale(20),

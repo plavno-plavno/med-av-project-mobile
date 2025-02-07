@@ -31,6 +31,7 @@ const CalendarScreen = () => {
   const sheetScheduleRef = useRef<BottomSheetMethods>(null)
   const [eventId, setEventId] = React.useState(0)
   const [handleEventTime, setCustomEventTime] = React.useState("")
+  const [isOpen, setIsOpen] = useState(false)
   const [scrollOffsetMinutes, setScrollOffsetMinutes] = useState(0)
   const scrollRef = useRef<KeyboardAwareScrollView>(null)
 
@@ -49,7 +50,7 @@ const CalendarScreen = () => {
       const startOfDay = moment().startOf("day")
       const minutesElapsed = now.diff(startOfDay, "minutes")
 
-      setScrollOffsetMinutes(minutesElapsed * 0.7)
+      setScrollOffsetMinutes(minutesElapsed * 0.5)
     } else {
       setScrollOffsetMinutes(0)
     }
@@ -162,7 +163,10 @@ const CalendarScreen = () => {
 
   const handleCreateEvent = (e: string) => {
     setCustomEventTime(e)
-    sheetScheduleRef.current?.open()
+    setIsOpen(true)
+    setTimeout(() => {
+      sheetScheduleRef.current?.open()
+    }, 100)
     scrollRef?.current?.scrollToPosition(0, 0, true)
   }
 
@@ -229,15 +233,19 @@ const CalendarScreen = () => {
           eventId={eventId}
           sheetRef={sheetDetailsRef}
         />
-        <ScheduleMeetingModal
-          handleEventTime={handleEventTime}
-          handleGoModalBack={handleGoModalBack}
-          onClose={handleCloseScheduleModal}
-          sheetRef={sheetScheduleRef}
-          eventId={eventId}
-          refetch={calendarEventsRefetch}
-          scrollRef={scrollRef}
-        />
+        {isOpen && (
+          <ScheduleMeetingModal
+            isOpen={isOpen}
+            setIsOpen={setIsOpen}
+            handleEventTime={handleEventTime}
+            handleGoModalBack={handleGoModalBack}
+            onClose={handleCloseScheduleModal}
+            sheetRef={sheetScheduleRef}
+            eventId={eventId}
+            refetch={calendarEventsRefetch}
+            scrollRef={scrollRef}
+          />
+        )}
       </Portal>
     </>
   )

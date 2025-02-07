@@ -52,6 +52,8 @@ const DEFAULT_COLOR = colors.lightAqua
 
 interface IScheduleMeetingModal {
   onClose: () => void
+  isOpen?: any
+  setIsOpen?: any
   handleEventTime?: string
   handleGoModalBack?: () => void
   sheetRef: React.RefObject<BottomSheetMethods>
@@ -72,6 +74,7 @@ const ScheduleMeetingModal = ({
   sheetRef,
   handleEventTime,
   eventId,
+  setIsOpen,
   handleGoModalBack,
   refetch,
   scrollRef,
@@ -275,7 +278,14 @@ const ScheduleMeetingModal = ({
     }
   }
 
+  const resetModal = () => {
+    if (setIsOpen) {
+      setIsOpen(false)
+    }
+  }
+
   const onModalClose = () => {
+    resetModal()
     formikRef.current?.resetForm()
     onClose()
   }
@@ -289,6 +299,8 @@ const ScheduleMeetingModal = ({
         style={styles.bottomSheet}
         disableBodyPanning
         disableKeyboardHandling
+        closeOnDragDown
+        onClose={resetModal}
       >
         <KeyboardAwareScrollView
           keyboardShouldPersistTaps="always"

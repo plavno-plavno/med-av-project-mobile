@@ -88,7 +88,6 @@ const DetailsEventModal = ({
       setIsDeclineEventLoading(false)
     }
   }
-
   return (
     <>
       <BottomSheet
@@ -108,7 +107,7 @@ const DetailsEventModal = ({
                 <Icon name={"closeButton"} onPress={onClose} />
               </View>
               <View style={styles.content}>
-                <Text style={styles.subtitle}>{t("DesignOnboardingCall")}</Text>
+                <Text style={styles.subtitle}>{eventDetailsData?.title}</Text>
                 <View
                   style={[
                     helpers.gap8,

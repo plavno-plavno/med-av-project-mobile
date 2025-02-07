@@ -24,7 +24,7 @@ interface IFormValues {
 const ChangePasswordScreen = () => {
   const { t } = useTranslation()
   const formikRef = React.useRef<FormikProps<IFormValues>>(null as any)
-
+  const scrollRef = React.useRef<KeyboardAwareScrollView>(null)
   const navigation = useNavigation<ROUTES>()
   const [updateAuthMe, { isLoading: isUpdateAuthMeLoading }] =
     useUpdateAuthMeMutation()
@@ -54,13 +54,13 @@ const ChangePasswordScreen = () => {
       isBackButton
       title={t("ChangePassword")}
       isCenterTitle
-      keyboardVerticalOffset={isIOS() ? moderateScale(-100) : undefined}
+      keyboardVerticalOffset={isIOS() ? moderateScale(-10) : undefined}
     >
       <KeyboardAwareScrollView
-        style={helpers.flex1}
+        ref={scrollRef}
+        style={[helpers.flex1]}
         bounces={false}
         enableOnAndroid
-        enableAutomaticScroll
         showsVerticalScrollIndicator={false}
       >
         <Formik
@@ -107,7 +107,7 @@ const ChangePasswordScreen = () => {
         </Formik>
       </KeyboardAwareScrollView>
       <CustomButton
-        style={{ bottom: moderateScale(30) }}
+        style={[helpers.absoluteLeftRight20]}
         text={t("ChangePassword")}
         onPress={() => {
           formikRef.current?.submitForm()

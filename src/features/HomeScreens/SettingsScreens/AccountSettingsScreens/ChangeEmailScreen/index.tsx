@@ -58,7 +58,7 @@ const ChangeEmailScreen = () => {
       }).unwrap()
       Toast.show({
         type: "success",
-        text1: t("EmailChanged"),
+        text1: t("WeSentAnEmailToYou"),
       })
       handleLogout()
     } catch (error: any) {

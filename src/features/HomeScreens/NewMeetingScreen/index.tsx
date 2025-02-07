@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native"
+import { ScrollView, StyleSheet, Text, View } from "react-native"
 import React, { useRef } from "react"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { useTranslation } from "react-i18next"
@@ -50,29 +50,35 @@ const NewMeetingScreen = () => {
       console.log(error)
     }
   }
-  
+
   return (
     <>
       <ScreenWrapper title={t("NewMeeting")} isCenterTitle>
-        <View style={styles.container}>
-          <Icon name="meetingLogo" width={"100%"} height="250" />
-          <View>
-            <Text style={styles.title}>{t("StartNewMeeting")}</Text>
-            <Text style={styles.subtitle}>{t("StartAMeeting")}</Text>
-          </View>
-          <View style={[helpers.gap8, helpers.width100Percent]}>
-            <MeetingsButton
-              icon="videoIcon"
-              title={t("StartMeetingInstantly")}
-              onPress={onCreateInstantEvent}
+        <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+          <View style={styles.container}>
+            <Icon
+              name="meetingLogo"
+              width={"100%"}
+              height={moderateScale(250)}
             />
-            <MeetingsButton
-              icon="scheduleMeeting"
-              title={t("ScheduleMeeting")}
-              onPress={onOpen}
-            />
+            <View>
+              <Text style={styles.title}>{t("StartNewMeeting")}</Text>
+              <Text style={styles.subtitle}>{t("StartAMeeting")}</Text>
+            </View>
+            <View style={[helpers.gap8, helpers.width100Percent]}>
+              <MeetingsButton
+                icon="videoIcon"
+                title={t("StartMeetingInstantly")}
+                onPress={onCreateInstantEvent}
+              />
+              <MeetingsButton
+                icon="scheduleMeeting"
+                title={t("ScheduleMeeting")}
+                onPress={onOpen}
+              />
+            </View>
           </View>
-        </View>
+        </ScrollView>
       </ScreenWrapper>
       <Portal>
         <ScheduleMeetingModal
