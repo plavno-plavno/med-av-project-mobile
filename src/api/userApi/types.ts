@@ -49,33 +49,60 @@ export interface IUpdateAuthMeRequest {
   password?: string
   oldPassword?: string
 }
+export type Photo = {
+  id: string;
+  path: string;
+  link: string;
+};
+
+export type Departments = {
+  name: string;
+};
+
+export interface Organization {
+  id: number | string;
+  location: string;
+  staffCount: string
+  phoneNumber: string;
+
+  name: string;
+  domain: string;
+  updatedAt: string;
+  createdAt: string;
+  photo: Photo | null;
+  departments: any[];
+}
+
 
 export interface User {
-  billingAddress: any[]
-  createdAt: string
-  dateBirth: string | null
-  deletedAt: string | null
-  department: string | null
-  directoryId: number | null
-  email: string
-  firstName: string
-  gmtDelta: number
-  id: number
-  isTwoFAEnabled: boolean
-  language: Language
-  lastName: string
-  newEmail: string | null
-  organization: string | null
-  photo: FileEntity
-  provider: string
-  role: RoleEntity
-  shippingAddress: any[]
-  socialId: string | null
-  status: Status
-  subscribePlan: string | null
-  title: string
-  updatedAt: string
-  widgets: any[]
+  id: number | string;
+  photo: Photo | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  createdAt: string;
+  deletedAt: null | string;
+  department: Departments;
+  provider: string;
+  title: string;
+  phone: string;
+  age: string;
+  gender: string;
+  gmtDelta: number;
+  role: {
+    id: number;
+    name: string;
+  };
+  socialId: null | string | number;
+  status: {
+    id: number;
+    name: string;
+  };
+  language: {
+    name: string
+  }
+  updatedAt: string;
+  organization: Organization;
 }
 
 export interface Language {

@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { View, Text, TouchableOpacity } from "react-native"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { styles } from "./styles"
@@ -11,6 +11,8 @@ import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { copyToClipboard } from "@utils/clipboard"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
+import { mediaDevices, MediaStream } from "react-native-webrtc"
+import { initializeSocket } from "src/hooks/webRtcSocketInstance"
 
 type ParamList = {
   Detail: {
@@ -24,29 +26,56 @@ const MeetingDetailsScreen = () => {
   const { t } = useTranslation()
   const { navigate } = useNavigation<ROUTES>()
   const {
-    localStream,
-    isMuted,
-    isVideoOff,
-    toggleAudio,
-    toggleVideo,
     RTCView,
     startCall,
-    roomId,
-  } = useWebRTC(true)
+  } = useWebRTC()
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const { hash, isCreatorMode, title } = route.params
+
+  const [isVideoOff, setIsVideoOff] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+
+  const toggleAudio = () => {
+    setIsMuted(prev => !prev)
+  }
+
+  const toggleVideo = () => {
+    setIsVideoOff(prev => !prev)
+
+  }
+
+  const [preview, setPreview] = useState<MediaStream>();
+  useEffect(() => {
+    const initialize = async () => {
+      let mediaConstraints = {
+        audio: true,
+        video: {
+          frameRate: 30,
+          facingMode: "user",
+        },
+      }
+      const stream = await mediaDevices.getUserMedia(mediaConstraints)
+      setPreview(stream)
+    }
+      initialize()
+      initializeSocket();
+      return () => {
+        preview?.getTracks().forEach(t => t.stop());
+        preview?.getTracks().forEach(t => t.release());
+      }
+  }, [])
 
   return (
     <ScreenWrapper title={title || hash} isBackButton isCenterTitle>
       <View style={styles.container}>
         <View style={styles.videoContainer}>
-          {localStream && !isVideoOff ? (
+          {preview && !isVideoOff ? (
             <RTCView
               style={{
                 height: "100%",
                 width: "100%",
               }}
-              streamURL={localStream?.toURL?.()}
+              streamURL={preview?.toURL?.()}
               mirror={true}
             />
           ) : (
@@ -86,7 +115,7 @@ const MeetingDetailsScreen = () => {
                 title: title,
                 instanceMeetingOwner: true,
               })
-              startCall()
+              startCall();
             }}
           />
           <CustomButton

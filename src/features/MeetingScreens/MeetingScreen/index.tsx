@@ -1,4 +1,4 @@
-import React, { useRef } from "react"
+import React, { useEffect, useRef } from "react"
 import { FlatList, Text, View } from "react-native"
 import useWebRtc from "src/hooks/useWebRtc"
 import { styles } from "./styles"
@@ -15,6 +15,7 @@ import { useRoute, RouteProp } from "@react-navigation/native"
 import SubtitlesModal from "src/modals/MeetingModals/SubtitlesModal"
 import { Toast } from "react-native-toast-message/lib/src/Toast"
 import { useTranslation } from "react-i18next"
+import { useKeepAwake } from "@sayem314/react-native-keep-awake"
 
 type ParamList = {
   Detail: {
@@ -29,12 +30,10 @@ const MeetingScreen = () => {
   const { t } = useTranslation()
   const {
     localStream,
-    remoteStreams,
     endCall,
     isMuted,
     isVideoOff,
-    toggleAudio,
-    toggleVideo,
+    toggleMedia,
     roomId,
     participants,
     isSpeakerOn,
@@ -44,10 +43,15 @@ const MeetingScreen = () => {
     messages,
     sendMessage,
     isScreenShare,
+
+    remoteAudioStreams,
+    usersAudioTrackToIdMap,
+    remoteVideoStreams,
+    usersVideoTrackToIdMap,
   } = useWebRtc()
 
+  useKeepAwake();
   useStatusBar("light-content", colors.dark)
-
   const [isCaptionOn, setIsCaptionOn] = React.useState(false)
   const [subtitleLanguage, setSubtitleLanguage] = React.useState("")
   const route = useRoute<RouteProp<ParamList, "Detail">>()
@@ -67,7 +71,6 @@ const MeetingScreen = () => {
     sheetParticipantsRef.current?.open()
   }
 
-  //TODO: add actions
   const callTopActions = [
     {
       name: "swapCamera",
@@ -91,7 +94,7 @@ const MeetingScreen = () => {
       },
     },
   ]
-  //TODO: add actions
+
   const callBottomActions = [
     {
       name: "callEnd",
@@ -99,9 +102,9 @@ const MeetingScreen = () => {
     },
     {
       name: isVideoOff ? "cameraOff" : "cameraOn",
-      onPress: toggleVideo,
+      onPress: () => toggleMedia('video'),
     },
-    { name: isMuted ? "microOff" : "microOn", onPress: toggleAudio },
+    { name: isMuted ? "microOff" : "microOn", onPress: () => toggleMedia('audio') },
     {
       name: "meetingChat",
       onPress: handleChatOpen,
@@ -139,11 +142,15 @@ const MeetingScreen = () => {
             </View>
           </View>
           <VideoGrid
-            remoteStreams={remoteStreams}
             localStream={localStream}
             isVideoOff={isVideoOff}
             isMuted={isMuted}
             isScreenShare={isScreenShare}
+            remoteAudioStreams={remoteAudioStreams}
+            usersAudioTrackToIdMap={usersAudioTrackToIdMap}
+            remoteVideoStreams={remoteVideoStreams}
+            usersVideoTrackToIdMap={usersVideoTrackToIdMap}
+            participants={participants}
           />
         </View>
         <View>
@@ -151,7 +158,7 @@ const MeetingScreen = () => {
             data={callBottomActions}
             horizontal
             contentContainerStyle={styles.bottomControlContainer}
-            keyExtractor={(index) => index.toString()}
+            keyExtractor={(_item, index) => index.toString()}
             renderItem={({ item }) => (
               <View style={styles.actionButton}>
                 {participants.length > 0 &&

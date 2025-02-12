@@ -56,7 +56,7 @@ const ChatInput = ({
           numberOfLines={1}
         />
 
-        <TouchableOpacity onPress={handleSendMessage} disabled={!message}>
+        <TouchableOpacity onPress={handleSendMessage} disabled={!message || !message?.trim()}>
           {isLoading ? (
             <ActivityIndicator size="small" />
           ) : (
