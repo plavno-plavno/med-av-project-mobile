@@ -200,6 +200,21 @@ const SetupProfileScreen = () => {
                     />
                   ) : (
                     <>
+                      {!timezone?.id && (
+                        <CustomInput
+                          inputType="dropdown"
+                          searchField
+                          dropdownData={timezoneOptions}
+                          label={t("Timezone")}
+                          placeholder={t("EnterYourTimezone")}
+                          value={values.gmtDelta.toString()}
+                          onChangeText={(val) =>
+                            handleChange("gmtDelta")(val as string)
+                          }
+                          onBlur={handleBlur("gmtDelta")}
+                          error={touched.gmtDelta && errors.gmtDelta}
+                        />
+                      )}
                       {!authMeData?.firstName && (
                         <CustomInput
                           label={t("FirstName")}
@@ -236,21 +251,6 @@ const SetupProfileScreen = () => {
                           }
                           onBlur={handleBlur("language")}
                           error={touched.language && errors.language}
-                        />
-                      )}
-                      {!timezone?.id && (
-                        <CustomInput
-                          inputType="dropdown"
-                          searchField
-                          dropdownData={timezoneOptions}
-                          label={t("Timezone")}
-                          placeholder={t("EnterYourTimezone")}
-                          value={values.gmtDelta.toString()}
-                          onChangeText={(val) =>
-                            handleChange("gmtDelta")(val as string)
-                          }
-                          onBlur={handleBlur("gmtDelta")}
-                          error={touched.gmtDelta && errors.gmtDelta}
                         />
                       )}
                     </>

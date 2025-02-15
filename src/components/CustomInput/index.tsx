@@ -201,13 +201,21 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
           )
         }
         case "textArea": {
+          const handleChange = (value: string) => {
+            if (value.length > 240) {
+              setHandleError("Description must be at most 240 characters")
+            } else if (handleError) {
+              setHandleError("")
+            }
+            onChangeText(value)
+          }
           return (
             <CustomTextInput
               label={label}
               multiline
               placeholder={placeholder}
               value={value}
-              onChangeText={onChangeText}
+              onChangeText={handleChange}
               secureTextEntry={isSecure}
               editable={editable}
               handleFocus={handleFocus}
