@@ -18,7 +18,6 @@ export const styles = StyleSheet.create({
     maxWidth: "95%",
   },
   eventText: {
-    ...fontFamilies.interManropeSemiBold12,
     ...fontWeights.fontWeight500,
     color: colors.ghostWhite,
   },

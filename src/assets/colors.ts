@@ -22,6 +22,7 @@ const colors = {
   lightGray: "#D5D7DA",
   lightBlue: "#03a4ab",
   mint: "rgba(78,183,189,.102)",
+  mirage: "#18212B",
 
   placeholder: "#9BA0A6",
   borderGrey: "#EAEEF2",

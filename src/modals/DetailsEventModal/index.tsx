@@ -184,7 +184,13 @@ const DetailsEventModal = ({
                     </View>
                   </View>
                   {eventDetailsData?.description && (
-                    <View style={[helpers.flexRow, helpers.gap8]}>
+                    <View
+                      style={[
+                        helpers.flexRow,
+                        helpers.gap8,
+                        helpers.maxWidth80Percent,
+                      ]}
+                    >
                       <Icon name="info" />
                       <Text style={[styles.text, { color: colors.midGrey }]}>
                         {eventDetailsData?.description}
@@ -226,6 +232,7 @@ const DetailsEventModal = ({
                   text={isCreatorMode ? t("EditDetails") : t("Accept")}
                   onPress={() => {
                     if (isCreatorMode) {
+                      console.log("\x1b[31m%s\x1b[0m", "eventId", eventId)
                       handleOpenScheduleModal(eventId)
                     } else {
                       handleTogglerEvent({ status: "accept" })

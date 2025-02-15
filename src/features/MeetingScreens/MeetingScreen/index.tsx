@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import React, { useRef } from "react"
 import { FlatList, Text, View } from "react-native"
 import useWebRtc from "src/hooks/useWebRtc"
 import { styles } from "./styles"
@@ -16,6 +16,7 @@ import SubtitlesModal from "src/modals/MeetingModals/SubtitlesModal"
 import { Toast } from "react-native-toast-message/lib/src/Toast"
 import { useTranslation } from "react-i18next"
 import { useKeepAwake } from "@sayem314/react-native-keep-awake"
+import Subtitles from "src/components/Subtitles"
 
 type ParamList = {
   Detail: {
@@ -50,7 +51,7 @@ const MeetingScreen = () => {
     usersVideoTrackToIdMap,
   } = useWebRtc()
 
-  useKeepAwake();
+  useKeepAwake()
   useStatusBar("light-content", colors.dark)
   const [isCaptionOn, setIsCaptionOn] = React.useState(false)
   const [subtitleLanguage, setSubtitleLanguage] = React.useState("")
@@ -102,9 +103,12 @@ const MeetingScreen = () => {
     },
     {
       name: isVideoOff ? "cameraOff" : "cameraOn",
-      onPress: () => toggleMedia('video'),
+      onPress: () => toggleMedia("video"),
     },
-    { name: isMuted ? "microOff" : "microOn", onPress: () => toggleMedia('audio') },
+    {
+      name: isMuted ? "microOff" : "microOn",
+      onPress: () => toggleMedia("audio"),
+    },
     {
       name: "meetingChat",
       onPress: handleChatOpen,
@@ -152,6 +156,7 @@ const MeetingScreen = () => {
             usersVideoTrackToIdMap={usersVideoTrackToIdMap}
             participants={participants}
           />
+          <Subtitles isActive={isCaptionOn} />
         </View>
         <View>
           <FlatList
