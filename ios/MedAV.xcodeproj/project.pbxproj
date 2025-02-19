@@ -33,6 +33,8 @@
 		78A13DEA2D07602800858E82 /* Manrope-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FB28DFB60FE445CDBB52A789 /* Manrope-Medium.ttf */; };
 		78A13DEB2D07602800858E82 /* Manrope-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 76E440BEAB8843B290A6193B /* Manrope-Regular.ttf */; };
 		78A13DEC2D07602800858E82 /* Manrope-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B948F9715DC04F1CB6E19378 /* Manrope-SemiBold.ttf */; };
+		78F4750D2D5DDB4C00ABED38 /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78F4750C2D5DDB4C00ABED38 /* ReplayKit.framework */; };
+		78F4750E2D5DDB5A00ABED38 /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 78F4750C2D5DDB4C00ABED38 /* ReplayKit.framework */; };
 		7F3140CE4F884CB783B56301 /* Manrope-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 284ED59C147947A7B48F277B /* Manrope-ExtraBold.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		C110ADB4423B4C829B5007D3 /* Manrope-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FB28DFB60FE445CDBB52A789 /* Manrope-Medium.ttf */; };
@@ -76,6 +78,7 @@
 		78A13DF42D07602800858E82 /* MedAVDevelopment-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "MedAVDevelopment-Info.plist"; path = "/Users/igor/Desktop/med-av-project-mobile/ios/MedAVDevelopment-Info.plist"; sourceTree = "<absolute>"; };
 		78A13DF52D0C2EA200858E82 /* MedAVDevelopment.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MedAVDevelopment.entitlements; sourceTree = "<group>"; };
 		78A13DF62D0C2ED900858E82 /* MedAV.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = MedAV.entitlements; path = MedAV/MedAV.entitlements; sourceTree = "<group>"; };
+		78F4750C2D5DDB4C00ABED38 /* ReplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReplayKit.framework; path = System/Library/Frameworks/ReplayKit.framework; sourceTree = SDKROOT; };
 		804B2D13938F234054D80FBC /* libPods-MedAV-MedAVDevelopment.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MedAV-MedAVDevelopment.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = MedAV/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8D5A6CDF52E5DBF70ECA58D7 /* libPods-MedAV-MedAVTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MedAV-MedAVTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -100,6 +103,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				78F4750D2D5DDB4C00ABED38 /* ReplayKit.framework in Frameworks */,
 				0C80B921A6F3F58F76C31292 /* BuildFile in Frameworks */,
 				1C88E99273610A873C49E4B6 /* libPods-MedAV.a in Frameworks */,
 			);
@@ -109,6 +113,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				78F4750E2D5DDB5A00ABED38 /* ReplayKit.framework in Frameworks */,
 				078B4C6A6737D57C2CF81C22 /* libPods-MedAV-MedAVDevelopment.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -151,6 +156,7 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				78F4750C2D5DDB4C00ABED38 /* ReplayKit.framework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				35CA1598A3F2055DB85AD513 /* libPods-MedAV.a */,
 				804B2D13938F234054D80FBC /* libPods-MedAV-MedAVDevelopment.a */,

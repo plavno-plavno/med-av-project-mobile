@@ -45,7 +45,9 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>We need access to your microphone for video calls.</string>
+	<string>We need microphone access to record the screen</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need access to add recorded video to the photo library</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Allow photo access to add photos for your profile.</string>
 	<key>UIAppFonts</key>

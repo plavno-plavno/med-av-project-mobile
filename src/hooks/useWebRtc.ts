@@ -2,13 +2,14 @@ import {
   useState, useEffect, useRef,
 } from 'react';
 import { Socket } from 'socket.io-client';
-import {  getSocket, initializeSocket } from './webRtcSocketInstance';
+import { getSocket, initializeSocket } from './webRtcSocketInstance';
 import { mediaDevices, MediaStreamTrack, RTCIceCandidate, RTCPeerConnection, RTCSessionDescription, RTCView } from 'react-native-webrtc';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { ROUTES } from 'src/navigation/RoutesTypes';
 import { useAuthMeQuery, useGetUsersByIdMutation } from 'src/api/userApi/userApi';
 import inCallManager from 'react-native-incall-manager';
 import { ScreensEnum } from 'src/navigation/ScreensEnum';
+import AudioRecord from "react-native-audio-record";
 
 export type Photo = {
   id: string;
@@ -72,6 +73,17 @@ export interface ActionStatus {
   isRecordingOn: boolean;
 }
 
+export interface ParticipantsInfo {
+  userId: string;
+  status: ActionStatus;
+}
+
+export interface ISubtitle {
+  userName: string;
+  message: string;
+  time: string;
+}
+
 export enum UserActions {
   MuteAudio = 'mute-audio',
   UnmuteAudio = 'unmute-audio',
@@ -98,6 +110,7 @@ export interface RemoteStream {
   userId: number | string;
   audioTrack: MediaStreamTrack | null;
   videoTrack: MediaStreamTrack | null;
+  mid: string;
 }
 
 export interface IUsersAudioTrackToIdMap {
@@ -126,6 +139,10 @@ const config = {
   ],
 };
 
+const SUBTITLES_QUEUE_LIMIT = 3;
+const TRIES_LIMIT = 7;
+let RETRY_ATTEMPT: number = 0;
+
 const useWebRtc = () => {
   const [localStream, setLocalStream] = useState<RemoteStream | null>(null);
   const peerConnection = useRef<RTCPeerConnection | null>(null);
@@ -150,24 +167,58 @@ const useWebRtc = () => {
 
   const { reset } = useNavigation<ROUTES>()
   const route = useRoute<RouteProp<ParamList, "Detail">>()
-  const [isMuted, setIsMuted] = useState(route.params?.isMuted || false)
-  const [isVideoOff, setIsVideoOff] = useState(
-    route.params?.isVideoOff || false
-  )
+  const [isMuted, setIsMuted] = useState(route.params?.isMuted)
+  const [isVideoOff, setIsVideoOff] = useState(route.params?.isVideoOff)
   const [isScreenShare, setIsScreenShare] = useState(false)
-  const [isSpeakerOn, setIsSpeakerOn] = useState(false)
+  const [isSpeakerOn, setIsSpeakerOn] = useState(true)
   const [isCameraSwitched, setIsCameraSwitched] = useState(false)
 
   const [getUsersById] = useGetUsersByIdMutation()
   const roomId = route?.params?.hash
 
-  const [isLeftMeeting, setIsLeftMeeting] = useState<boolean>(false);
   const socketRef = useRef<Socket | null>(null);
+
+  const sttUrlRef = useRef<string | null>(null);
+
+  const offerStatusCheckRef = useRef<ReturnType<typeof setInterval>>();
+
+  const [activeSpeakerId, setActiveSpeakerId] = useState<number | null>(null);
+  const [isSTTOpened, setSTTOpen] = useState<boolean>(false);
+
+  const STTSocket = useRef<WebSocket | null>(null);
+  const sttLanguageRef = useRef<string | undefined>(authMeData?.language?.code?.toLowerCase?.());
+  const isConnectingRef = useRef<boolean>(false);
+  const allLanguagesRef = useRef<string[] | undefined>(['en', 'hi']);
+
+  const pendingCandidates: RTCIceCandidate[] = [];
+
+  const audioLevelMapRef = useRef<Record<string, number>>({});
+  const [transceiversInfo, setTransceiversInfo] = useState<RemoteStream[]>([]);
+
+  const sttLanguagesRef = useRef<any[]>([
+    authMeData?.language?.code
+  ]);
+
+  let isRecording = false;
+  const audioCheckIntervalRef = useRef<ReturnType<typeof setInterval>>();
+
+  const [subtitlesQueue, setSubtitesQueue] = useState<any[]>([]);
+
+    let collectorAr: Float32Array[] = [];
+
+console.log(isSTTOpened, 'isSTTOpened');
+console.log(subtitlesQueue, 'subtitlesQueue');
+
+console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
 
   socketRef.current = getSocket()
 
   useEffect(() => {
     if (!socketRef.current) {
+      initializeSocket().then(() => {
+        socketRef.current = getSocket()
+        peerConnection.current = createPeerConnection();
+      })
       return;
     }
 
@@ -175,6 +226,8 @@ const useWebRtc = () => {
       socketRef.current.connect();
     }
     socketRef.current.onAny(handleOnAny);
+    // socketRef.current.on('offer', (event) => checkPeerConnection(() => handleOffer(event)));
+    // socketRef.current.on('answer', (event) => checkPeerConnection(() => handleAnswer(event)));
     socketRef.current.on('offer', handleOffer);
     socketRef.current.on('answer', handleAnswer);
     socketRef.current.on('candidate', handleCandidate);
@@ -191,23 +244,80 @@ const useWebRtc = () => {
     socketRef.current.on('error', handleSocketError);
 
     socketRef.current.on('chat-message', handleChatMessage);
+
+    peerConnection.current = createPeerConnection();
     // return () => {
-    //   if (socketRef.current) {
-    //     socketRef.current.offAny(handleOnAny);
-    //     socketRef.current.off('offer', handleOffer);
-    //     socketRef.current.off('answer', handleAnswer);
-    //     socketRef.current.off('candidate', handleCandidate);
-    //     socketRef.current.off('user-joined', handleUserJoined);
-
-    //     socketRef.current.off('client-disconnected');
-    //     socketRef.current.off('transceiver-info', handleTransceiver);
-    //     socketRef.current.off('error', handleSocketError);
-    //   }
-    //   console.log('UseEffect UNMOUNT');
-
+    //   disconnectSocketEvents()
     //   endCall();
     // };
   }, [socketRef.current, roomId]);
+
+  const handleAudioCheck = () => {
+    if (!peerConnection.current) return;
+
+    try {
+      peerConnection.current?.getStats().then(stats => {
+        let maxAudioLevel = 0;
+        let newActiveSpeakerId: number | null = null;
+
+        stats.forEach((report: any) => {
+          if (
+            report.type === "inbound-rtp" &&
+            report.kind === "audio" &&
+            report.audioLevel !== undefined
+          ) {
+            const trackId = report.trackIdentifier || report.trackId;
+            const userId = transceiversInfo!.find(
+              str => str.audioTrack!.id === trackId,
+            )?.userId;
+
+            if (userId) {
+              audioLevelMapRef.current[userId] = report.audioLevel;
+
+              if (report.audioLevel > maxAudioLevel) {
+                maxAudioLevel = report.audioLevel;
+                newActiveSpeakerId = Number(userId) || null;
+              }
+            }
+          }
+        });
+
+        if (maxAudioLevel > 0.01) {
+          setActiveSpeakerId(newActiveSpeakerId!);
+        } else {
+          setActiveSpeakerId(null);
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching audio levels:", error);
+    }
+  };
+
+  const onSTTSocketMessage = (event: WebSocketMessageEvent) => {
+    console.log("onSocketMessage: ", !!JSON.parse(event.data));
+    return;
+  };
+
+  const disconnectSocketEvents = () => {
+    if (socketRef.current) {
+      const events = [
+        'offer',
+        'answer',
+        'candidate',
+        'user-joined',
+        'client-disconnected',
+        'chat-message',
+        'transceiver-info',
+        'error',
+        'mute-audio',
+        'unmute-audio',
+        'mute-video',
+        'unmute-video',
+      ];
+  
+      events.forEach(event => socketRef.current?.off(event));
+    }
+  }
 
   const createPeerConnection = () => {
     if (peerConnection.current) {
@@ -232,31 +342,25 @@ const useWebRtc = () => {
       });
 
       pc.addEventListener('datachannel', (event) => {
-        const dataChannel = event.channel;
+      const dataChannel = event.channel;
 
-        dataChannel.addEventListener("open", (event) => {
-          console.log("Data channel opened", event)
-        })
+      dataChannel.addEventListener("open", () => {
+        console.log("Data channel opened");
+      });
 
-        dataChannel.addEventListener("message", (event) => {
-          const data = event?.data
-          console.log("Message received through data channel:", data)
-        })
+      dataChannel.addEventListener("message", handlePeerDataChannelMessage);
 
-        dataChannel.addEventListener("close", () => {
-          console.log("Data channel closed")
-        })
+      dataChannel.addEventListener("close", () => {
+        console.log("Data channel closed");
+      });
 
-        dataChannel.addEventListener("error", (error) => {
-          console.error("Data channel error:", error)
-        })
+      dataChannel.addEventListener("error", error => {
+        console.error("Data channel error:", error);
+      });
       })
 
       pc.addEventListener('track', (event) => {
-        console.log('Receive track in ontrack', event);
-
         const midId = event.transceiver.mid || '';
-
         if (event?.track?.kind === 'video') {
           setRemoteVideoStreams((prevStreams) => {
             const exists = prevStreams.some((stream) => stream.videoTrack.id === event?.track?.id);
@@ -289,7 +393,6 @@ const useWebRtc = () => {
           });
         }
       });
-
       return pc;
     } catch (error) {
       console.error('Failed to create PeerConnection:', error);
@@ -301,33 +404,46 @@ const useWebRtc = () => {
     console.log('Socket error:', error.message);
     setError(error);
   };
-console.log(!route.params?.isMuted || !isMuted, 'route.params?.isMuted');
-console.log(route.params?.isVideoOff, 'route.params?.isVideoOff');
 
-  const startCall = async () => {
+  const checkPeerConnection = (func: () => void) => {
+     const interval = setInterval(() => {
+        if (peerConnection.current?.signalingState === 'stable') {
+          clearInterval(interval);
+          func()
+           } else {
+          console.warn('Waiting for peer connection to stabilize...');
+          return
+        }
+      }, 2000);
+  };
+
+  const startCall = async ({isAudioOn, isVideoOn}:{isAudioOn: boolean, isVideoOn: boolean}) => {
     try {
-      socketRef.current?.emit('join', {
-        roomId,
-        language: 'en',
-        status: {
-          isAudioOn: !route.params?.isMuted || !isMuted,
-          isVideoOn: !route.params?.isVideoOff || !isVideoOff,
-          isSharingOn: false,
-          isRecordingOn: false,
-        },
-      });
-
-      if (!timerRef.current) {
-        startTimeRef.current = Date.now();
-        timerRef.current = setInterval(() => {
-          elapsedTimeRef.current = Date.now() - (startTimeRef.current || 0);
-        }, 1000);
-      }
+          socketRef.current?.emit('join', {
+            roomId,
+            language: 'en',
+            status: {
+              isAudioOn,
+              isVideoOn,
+              isSharingOn: false,
+              isRecordingOn: false,
+            },
+          });
+  
+          inCallManager.setSpeakerphoneOn(true);
+  
+          if (!timerRef.current) {
+            startTimeRef.current = Date.now();
+            timerRef.current = setInterval(() => {
+              elapsedTimeRef.current = Date.now() - (startTimeRef.current || 0);
+            }, 1000);
+          }
+ 
     } catch (error) {
       console.error('Error starting call:', error);
     }
   };
-
+  
   const endCall = () => {
     stopLocalStreamTracks();
     remoteAudioStreams?.forEach(t => t?.audioTrack?.stop?.());
@@ -337,22 +453,7 @@ console.log(route.params?.isVideoOff, 'route.params?.isVideoOff');
     peerConnection.current?.close()
 
     peerConnection.current = null
-    const events = [
-      'offer',
-      'answer',
-      'candidate',
-      'user-joined',
-      'client-disconnected',
-      'chat-message',
-      'transceiver-info',
-      'error',
-      'mute-audio',
-      'unmute-audio',
-      'mute-video',
-      'unmute-video',
-    ];
-
-    events.forEach(event => socketRef.current?.off(event));
+    disconnectSocketEvents();
     peerConnection.current = null
     reset({
       index: 0,
@@ -381,37 +482,51 @@ console.log(route.params?.isVideoOff, 'route.params?.isVideoOff');
     }
   };
 
+  const handleOfferCheck = async () => {
+    try {
+      RETRY_ATTEMPT++;
+      if (RETRY_ATTEMPT > TRIES_LIMIT)
+        throw new Error("Something wrong with connection");
+      if (peerConnection.current?.signalingState !== "stable") return;
+      const offer = await peerConnection.current.createOffer({});
+      await peerConnection.current.setLocalDescription(offer);
+      socketRef.current!.emit("offer", {
+        sdp: peerConnection.current.localDescription,
+        roomId,
+      });
+      clearInterval(offerStatusCheckRef.current);
+      if (RETRY_ATTEMPT) RETRY_ATTEMPT = 0;
+      return
+    } catch (error) {
+      console.error("Error obtaining media:", error);
+      clearInterval(offerStatusCheckRef.current);
+    }
+  };
+
   const handleOffer = async ({ sdp }: { sdp: RTCSessionDescription }) => {
     if (!peerConnection.current) {
       peerConnection.current = createPeerConnection();
     }
-
     try {
-      const polite = true;
-      const offerCollision = (peerConnection.current.signalingState === 'have-local-offer' || peerConnection.current.signalingState === 'have-remote-offer');
-      const ignoreOffer = !polite && offerCollision;
-
-      if (ignoreOffer) {
-        console.log('Offer ignored due to collision');
-        return;
-      }
+        RETRY_ATTEMPT++;
+        if (RETRY_ATTEMPT > TRIES_LIMIT)
+          throw new Error("Something wrong with connection");
+        if (peerConnection.current?.signalingState !== "stable") return;
       const offer = new RTCSessionDescription(sdp);
       await peerConnection.current.setRemoteDescription(new RTCSessionDescription(offer));
       await flushCandidates();
       const answer = await peerConnection.current.createAnswer();
       await peerConnection.current.setLocalDescription(answer);
-
-      if (peerConnection.current.localDescription) {
+      if (peerConnection.current?.localDescription) {
         const localDescription = peerConnection.current.localDescription as RTCSessionDescription;
-        socketRef.current?.emit('answer', {
-          sdp: localDescription,
-          roomId,
-        });
+        socketRef.current?.emit("answer", { sdp: localDescription, roomId });
+        clearInterval(offerStatusCheckRef.current);
+        if (RETRY_ATTEMPT) RETRY_ATTEMPT = 0;
       } else {
-        console.error('Local description is null');
+        console.error("Local description is null");
       }
     } catch (error) {
-      console.error('Error processing offer:', error);
+      console.error("Error processing offer:", error);
     }
   };
 
@@ -422,34 +537,53 @@ console.log(route.params?.isVideoOff, 'route.params?.isVideoOff');
           console.warn('Answer ignored: already stable');
           return;
         }
-
         await peerConnection.current.setRemoteDescription(
           new RTCSessionDescription(sdp));
       }
     } catch (error) {
-      console.error('Error setting remote description:', error);
+      console.error("Error setting remote description:", error);
     }
   };
 
-  const handleUserJoined = async ({ userId }: { userId: number }) => {
+  const handleUserJoined = async (event: { userId: string, actionStatus: ActionStatus, participantsInfo: ParticipantsInfo[] }) => {
     try {
-      const userData = await getUsersById({ id: userId }).unwrap()
-      setParticipants((prev) => {
-        const isUserExist = prev.some((participant) => participant.id === userData?.user?.id);
-
-        if (isUserExist) {
-          return prev;
-        }
-
-        return [...prev, userData.user] as User[];
-      });
-      // if (userData?.user) {
-      //   setParticipants((prev) => [...prev, userData.user] as User[]);
-      // }
+    if (!peerConnection.current) {
+      peerConnection.current = createPeerConnection();
+    }
+      sttUrlRef.current = 'wss://c17836126.plavno.app:20277';
+      const existingUserIds = new Set(participants.map((participant) => participant.id));
+      const usersToFetch = event.participantsInfo.filter((participant) => !existingUserIds.has(participant.userId));
+      const userFetchPromises = usersToFetch.map(async participant => await getUsersById({ id: Number(participant.userId) }).unwrap());
+      const results = await Promise.allSettled(userFetchPromises);
 
       const stream = await mediaDevices.getUserMedia({
         audio: true,
         video: true,
+      });
+
+       const newUsers = results
+      .map((result, index) => {
+        if (result.status === 'fulfilled') {
+          const user = result.value.user;
+          return {
+            ...user,
+            isAudioOn: event.participantsInfo[index].status.isAudioOn,
+            isVideoOn: event.participantsInfo[index].status.isVideoOn,
+          };
+
+        } else {
+          console.error(`Failed to fetch user ${event.participantsInfo[index].userId}:`, result.reason);
+          return null;
+        }
+      })
+      .filter(Boolean);
+      setParticipants((prev) => {
+        const existingUserIds = new Set(prev.map((participant) => participant.id));
+      
+        return [
+          ...prev,
+          ...newUsers.filter((newUser): newUser is any => newUser !== null && !existingUserIds.has(newUser.id)),
+        ];
       });
 
       if (userRefId.current && !localStream) {
@@ -457,47 +591,38 @@ console.log(route.params?.isVideoOff, 'route.params?.isVideoOff');
           userId: userRefId.current,
           audioTrack: stream.getAudioTracks()[0] || null,
           videoTrack: stream.getVideoTracks()[0] || null,
-        });
+        } as RemoteStream);
       }
 
-      if (!peerConnection.current) {
-        peerConnection.current = createPeerConnection();
-      }
-
-      stream.getTracks().forEach((track) => {
+      await stream.getTracks().forEach((track) => {
         if (peerConnection.current) {
           peerConnection.current.addTrack(track, stream);
         }
       });
-
-      const offer = await peerConnection.current.createOffer({});
-      await peerConnection.current.setLocalDescription(offer);
-
-      if (peerConnection.current.localDescription) {
-        socketRef.current?.emit('offer', {
-          sdp: peerConnection.current.localDescription,
-          roomId,
-        });
-      } else {
-        console.error('Failed to send offer: localDescription is null');
+      if (offerStatusCheckRef.current) {
+        clearInterval(offerStatusCheckRef.current);
       }
+      checkPeerConnection(handleOfferCheck)
     } catch (error) {
       console.error('Error handling user join:', error);
     }
   };
 
-  const pendingCandidates: RTCIceCandidate[] = [];
-
   const flushCandidates = async () => {
     for (const candidate of pendingCandidates) {
       try {
         if (!candidate.sdpMid && candidate.sdpMLineIndex === null) {
-          console.warn('Skipping ICE candidate with null sdpMid and sdpMLineIndex.');
+          console.warn(
+            "Skipping ICE candidate with null sdpMid and sdpMLineIndex.",
+          );
           continue;
         }
-        await peerConnection.current?.addIceCandidate(new RTCIceCandidate(candidate));
+        await peerConnection.current?.addIceCandidate(
+          new RTCIceCandidate(candidate),
+        );
+        console.log("Buffered ICE candidate added.");
       } catch (error) {
-        console.error('Error adding buffered ICE candidate:', error);
+        console.error("Error adding buffered ICE candidate:", error);
       }
     }
     pendingCandidates.length = 0;
@@ -508,7 +633,6 @@ console.log(route.params?.isVideoOff, 'route.params?.isVideoOff');
       if (peerConnection.current) {
         if (!peerConnection.current.remoteDescription) {
           pendingCandidates.push(candidate);
-          console.warn('Send candidate to the queue');
           return;
         }
         await peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
@@ -516,6 +640,17 @@ console.log(route.params?.isVideoOff, 'route.params?.isVideoOff');
     } catch (error) {
       console.error('Error adding ICE candidate:', error);
     }
+  };
+
+  useEffect(() => {
+    if(authMeData?.language?.code){
+      sttLanguageRef.current = authMeData?.language?.code;
+    }
+  }, [authMeData?.language?.code])
+
+  const handleChangedRoomLanguage = ({ languages }: {languages: any}) => {
+    console.log("handleChangedRoomLanguage: ", languages);
+    sttLanguagesRef.current = languages;
   };
 
   const handleTransceiver = async ({
@@ -549,6 +684,23 @@ console.log(route.params?.isVideoOff, 'route.params?.isVideoOff');
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
+    }
+
+    const existingStream = transceiversInfo?.find(
+      stream => stream.mid === String(mid) || stream?.userId === userId,
+    );
+    if (!existingStream) {
+      setTransceiversInfo(current =>
+        current.concat({ mid: String(mid), userId, audioTrack: null, videoTrack: null }),
+      );
+    } else {
+      const updatedStream = { ...existingStream };
+      updatedStream.userId = userId;
+      setTransceiversInfo(current =>
+        current.map(stream =>
+          stream.mid === updatedStream.mid ? updatedStream : stream,
+        ),
+      );
     }
 
     if (mid) {
@@ -613,6 +765,10 @@ console.log(route.params?.isVideoOff, 'route.params?.isVideoOff');
       return updatedMap;
     });
 
+    setTransceiversInfo(current =>
+      current.filter(stream => stream.userId !== userId),
+    );
+
     setUsersAudioTrackToIdMap((prevMap) => {
       const updatedMap = { ...prevMap };
       Object.keys(updatedMap).forEach((key) => {
@@ -642,7 +798,6 @@ console.log(route.params?.isVideoOff, 'route.params?.isVideoOff');
 
   const switchCamera = () => {
     if (localStream) {
-      // const videoTrack = localStream?.getVideoTracks?.()?.[0];
       const videoTrack = localStream?.videoTrack
       if (videoTrack && typeof videoTrack._switchCamera === 'function') {
         videoTrack._switchCamera();
@@ -651,27 +806,300 @@ console.log(route.params?.isVideoOff, 'route.params?.isVideoOff');
     }
   };
 
-  const toggleMedia = async (type: 'audio' | 'video') => {
-    const isAudio = type === 'audio';
-    if(isAudio){
-      setIsMuted((prev) => !prev)
-    } else {
-      setIsVideoOff((prev) => !prev)
+  const handleClearInterval = (
+    int: string | number | NodeJS.Timeout | null | undefined,
+  ) => {
+    if (int) {
+      clearInterval(int);
+      int = null;
     }
+  };
+
+  const base64ToFloat32Array = (base64: string): Float32Array => {
+    const binaryString = atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+  
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+  
+    return new Float32Array(bytes.buffer);
+  };
+  
+  const Float32ConcatAll = (arrays: Float32Array[]): Float32Array => {
+    const totalLength = arrays.reduce((acc, arr) => acc + arr.length, 0);
+    const result = new Float32Array(totalLength);
+  
+    let offset = 0;
+    for (const arr of arrays) {
+      result.set(arr, offset);
+      offset += arr.length;
+    }
+  
+    return result;
+  };
+
+  const resampleTo16kHZ = (audioData: Float32Array | number[], origSampleRate = 44100) => {
+    const data = new Float32Array(audioData);
+    const targetLength = Math.round(data.length * (16000 / origSampleRate));
+    const resampledData = new Float32Array(targetLength);
+    const springFactor = (data.length - 1) / (targetLength - 1);
+    resampledData[0] = data[0];
+    resampledData[targetLength - 1] = data[data.length - 1];
+
+    for (let i = 1; i < targetLength - 1; i++) {
+      const index = i * springFactor;
+      const leftIndex = Math.floor(index);
+      const rightIndex = Math.ceil(index);
+      const fraction = index - leftIndex;
+      resampledData[i] = data[leftIndex] + (data[rightIndex] - data[leftIndex]) * fraction;
+    }
+
+    return resampledData;
+  };
+
+  const float32ArrayToBase64 = (float32Array: Float32Array): string => {
+    const uint8Array = new Uint8Array(float32Array.buffer);
+
+    let binaryString = '';
+
+    for (let i = 0; i < uint8Array.length; i++) {
+      binaryString += String.fromCharCode(uint8Array[i]);
+    }
+
+    return btoa(binaryString);
+  };
+
+
+  const startStreaming = async () => {
+    console.log("captureAndSendAudio");
+    if (isRecording) {
+      isRecording = false;
+      AudioRecord.stop();
+    }
+    AudioRecord.init({
+      sampleRate: 44100, // 16 kHz
+      channels: 1, // Mono
+      bitsPerSample: 16, // 16-bit audio
+      audioSource: 6, // Use the microphone as the audio source
+      wavFile: "newTest.wav", // default 'audio.wav'
+    });
+    AudioRecord.start();
+    isRecording = true;
+    AudioRecord.on("data", (data: any) =>
+      addToBufferAndSend(
+        data,
+        sttLanguageRef.current || 'en',
+        allLanguagesRef.current || [] ,
+      ),
+    );
+  };
+
+  const onSocketOpen = () => {
+    isConnectingRef.current = false;
+
+    if (STTSocket.current?.readyState === WebSocket.OPEN) {
+      STTSocket.current?.send(
+        JSON.stringify({
+          uid: `tester-${userRefId.current}`,
+          language: sttLanguageRef.current,
+          task: 'transcribe',
+          model: 'large-v3',
+          use_vad: true,
+        }),
+      );
+    }
+
+    console.log('Socket connected.');
+    console.log(`WebSocket state: ${STTSocket.current?.readyState}`);
+
+    startStreaming();
+  };
+
+
+  const handleSubtitles = (newEl: any) => (prev: any[]) => {
+    let newAr = [...prev, newEl];
+    if (newAr.length > SUBTITLES_QUEUE_LIMIT) {
+      newAr.shift(); // Remove the oldest item if at limit
+    }
+    return newAr;
+  };
+
+  const handlePeerDataChannelMessage = (event: any) => {
+    console.log("handlePeerDataChannelMessage: ", event);
+    const data = JSON.parse(event.data);
+    const { userId, language, text, participantId, participantLang } = data;
+    setSubtitesQueue(handleSubtitles(data));
+  };
+
+  useEffect(() => {
+    sttLanguageRef.current = authMeData?.language?.code?.toLowerCase?.();
+  }, [authMeData]);
+
+  useEffect(() => {
+    console.log('Stt url ' + sttUrlRef.current);
+    console.log(`WebSocket state: ${STTSocket.current?.readyState}`);
+
+    if (!sttUrlRef.current) {
+      return;
+    }
+
+    STTSocket.current = new WebSocket(sttUrlRef.current);
+    console.log(`WebSocket state: ${STTSocket.current?.readyState}`);
+    console.log('UseSttConnection hook initialized');
+
+    STTSocket.current.onopen = () => {
+      onSocketOpen();
+    };
+
+    STTSocket.current.onmessage = (event) => {
+      console.log(event, 'eventeventeventeventeventevent');
+    };
+
+    STTSocket.current.onerror = (event: Event) => {
+      const error = event
+        setError(error as any);
+      console.error('WebSocket error', error);
+    };
+
+    STTSocket.current.onclose = (event) => {
+      console.log(event, 'event close');
+    };
+    return () => {
+      console.log('Unmount Stt hook');
+    };
+  }, [sttUrlRef?.current, socketRef]);
+
+    const addToBufferAndSend = async (
+      data: string,
+      language: string,
+      sttLanguages: string[],
+    ) => {
+      if (!isRecording) return;
+      try {
+        const arrayBuffer = base64ToFloat32Array(data);
+        collectorAr.push(resampleTo16kHZ(arrayBuffer));
+  
+        if (collectorAr?.length !== 4) return;
+        if (STTSocket.current?.readyState === WebSocket.OPEN) {
+          const audio = Float32ConcatAll(collectorAr);
+          const packet = {
+            speakerLang: sttLanguageRef.current,
+            allLangs: allLanguagesRef.current,
+            audio: float32ArrayToBase64(audio),
+          };
+  // console.log(packet, 'packetpacketpacket');
+          // Send the packet via WebSocket
+          STTSocket.current.send(JSON.stringify(packet));
+          collectorAr = [];
+        } else {
+          console.warn("WebSocket is not open. Saving audio locally.");
+          AudioRecord.stop().then((res: string) => {
+            isRecording = false;
+          });
+        }
+      } catch (error) {
+        console.error("Error processing and sending audio data:", error);
+      }
+    };
+
+    const currentLanguageRef = useRef<string>(
+      authMeData?.language?.code!,
+    );
+
+  const captureAndSendAudio = () => {
+    console.log("captureAndSendAudio");
+    if (isRecording) {
+      isRecording = false;
+      handleClearInterval(audioCheckIntervalRef.current);
+      AudioRecord.stop();
+    }
+    AudioRecord.init({
+      sampleRate: 44100, // 16 kHz
+      channels: 1, // Mono
+      bitsPerSample: 16, // 16-bit audio
+      audioSource: 6, // Use the microphone as the audio source
+      wavFile: "newTest.wav", // default 'audio.wav'
+    });
+    AudioRecord.start();
+    audioCheckIntervalRef.current = setInterval(handleAudioCheck, 1000); // Polling every 100ms
+    isRecording = true;
+    AudioRecord.on("data", (data: any) =>
+      addToBufferAndSend(
+        data,
+        currentLanguageRef.current,
+        sttLanguagesRef.current,
+      ),
+    );
+  };
+
+  useEffect(() => {
+    if(sttUrlRef.current){
+      handleSetSTTSocket({sttUrl: sttUrlRef.current})
+    }
+  }, [sttUrlRef.current])
+
+  const handleSetSTTSocket = ({sttUrl} : { sttUrl: string }) => {
+    STTSocket.current = new WebSocket(sttUrl);
+    console.log({ STTSocket });
+
+    STTSocket.current.onopen = onSTTSocketOpen;
+    STTSocket.current.onmessage = onSTTSocketMessage;
+
+    STTSocket.current.onerror = error => {
+      console.log("STTError: ", error);
+
+      AudioRecord.stop();
+      STTSocket.current?.close();
+    };
+
+    STTSocket.current.onclose = event => {
+      console.log("STTOnclose: ", event);
+    };
+  };
+  const onSTTSocketOpen = () => {
+    if (!userRefId.current) return;
+    setSTTOpen(true);
+    console.log("STT SEND: ");
+    STTSocket.current!.send(
+      JSON.stringify({
+        uid: `tester-${userRefId.current}`,
+        language: sttLanguageRef.current,
+        task: 'transcribe',
+        model: 'large-v3',
+        use_vad: true,
+      }),
+    );
+    if (!isMuted) {
+      captureAndSendAudio();
+    }
+  };
+
+  const toggleMedia = async (type: 'audio' | 'video') => {
     if (!peerConnection.current) {
       return;
     }
-
     if (!localStream || !socketRef.current) {
       return;
     }
-
+    const isAudio = type === 'audio';
+    if(isAudio){
+      setIsMuted((prev) => !prev)
+      if (!isMuted) {
+        console.log("Microphone muted. Stopping recording...");
+        AudioRecord.stop();
+      } else {
+        console.log("Microphone unmuted. Restarting recording...");
+        // captureAndSendAudio();
+      }
+    } else {
+      setIsVideoOff((prev) => !prev)
+    }
     const track = isAudio ? localStream.audioTrack : localStream.videoTrack;
-
     if (!track) {
       return;
     }
-
     track.enabled = !track.enabled;
 
     setLocalStream((prev) => ({
@@ -708,31 +1136,19 @@ console.log(route.params?.isVideoOff, 'route.params?.isVideoOff');
     );
   };
 
-
   return {
     localStream,
-    // remoteStreams,
     isMuted,
     isVideoOff,
-    toggleMedia,
-    startCall,
-    endCall,
     messages,
-    sendMessage,
     participants,
-    RTCView,
-
+    
     roomId,
-
-    toggleSpeaker,
-    switchCamera,
+    
     isSpeakerOn,
     isCameraSwitched,
     isScreenShare,
-
-    setLocalStream,
-    isLeftMeeting,
-    setIsLeftMeeting,
+    
     elapsedTimeRef: elapsedTimeRef.current,
     remoteVideoStreams,
     remoteAudioStreams,
@@ -740,6 +1156,16 @@ console.log(route.params?.isVideoOff, 'route.params?.isVideoOff');
     usersVideoTrackToIdMap,
     peerConnection: peerConnection.current,
     rtcError: error,
+    
+    sttUrl: sttUrlRef,
+
+    toggleMedia,
+    startCall,
+    endCall,
+    sendMessage,
+    toggleSpeaker,
+    switchCamera,
+    setLocalStream,
   };
 };
 

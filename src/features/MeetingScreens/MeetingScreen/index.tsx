@@ -1,5 +1,5 @@
-import React, { useRef } from "react"
-import { FlatList, Text, View } from "react-native"
+import React, { useEffect, useRef, useState } from "react"
+import { FlatList, PermissionsAndroid, Platform, Text, View } from "react-native"
 import useWebRtc from "src/hooks/useWebRtc"
 import { styles } from "./styles"
 import { Icon } from "@components"
@@ -17,6 +17,11 @@ import { Toast } from "react-native-toast-message/lib/src/Toast"
 import { useTranslation } from "react-i18next"
 import { useKeepAwake } from "@sayem314/react-native-keep-awake"
 import Subtitles from "src/components/Subtitles"
+import useSttConnection from "src/hooks/useSttConnection"
+import RecordScreen, { RecordingResult } from 'react-native-record-screen';
+import RNFS from 'react-native-fs';
+import RNFetchBlob from "react-native-blob-util"
+import base64 from "base64-js";
 
 type ParamList = {
   Detail: {
@@ -24,32 +29,43 @@ type ParamList = {
     title?: string
     hash?: string
     instanceMeetingOwner?: boolean
+    isVideoOff?: boolean
+    isMuted?: boolean
   }
 }
+
+const CHUNK_SIZE = 64 * 1024; // 64 KB per chunk
 
 const MeetingScreen = () => {
   const { t } = useTranslation()
   const {
     localStream,
-    endCall,
     isMuted,
     isVideoOff,
-    toggleMedia,
     roomId,
     participants,
     isSpeakerOn,
     isCameraSwitched,
-    switchCamera,
-    toggleSpeaker,
     messages,
-    sendMessage,
     isScreenShare,
-
     remoteAudioStreams,
     usersAudioTrackToIdMap,
     remoteVideoStreams,
     usersVideoTrackToIdMap,
+    peerConnection,
+    sttUrl,
+
+    endCall,
+    toggleMedia,
+    switchCamera,
+    toggleSpeaker,
+    sendMessage,
+    startCall,
   } = useWebRtc()
+  // const { stopStreaming, isSttConnected, toggleSttMicrophoneMute, handleChangeSttLanguage, subtitles } = useSttConnection({ sttUrl,
+  //   isAudioOn: !isMuted });
+  // console.log(isSttConnected, 'isSttConnectedisSttConnected');
+  // console.log(subtitles, 'subtitlessubtitlessubtitlessubtitlessubtitles');
 
   useKeepAwake()
   useStatusBar("light-content", colors.dark)
@@ -62,6 +78,13 @@ const MeetingScreen = () => {
   const sheetCatiptionsRef = useRef<BottomSheetMethods>(null)
   const sheetParticipantsRef = useRef<BottomSheetMethods>(null)
 
+  useEffect(() => {
+    startCall({
+       isVideoOn: !route.params?.isVideoOff,
+       isAudioOn: !route.params?.isMuted,
+    });
+  }, [])
+
   const handleChatOpen = () => {
     sheetChatRef.current?.open()
   }
@@ -71,6 +94,98 @@ const MeetingScreen = () => {
   const handleParticipantsOpen = () => {
     sheetParticipantsRef.current?.open()
   }
+
+  const moveFileToDownloads = async (filePath: string) => {
+    const newPath = `${RNFS.ExternalStorageDirectoryPath}/Download/recordedVideo.mp4`;
+    try {
+      await RNFS.copyFile(filePath, newPath);
+      console.log("File moved successfully:", newPath);
+      return newPath;
+    } catch (error) {
+      console.error("Error moving file:", error);
+    }
+  };
+
+
+  const streamFile = async (filePath: string, sendChunk: (data: Uint8Array) => void) => {
+    try {
+      const fileStat = await RNFetchBlob.fs.stat(filePath);
+      const fileSize = fileStat.size;
+      let offset = 0;
+  
+      console.log(`Starting file stream, size: ${fileSize} bytes`);
+  
+      const stream = await RNFetchBlob.fs.readStream(filePath, "base64", CHUNK_SIZE);
+  
+      stream.open();
+  
+      stream.onData((data) => {
+        if (typeof data === "string") {
+          const chunkBuffer = base64.toByteArray(data); // Convert base64 to Uint8Array
+          sendChunk(chunkBuffer);
+        }
+      });
+  
+      stream.onError((err) => {
+        console.error("Error reading stream:", err);
+      });
+  
+      stream.onEnd(() => {
+        console.log("File streaming complete");
+      });
+    } catch (error) {
+      console.error("Error streaming file:", error);
+    }
+  };
+
+const sendChunk = (data: Uint8Array) => {
+  console.log(data, 'datadatadatadatadatadata');
+};
+
+const [isStarted, setIsStarted] = useState(false);
+  const startRecording = async () => {
+    try {
+      console.log('asdfasdfsfsfsaf');
+      
+      const res = RecordScreen.startRecording({
+        onBuffer: (buffer) => {
+          console.log(buffer, ' bufferbufferbufferbuffer');
+          
+          // This is where you access the buffer data.
+          // sendBufferOverWebSocket(buffer);
+        },
+      });
+
+      if (res === RecordingResult.PermissionError) {
+        return
+      }
+      setIsStarted(true);
+    } catch (error) {
+      console.error('Error starting recording:', error);
+    }
+  };
+  
+  const stopRecording = async () => {
+    try {
+      console.log('Stopping recording...');
+      // await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const res: any = await RecordScreen.stopRecording().catch((error) => console.warn(error));
+      console.log(res, 'Recording result:', res);
+      
+      // await new Promise(resolve => setTimeout(resolve, 1000));
+      // RecordScreen.clean();
+      setIsStarted(false);
+  
+      // if (res?.result?.outputURL) {
+      //   const outputPath = res.result.outputURL;
+      //   moveFileToDownloads(outputPath)
+      //   streamFile(outputPath, sendChunk);
+      // }
+    } catch (error) {
+      console.error('Error stopping and saving recording:', error);
+    }
+  };
 
   const callTopActions = [
     {
@@ -87,12 +202,13 @@ const MeetingScreen = () => {
       name: "screenRecordStart",
       onPress: () => {
         instanceMeetingOwner
-          ? ""
+          ? isStarted ? stopRecording() : startRecording()
           : Toast.show({
               type: "error",
               text1: t("OnlyCreatorCanStartScreenRecording"),
             })
       },
+      style: { opacity: isStarted ? 1 : 0.5 },
     },
   ]
 
@@ -155,6 +271,7 @@ const MeetingScreen = () => {
             remoteVideoStreams={remoteVideoStreams}
             usersVideoTrackToIdMap={usersVideoTrackToIdMap}
             participants={participants}
+            peerConnection={peerConnection}
           />
           <Subtitles isActive={isCaptionOn} />
         </View>

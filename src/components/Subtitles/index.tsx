@@ -13,7 +13,6 @@ const Subtitles = ({ isActive }: ISubtitles) => {
   //REDUX: for subtitles
   const { subtitles } = useAppSelector((state) => state.subtitles)
   const dispatch = useAppDispatch()
-  dispatch(setSubtitles("HELLO WORLD"))
   if (!isActive) return null
   return (
     <View style={styles.container}>

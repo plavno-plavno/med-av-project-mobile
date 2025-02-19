@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { View, Text, TouchableOpacity } from "react-native"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { styles } from "./styles"
@@ -7,11 +7,11 @@ import { useTranslation } from "react-i18next"
 import { helpers } from "@utils/theme"
 import colors from "src/assets/colors"
 import useWebRTC from "src/hooks/useWebRtc"
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
+import { RouteProp, useFocusEffect, useNavigation, useRoute } from "@react-navigation/native"
 import { copyToClipboard } from "@utils/clipboard"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
-import { mediaDevices, MediaStream } from "react-native-webrtc"
+import { mediaDevices, MediaStream, RTCView } from "react-native-webrtc"
 import { initializeSocket } from "src/hooks/webRtcSocketInstance"
 
 type ParamList = {
@@ -25,27 +25,32 @@ type ParamList = {
 const MeetingDetailsScreen = () => {
   const { t } = useTranslation()
   const { navigate } = useNavigation<ROUTES>()
-  const {
-    RTCView,
-    startCall,
-  } = useWebRTC()
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const { hash, isCreatorMode, title } = route.params
 
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [preview, setPreview] = useState<MediaStream>();
 
   const toggleAudio = () => {
-    setIsMuted(prev => !prev)
-  }
-
+    if (preview) {
+      preview.getAudioTracks().forEach(track => {
+        track.enabled = !track.enabled;
+      });
+    }
+    setIsMuted(prev => !prev);
+  };
+  
   const toggleVideo = () => {
-    setIsVideoOff(prev => !prev)
+    if (preview) {
+      preview.getVideoTracks().forEach(track => {
+        track.enabled = !track.enabled;
+      });
+    }
+    setIsVideoOff(prev => !prev);
+  };
 
-  }
-
-  const [preview, setPreview] = useState<MediaStream>();
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     const initialize = async () => {
       let mediaConstraints = {
         audio: true,
@@ -63,7 +68,7 @@ const MeetingDetailsScreen = () => {
         preview?.getTracks().forEach(t => t.stop());
         preview?.getTracks().forEach(t => t.release());
       }
-  }, [])
+  }, []))
 
   return (
     <ScreenWrapper title={title || hash} isBackButton isCenterTitle>
@@ -115,7 +120,6 @@ const MeetingDetailsScreen = () => {
                 title: title,
                 instanceMeetingOwner: true,
               })
-              startCall();
             }}
           />
           <CustomButton

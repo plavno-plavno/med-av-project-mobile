@@ -1,5 +1,12 @@
 import { IPostMediaResponse } from "../mediaApi/types"
 
+export interface ILanguage {
+  __entity: string;
+  code: string;
+  id: number;
+  name: string;
+}
+
 export interface IAuthMeResponse {
   __entity: "User"
   createdAt: string // ISO date string
@@ -12,7 +19,7 @@ export interface IAuthMeResponse {
   gmtDelta: number
   id: number
   isTwoFAEnabled: boolean
-  language: string | null
+  language: ILanguage | null
   lastName: string | null
   newEmail: string | null
   organization: string | null

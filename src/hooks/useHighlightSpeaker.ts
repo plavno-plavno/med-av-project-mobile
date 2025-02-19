@@ -1,15 +1,14 @@
 import { useCallback, useRef, useState } from "react";
-import useWebRtc from "./useWebRtc";
 import { useFocusEffect } from "@react-navigation/native";
+import { RTCPeerConnection } from "react-native-webrtc";
 
-const useHighlightSpeaker = () => {
-  const { peerConnection, usersAudioTrackToIdMap } = useWebRtc();
+const useHighlightSpeaker = (peerConnection: RTCPeerConnection | null, usersAudioTrackToIdMap: any) => {
   const [activeSpeaker, setActiveSpeaker] = useState<number | null>(null);
 
   const audioLevelMapRef = useRef<{ [key: string]: number }>({});
   const audioLevelHistory = useRef<{ [key: string]: number[] }>({});
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const CHECK_INTERVAL_MS = 5000;
+  const CHECK_INTERVAL_MS = 500;
 
   const checkAudioLevels = async () => {
     if (!peerConnection) return;
@@ -20,11 +19,8 @@ const useHighlightSpeaker = () => {
 
     stats?.forEach((report: { type: string; kind: string; trackIdentifier: any; trackId: any; audioLevel: number; }) => {
       if (report.type === "inbound-rtp" && report.kind === "audio") {
-        const trackId = report.trackIdentifier || report.trackId;
-        const userId = Object.keys(usersAudioTrackToIdMap as Record<string, string>)?.find(
-          (key) => (usersAudioTrackToIdMap as Record<string, string>)[key] === trackId
-        );
-
+        const trackMidId = report?.mid
+        const userId = usersAudioTrackToIdMap[trackMidId];
         if (userId) {
           const audioLevel = report.audioLevel ?? 0;
           audioLevelMapRef.current[userId] = audioLevel;

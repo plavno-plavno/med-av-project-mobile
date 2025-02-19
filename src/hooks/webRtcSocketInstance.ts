@@ -53,6 +53,7 @@ export const initializeSocket = async () => {
 export const getSocket = (): Socket | null => {
   if (!socket) {
     console.warn('Socket not initialized. Call initializeSocket() first.');
+    return null;
   }
 
   return socket;
