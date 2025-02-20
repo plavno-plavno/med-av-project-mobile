@@ -18,10 +18,11 @@ import { useTranslation } from "react-i18next"
 import { useKeepAwake } from "@sayem314/react-native-keep-awake"
 import Subtitles from "src/components/Subtitles"
 import useSttConnection from "src/hooks/useSttConnection"
-import RecordScreen, { RecordingResult } from 'react-native-record-screen';
 import RNFS from 'react-native-fs';
 import RNFetchBlob from "react-native-blob-util"
 import base64 from "base64-js";
+import { NativeEventEmitter, NativeModules } from 'react-native';
+const { ScreenRecorder } = NativeModules;
 
 type ParamList = {
   Detail: {
@@ -34,7 +35,7 @@ type ParamList = {
   }
 }
 
-const CHUNK_SIZE = 64 * 1024; // 64 KB per chunk
+const CHUNK_SIZE = 1024 * 1024 // 1MB chunks
 
 const MeetingScreen = () => {
   const { t } = useTranslation()
@@ -78,6 +79,8 @@ const MeetingScreen = () => {
   const sheetCatiptionsRef = useRef<BottomSheetMethods>(null)
   const sheetParticipantsRef = useRef<BottomSheetMethods>(null)
 
+  const [isStarted, setIsStarted] = useState(false);
+
   useEffect(() => {
     startCall({
        isVideoOn: !route.params?.isVideoOff,
@@ -95,95 +98,46 @@ const MeetingScreen = () => {
     sheetParticipantsRef.current?.open()
   }
 
-  const moveFileToDownloads = async (filePath: string) => {
-    const newPath = `${RNFS.ExternalStorageDirectoryPath}/Download/recordedVideo.mp4`;
-    try {
-      await RNFS.copyFile(filePath, newPath);
-      console.log("File moved successfully:", newPath);
-      return newPath;
-    } catch (error) {
-      console.error("Error moving file:", error);
-    }
-  };
+  useEffect(() => {
+    const eventEmitter = new NativeEventEmitter(ScreenRecorder);
+  
+    const chunkListener = eventEmitter.addListener("onChunk", (base64Chunk) => {
+      console.log("Received chunk:", base64Chunk);
+      sendChunkToServer(base64Chunk);
+    });
+  
+    return () => {
+      chunkListener.remove();
+    };
+  }, []);
 
-
-  const streamFile = async (filePath: string, sendChunk: (data: Uint8Array) => void) => {
-    try {
-      const fileStat = await RNFetchBlob.fs.stat(filePath);
-      const fileSize = fileStat.size;
-      let offset = 0;
-  
-      console.log(`Starting file stream, size: ${fileSize} bytes`);
-  
-      const stream = await RNFetchBlob.fs.readStream(filePath, "base64", CHUNK_SIZE);
-  
-      stream.open();
-  
-      stream.onData((data) => {
-        if (typeof data === "string") {
-          const chunkBuffer = base64.toByteArray(data); // Convert base64 to Uint8Array
-          sendChunk(chunkBuffer);
-        }
-      });
-  
-      stream.onError((err) => {
-        console.error("Error reading stream:", err);
-      });
-  
-      stream.onEnd(() => {
-        console.log("File streaming complete");
-      });
-    } catch (error) {
-      console.error("Error streaming file:", error);
-    }
-  };
-
-const sendChunk = (data: Uint8Array) => {
-  console.log(data, 'datadatadatadatadatadata');
-};
-
-const [isStarted, setIsStarted] = useState(false);
   const startRecording = async () => {
     try {
-      console.log('asdfasdfsfsfsaf');
-      
-      const res = RecordScreen.startRecording({
-        onBuffer: (buffer) => {
-          console.log(buffer, ' bufferbufferbufferbuffer');
-          
-          // This is where you access the buffer data.
-          // sendBufferOverWebSocket(buffer);
-        },
-      });
-
-      if (res === RecordingResult.PermissionError) {
-        return
-      }
+      const filePath = await ScreenRecorder.startRecording();
+      console.log("Recording started:", filePath);
       setIsStarted(true);
     } catch (error) {
-      console.error('Error starting recording:', error);
+      console.error("Failed to start recording:", error);
     }
   };
-  
+
   const stopRecording = async () => {
     try {
-      console.log('Stopping recording...');
-      // await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const res: any = await RecordScreen.stopRecording().catch((error) => console.warn(error));
-      console.log(res, 'Recording result:', res);
-      
-      // await new Promise(resolve => setTimeout(resolve, 1000));
-      // RecordScreen.clean();
+      const filePath = await ScreenRecorder.stopRecording();
+      console.log("Recording stopped:", filePath);
       setIsStarted(false);
-  
-      // if (res?.result?.outputURL) {
-      //   const outputPath = res.result.outputURL;
-      //   moveFileToDownloads(outputPath)
-      //   streamFile(outputPath, sendChunk);
-      // }
     } catch (error) {
-      console.error('Error stopping and saving recording:', error);
+      console.error("Failed to stop recording:", error);
+    }
+  };
+
+  const sendChunkToServer = async (base64Chunk: any) => {
+    try {
+      const binaryData = atob(base64Chunk);
+      console.log("Sending chunk to server:", binaryData);
+
+    } catch (error) {
+      console.error("Failed to send chunk:", error);
     }
   };
 

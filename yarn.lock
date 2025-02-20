@@ -7261,11 +7261,6 @@ react-native-reanimated@^3.16.4:
     convert-source-map "^2.0.0"
     invariant "^2.2.4"
 
-react-native-record-screen@^0.6.2:
-  version "0.6.2"
-  resolved "https://registry.yarnpkg.com/react-native-record-screen/-/react-native-record-screen-0.6.2.tgz#bfd00d2cc862b2b3acd687cd5d29ab0d06e5dbe8"
-  integrity sha512-KyIr/9UzY/JRz6zUaePR7Z4uedtG9n2WkC6yRPnOWFG38+Neh1snc+Oib6fMDWXK70YJb6OHVtv8i8kexiKgXg==
-
 react-native-safe-area-context@^5.0.0:
   version "5.0.0"
   resolved "https://registry.npmjs.org/react-native-safe-area-context/-/react-native-safe-area-context-5.0.0.tgz"

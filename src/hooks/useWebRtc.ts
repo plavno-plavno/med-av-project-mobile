@@ -550,7 +550,7 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
     if (!peerConnection.current) {
       peerConnection.current = createPeerConnection();
     }
-      sttUrlRef.current = 'wss://c17836126.plavno.app:20277';
+      // sttUrlRef.current = 'wss://c17836126.plavno.app:20277';
       const existingUserIds = new Set(participants.map((participant) => participant.id));
       const usersToFetch = event.participantsInfo.filter((participant) => !existingUserIds.has(participant.userId));
       const userFetchPromises = usersToFetch.map(async participant => await getUsersById({ id: Number(participant.userId) }).unwrap());
