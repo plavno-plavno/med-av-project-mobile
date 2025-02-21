@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react"
 import {
   FlatList,
   PermissionsAndroid,
-  Platform,
   Text,
   View,
 } from "react-native"
@@ -128,7 +127,11 @@ const MeetingScreen = () => {
       console.log("Recording started:")
       setIsStarted(true)
     } catch (error) {
-      console.error("Failed to start recording:", error)
+      console.error(
+        "Failed to start recording:",
+        { ScreenRecorder, froMNATIVE: NativeModules.ScreenRecorder },
+        error
+      )
     }
   }
 
