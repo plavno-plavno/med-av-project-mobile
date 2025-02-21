@@ -1,5 +1,11 @@
 import React, { useEffect, useRef, useState } from "react"
-import { FlatList, PermissionsAndroid, Platform, Text, View } from "react-native"
+import {
+  FlatList,
+  PermissionsAndroid,
+  Platform,
+  Text,
+  View,
+} from "react-native"
 import useWebRtc from "src/hooks/useWebRtc"
 import { styles } from "./styles"
 import { Icon } from "@components"
@@ -18,11 +24,11 @@ import { useTranslation } from "react-i18next"
 import { useKeepAwake } from "@sayem314/react-native-keep-awake"
 import Subtitles from "src/components/Subtitles"
 import useSttConnection from "src/hooks/useSttConnection"
-import RNFS from 'react-native-fs';
+import RNFS from "react-native-fs"
 import RNFetchBlob from "react-native-blob-util"
-import base64 from "base64-js";
-import { NativeEventEmitter, NativeModules } from 'react-native';
-const { ScreenRecorder } = NativeModules;
+import base64 from "base64-js"
+import { NativeEventEmitter, NativeModules } from "react-native"
+const { ScreenRecorder } = NativeModules
 
 type ParamList = {
   Detail: {
@@ -79,13 +85,13 @@ const MeetingScreen = () => {
   const sheetCatiptionsRef = useRef<BottomSheetMethods>(null)
   const sheetParticipantsRef = useRef<BottomSheetMethods>(null)
 
-  const [isStarted, setIsStarted] = useState(false);
+  const [isStarted, setIsStarted] = useState(false)
 
   useEffect(() => {
     startCall({
-       isVideoOn: !route.params?.isVideoOff,
-       isAudioOn: !route.params?.isMuted,
-    });
+      isVideoOn: !route.params?.isVideoOff,
+      isAudioOn: !route.params?.isMuted,
+    })
   }, [])
 
   const handleChatOpen = () => {
@@ -99,47 +105,51 @@ const MeetingScreen = () => {
   }
 
   useEffect(() => {
-    const eventEmitter = new NativeEventEmitter(ScreenRecorder);
-  
-    const chunkListener = eventEmitter.addListener("onChunk", (base64Chunk) => {
-      console.log("Received chunk:", base64Chunk);
-      sendChunkToServer(base64Chunk);
-    });
-  
+    const eventEmitter = new NativeEventEmitter(ScreenRecorder)
+
+    const chunkListener = eventEmitter.addListener(
+      "onVideoChunk",
+      (base64Chunk) => {
+        console.log("Received chunk:", base64Chunk)
+        sendChunkToServer(base64Chunk)
+      }
+    )
+
     return () => {
-      chunkListener.remove();
-    };
-  }, []);
+      chunkListener.remove()
+    }
+  }, [])
 
   const startRecording = async () => {
     try {
-      const filePath = await ScreenRecorder.startRecording();
-      console.log("Recording started:", filePath);
-      setIsStarted(true);
+      ScreenRecorder.setChunkSize(1024 * 1024) // 1MB chunks, or any other desired size
+
+      const filePath = await ScreenRecorder.startRecording()
+      console.log("Recording started:", filePath)
+      setIsStarted(true)
     } catch (error) {
-      console.error("Failed to start recording:", error);
+      console.error("Failed to start recording:", error)
     }
-  };
+  }
 
   const stopRecording = async () => {
     try {
-      const filePath = await ScreenRecorder.stopRecording();
-      console.log("Recording stopped:", filePath);
-      setIsStarted(false);
+      const filePath = await ScreenRecorder.stopRecording()
+      console.log("Recording stopped:", filePath)
+      setIsStarted(false)
     } catch (error) {
-      console.error("Failed to stop recording:", error);
+      console.error("Failed to stop recording:", error)
     }
-  };
+  }
 
   const sendChunkToServer = async (base64Chunk: any) => {
     try {
-      const binaryData = atob(base64Chunk);
-      console.log("Sending chunk to server:", binaryData);
-
+      const binaryData = atob(base64Chunk)
+      console.log("Sending chunk to server:", binaryData)
     } catch (error) {
-      console.error("Failed to send chunk:", error);
+      console.error("Failed to send chunk:", error)
     }
-  };
+  }
 
   const callTopActions = [
     {
@@ -156,7 +166,9 @@ const MeetingScreen = () => {
       name: "screenRecordStart",
       onPress: () => {
         instanceMeetingOwner
-          ? isStarted ? stopRecording() : startRecording()
+          ? isStarted
+            ? stopRecording()
+            : startRecording()
           : Toast.show({
               type: "error",
               text1: t("OnlyCreatorCanStartScreenRecording"),
