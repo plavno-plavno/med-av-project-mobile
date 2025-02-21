@@ -36,6 +36,11 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         android:supportsRtl="true">
+        <service
+            android:name=".ScreenCaptureService"
+            android:foregroundServiceType="mediaProjection"
+            android:exported="false" />
+
         <meta-data
             android:name="asset_statements"
             android:resource="@string/asset_statements" />

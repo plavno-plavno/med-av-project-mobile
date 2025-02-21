@@ -9,6 +9,8 @@ import org.devio.rn.splashscreen.SplashScreen;
 import android.content.Intent
 import android.net.Uri
 import com.oney.WebRTCModule.WebRTCModuleOptions
+import com.facebook.react.ReactNativeHost
+import com.facebook.react.ReactInstanceManager
 
 class MainActivity : ReactActivity() {
 
@@ -28,6 +30,18 @@ class MainActivity : ReactActivity() {
       val appLinkIntent: Intent = intent
       val appLinkAction: String? = appLinkIntent.action
       val appLinkData: Uri? = appLinkIntent.data
+  }
+
+  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+      super.onActivityResult(requestCode, resultCode, data)
+      val reactInstanceManager = reactNativeHost.reactInstanceManager
+      val currentReactContext = reactInstanceManager.currentReactContext
+
+      if (currentReactContext != null) {
+          val screenRecorderModule = currentReactContext
+              .getNativeModule(ScreenRecorderModule::class.java)
+          screenRecorderModule?.onActivityResult(this, requestCode, resultCode, data)
+      }
   }
 
   /**

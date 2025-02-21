@@ -122,10 +122,10 @@ const MeetingScreen = () => {
 
   const startRecording = async () => {
     try {
-      ScreenRecorder.setChunkSize(1024 * 1024) // 1MB chunks, or any other desired size
+      // ScreenRecorder.setChunkSize(1024 * 1024) // 1MB chunks, or any other desired size
 
-      const filePath = await ScreenRecorder.startRecording()
-      console.log("Recording started:", filePath)
+      await ScreenRecorder.startRecording()
+      console.log("Recording started:")
       setIsStarted(true)
     } catch (error) {
       console.error("Failed to start recording:", error)
@@ -134,8 +134,8 @@ const MeetingScreen = () => {
 
   const stopRecording = async () => {
     try {
-      const filePath = await ScreenRecorder.stopRecording()
-      console.log("Recording stopped:", filePath)
+      await ScreenRecorder.stopRecording()
+      console.log("Recording stopped:")
       setIsStarted(false)
     } catch (error) {
       console.error("Failed to stop recording:", error)
