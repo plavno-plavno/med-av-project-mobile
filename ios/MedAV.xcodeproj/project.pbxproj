@@ -9,18 +9,17 @@
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* MedAVTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* MedAVTests.m */; };
 		0663C11C9BA84A9DA43C959A /* Manrope-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 90B416F6B9D9401DAAD130B0 /* Manrope-Light.ttf */; };
-		0C80B921A6F3F58F76C31292 /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		2802745E2D69072A0038E8C8 /* ScreenRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 782F4B402D665293005AA7DB /* ScreenRecorder.swift */; };
+		280274672D691AC40038E8C8 /* ScreenRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 280274662D691AC40038E8C8 /* ScreenRecorder.m */; };
+		280274682D691AC40038E8C8 /* ScreenRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 280274662D691AC40038E8C8 /* ScreenRecorder.m */; };
 		3393C9CAFDC5AC02B635ACC2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		4696E111945D4D42A5C91180 /* Manrope-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 76E440BEAB8843B290A6193B /* Manrope-Regular.ttf */; };
 		561E4C1110F843EC960D7B4C /* Manrope-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E21F0A6D148D435CA2900724 /* Manrope-ExtraLight.ttf */; };
 		67831F513E834023BFE205ED /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B3E6149DFC814EFBBB4C63AB /* Manrope-Bold.ttf */; };
 		782F4B412D665293005AA7DB /* ScreenRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 782F4B402D665293005AA7DB /* ScreenRecorder.swift */; };
-		782F4B422D665293005AA7DB /* ScreenRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 782F4B402D665293005AA7DB /* ScreenRecorder.swift */; };
-		782F4B442D6652E3005AA7DB /* ScreenRecorderBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 782F4B432D6652E3005AA7DB /* ScreenRecorderBridge.m */; };
-		782F4B452D6652E3005AA7DB /* ScreenRecorderBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 782F4B432D6652E3005AA7DB /* ScreenRecorderBridge.m */; };
 		78581FFE2D51F2050079E1C9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 78581FFD2D51F2050079E1C9 /* GoogleService-Info.plist */; };
 		785820002D51F2130079E1C9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 78581FFF2D51F2130079E1C9 /* GoogleService-Info.plist */; };
 		78A13DDE2D07602800858E82 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
@@ -67,7 +66,13 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = MedAV/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = MedAV/main.m; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = MedAV/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		280274582D6905950038E8C8 /* libReact-Core.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libReact-Core.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2802745A2D69063F0038E8C8 /* libReact-Core.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libReact-Core.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2802745C2D6906550038E8C8 /* libReact-Core.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libReact-Core.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		280274652D6919E10038E8C8 /* ScreenRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ScreenRecorder.h; sourceTree = "<group>"; };
+		280274662D691AC40038E8C8 /* ScreenRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ScreenRecorder.m; sourceTree = "<group>"; };
 		284ED59C147947A7B48F277B /* Manrope-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-ExtraBold.ttf"; path = "../src/assets/fonts/Manrope-ExtraBold.ttf"; sourceTree = "<group>"; };
+		286C626A2D68FBF60005A4B0 /* libReact-Core.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libReact-Core.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3FE78D372E61E86540F809C2 /* libPods-MedAV-MedAVTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MedAV-MedAVTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		460AD00786C6AEBF17F61255 /* libPods-MedAV-MedAVDevelopment.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MedAV-MedAVDevelopment.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5AC211CC2FCB2044712BDFC3 /* Pods-MedAV.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MedAV.release.xcconfig"; path = "Target Support Files/Pods-MedAV/Pods-MedAV.release.xcconfig"; sourceTree = "<group>"; };
@@ -77,7 +82,6 @@
 		782F4B3E2D665293005AA7DB /* MedAV-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MedAV-Bridging-Header.h"; sourceTree = "<group>"; };
 		782F4B3F2D665293005AA7DB /* MedAVDevelopment-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MedAVDevelopment-Bridging-Header.h"; sourceTree = "<group>"; };
 		782F4B402D665293005AA7DB /* ScreenRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRecorder.swift; sourceTree = "<group>"; };
-		782F4B432D6652E3005AA7DB /* ScreenRecorderBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ScreenRecorderBridge.m; sourceTree = "<group>"; };
 		78581FFD2D51F2050079E1C9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		78581FFF2D51F2130079E1C9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		78A13DF32D07602800858E82 /* MedAVDevelopment.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MedAVDevelopment.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -112,7 +116,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				78F4750D2D5DDB4C00ABED38 /* ReplayKit.framework in Frameworks */,
-				0C80B921A6F3F58F76C31292 /* BuildFile in Frameworks */,
 				AA4D87CE36631D6742197111 /* libPods-MedAV.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -149,6 +152,7 @@
 		13B07FAE1A68108700A75B9A /* MedAV */ = {
 			isa = PBXGroup;
 			children = (
+				280274662D691AC40038E8C8 /* ScreenRecorder.m */,
 				78A13DF62D0C2ED900858E82 /* MedAV.entitlements */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
@@ -157,6 +161,8 @@
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB71A68108700A75B9A /* main.m */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
+				782F4B402D665293005AA7DB /* ScreenRecorder.swift */,
+				280274652D6919E10038E8C8 /* ScreenRecorder.h */,
 			);
 			name = MedAV;
 			sourceTree = "<group>";
@@ -164,6 +170,10 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2802745C2D6906550038E8C8 /* libReact-Core.a */,
+				2802745A2D69063F0038E8C8 /* libReact-Core.a */,
+				280274582D6905950038E8C8 /* libReact-Core.a */,
+				286C626A2D68FBF60005A4B0 /* libReact-Core.a */,
 				78F4750C2D5DDB4C00ABED38 /* ReplayKit.framework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				D5D11572BD5EE8832C694DBA /* libPods-MedAV.a */,
@@ -199,8 +209,6 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				782F4B402D665293005AA7DB /* ScreenRecorder.swift */,
-				782F4B432D6652E3005AA7DB /* ScreenRecorderBridge.m */,
 				78581FFC2D51EF320079E1C9 /* Production */,
 				78581FFB2D51EF290079E1C9 /* Development */,
 				78A13DF52D0C2EA200858E82 /* MedAVDevelopment.entitlements */,
@@ -639,8 +647,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				782F4B452D6652E3005AA7DB /* ScreenRecorderBridge.m in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
+				280274672D691AC40038E8C8 /* ScreenRecorder.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				782F4B412D665293005AA7DB /* ScreenRecorder.swift in Sources */,
 			);
@@ -650,10 +658,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				782F4B442D6652E3005AA7DB /* ScreenRecorderBridge.m in Sources */,
+				2802745E2D69072A0038E8C8 /* ScreenRecorder.swift in Sources */,
+				280274682D691AC40038E8C8 /* ScreenRecorder.m in Sources */,
 				78A13DDE2D07602800858E82 /* AppDelegate.mm in Sources */,
 				78A13DDF2D07602800858E82 /* main.m in Sources */,
-				782F4B422D665293005AA7DB /* ScreenRecorder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -727,7 +735,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = MedAV/MedAV.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5BP624HD4S;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = MedAV/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -758,7 +766,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = MedAV/MedAV.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5BP624HD4S;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = MedAV/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -787,7 +795,8 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = MedAVDevelopment.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5BP624HD4S;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = "MedAVDevelopment-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "MedAV-dev";
@@ -819,7 +828,8 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = MedAVDevelopment.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5BP624HD4S;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = "MedAVDevelopment-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "MedAV-dev";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -844,6 +854,7 @@
 		83CBBA201A601CBA00E9B192 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
@@ -872,6 +883,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				DEFINES_MODULE = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -910,10 +922,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -924,6 +933,7 @@
 		83CBBA211A601CBA00E9B192 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
@@ -952,6 +962,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
+				DEFINES_MODULE = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -982,10 +993,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
