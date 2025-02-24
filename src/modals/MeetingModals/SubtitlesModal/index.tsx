@@ -1,4 +1,4 @@
-import React from "react"
+import React, { MutableRefObject, useEffect } from "react"
 import { View, FlatList, TouchableOpacity, Text } from "react-native"
 import { CustomButton, Icon } from "@components"
 import BottomSheet, { BottomSheetMethods } from "@devvie/bottom-sheet"
@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next"
 import { styles } from "./styles"
 import { useLanguageOptionsQuery } from "src/api/auth/authApi"
 import { ILanguageOptions } from "src/api/auth/types"
+import { useAuthMeQuery } from "src/api/userApi/userApi"
 
 type SubtitlesContent = {
   id: number
@@ -27,19 +28,37 @@ interface IParticipantsModal {
   setIsCaptionOn: (val: boolean) => void
   setSubtitleLanguage: (val: string) => void
   isCaptionOn: boolean
+  allLanguagesRef: MutableRefObject<string[]>;
+  handleChangedRoomLanguage: (arg0: string) => void
 }
 
 const SubtitlesModal = ({
   sheetRef,
   setIsCaptionOn,
   isCaptionOn,
+  allLanguagesRef,
   setSubtitleLanguage,
+  handleChangedRoomLanguage,
 }: IParticipantsModal) => {
   const { t } = useTranslation()
 
   const { data: languageOptions } = useLanguageOptionsQuery()
   const [selectedLanguage, setSelectedLanguage] = React.useState<string>("")
   const [isChangeLanguageMode, setIsChangeLanguageMode] = React.useState(false)
+  const { data: authMeData } = useAuthMeQuery()
+
+  useEffect(() => {
+    if (authMeData?.language?.code) {
+      setSelectedLanguage(authMeData?.language?.code?.toLowerCase?.())
+    }
+  }, [authMeData?.language?.code]);
+
+  useEffect(() => {
+    if (languageOptions?.length) {
+      allLanguagesRef.current = languageOptions.map(lang => lang.code.toLowerCase());
+    }
+  }, [languageOptions]);
+
 
   const handleToggleSubtitles = () => {
     setIsCaptionOn(!isCaptionOn)
@@ -53,7 +72,7 @@ const SubtitlesModal = ({
   const subtitlesContent: SubtitlesContent[] = [
     {
       id: 1,
-      title: t("ShowSubtitles"),
+      title: isCaptionOn ? t('HideSubtitles') : t("ShowSubtitles"),
       icon: "showSubtitles",
       onPress: handleToggleSubtitles,
     },
@@ -81,10 +100,13 @@ const SubtitlesModal = ({
       return (
         <TouchableOpacity
           style={styles.languageItem}
-          onPress={() => setSelectedLanguage(item.code)}
+          onPress={() => {
+            handleChangedRoomLanguage(item?.code?.toLowerCase?.())
+            setSelectedLanguage(item.code?.toLowerCase())
+          }}
         >
           <Text style={styles.title}>{item.name}</Text>
-          {selectedLanguage === item.code && <Icon name={"checkCoral"} />}
+          {selectedLanguage === item.code?.toLowerCase?.() && <Icon name={"checkCoral"} />}
         </TouchableOpacity>
       )
     }

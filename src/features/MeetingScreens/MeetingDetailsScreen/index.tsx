@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { View, Text, TouchableOpacity } from "react-native"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { styles } from "./styles"
@@ -6,13 +6,11 @@ import { CustomButton, Icon } from "@components"
 import { useTranslation } from "react-i18next"
 import { helpers } from "@utils/theme"
 import colors from "src/assets/colors"
-import useWebRTC from "src/hooks/useWebRtc"
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from "@react-navigation/native"
 import { copyToClipboard } from "@utils/clipboard"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 import { mediaDevices, MediaStream, RTCView } from "react-native-webrtc"
-import { initializeSocket } from "src/hooks/webRtcSocketInstance"
 
 type ParamList = {
   Detail: {
@@ -63,7 +61,6 @@ const MeetingDetailsScreen = () => {
       setPreview(stream)
     }
       initialize()
-      initializeSocket();
       return () => {
         preview?.getTracks().forEach(t => t.stop());
         preview?.getTracks().forEach(t => t.release());

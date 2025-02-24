@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
-import { FlatList, PermissionsAndroid, Platform, Text, View } from "react-native"
+import { FlatList, Text, View } from "react-native"
 import useWebRtc from "src/hooks/useWebRtc"
 import { styles } from "./styles"
 import { Icon } from "@components"
@@ -17,11 +17,8 @@ import { Toast } from "react-native-toast-message/lib/src/Toast"
 import { useTranslation } from "react-i18next"
 import { useKeepAwake } from "@sayem314/react-native-keep-awake"
 import Subtitles from "src/components/Subtitles"
-import useSttConnection from "src/hooks/useSttConnection"
-import RNFS from 'react-native-fs';
-import RNFetchBlob from "react-native-blob-util"
-import base64 from "base64-js";
 import { NativeEventEmitter, NativeModules } from 'react-native';
+import Loading from "src/components/Loading"
 const { ScreenRecorder } = NativeModules;
 
 type ParamList = {
@@ -55,19 +52,17 @@ const MeetingScreen = () => {
     usersVideoTrackToIdMap,
     peerConnection,
     sttUrl,
+    localUserId,
+    allLanguagesRef,
+    subtitlesQueue,
 
     endCall,
     toggleMedia,
     switchCamera,
     toggleSpeaker,
     sendMessage,
-    startCall,
+    handleChangedRoomLanguage,
   } = useWebRtc()
-  // const { stopStreaming, isSttConnected, toggleSttMicrophoneMute, handleChangeSttLanguage, subtitles } = useSttConnection({ sttUrl,
-  //   isAudioOn: !isMuted });
-  // console.log(isSttConnected, 'isSttConnectedisSttConnected');
-  // console.log(subtitles, 'subtitlessubtitlessubtitlessubtitlessubtitles');
-
   useKeepAwake()
   useStatusBar("light-content", colors.dark)
   const [isCaptionOn, setIsCaptionOn] = React.useState(false)
@@ -80,13 +75,6 @@ const MeetingScreen = () => {
   const sheetParticipantsRef = useRef<BottomSheetMethods>(null)
 
   const [isStarted, setIsStarted] = useState(false);
-
-  useEffect(() => {
-    startCall({
-       isVideoOn: !route.params?.isVideoOff,
-       isAudioOn: !route.params?.isMuted,
-    });
-  }, [])
 
   const handleChatOpen = () => {
     sheetChatRef.current?.open()
@@ -113,8 +101,8 @@ const MeetingScreen = () => {
 
   const startRecording = async () => {
     try {
-      const filePath = await ScreenRecorder.startRecording();
-      console.log("Recording started:", filePath);
+      // const filePath = await ScreenRecorder.startRecording();
+      // console.log("Recording started:", filePath);
       setIsStarted(true);
     } catch (error) {
       console.error("Failed to start recording:", error);
@@ -123,8 +111,8 @@ const MeetingScreen = () => {
 
   const stopRecording = async () => {
     try {
-      const filePath = await ScreenRecorder.stopRecording();
-      console.log("Recording stopped:", filePath);
+      // const filePath = await ScreenRecorder.stopRecording();
+      // console.log("Recording stopped:", filePath);
       setIsStarted(false);
     } catch (error) {
       console.error("Failed to stop recording:", error);
@@ -196,6 +184,9 @@ const MeetingScreen = () => {
     },
   ]
 
+  if(!participants.length){
+    return <Loading />
+  }
   return (
     <>
       <SafeAreaView edges={["top"]} style={styles.container}>
@@ -226,8 +217,9 @@ const MeetingScreen = () => {
             usersVideoTrackToIdMap={usersVideoTrackToIdMap}
             participants={participants}
             peerConnection={peerConnection}
+            localUserId={localUserId}
           />
-          <Subtitles isActive={isCaptionOn} />
+          <Subtitles isActive={isCaptionOn} subtitlesQueue={subtitlesQueue}/>
         </View>
         <View>
           <FlatList
@@ -257,6 +249,8 @@ const MeetingScreen = () => {
           sheetRef={sheetCatiptionsRef}
           setIsCaptionOn={setIsCaptionOn}
           isCaptionOn={isCaptionOn}
+          handleChangedRoomLanguage={handleChangedRoomLanguage}
+          allLanguagesRef={allLanguagesRef}
         />
         <ParticipantsModal
           isCreatorMode={isCreatorMode}

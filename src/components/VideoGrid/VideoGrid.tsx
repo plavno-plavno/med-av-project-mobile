@@ -23,6 +23,8 @@ const VideoGrid = ({
   usersVideoTrackToIdMap,
   participants,
   peerConnection,
+  localUserId,
+  isMuted,
 }: any) => {
   const adaptParticipantsToShow = (): RemoteStream[] => {
     const remoteStreams: Record<string | number, RemoteStream> = {};
@@ -30,13 +32,13 @@ const VideoGrid = ({
     remoteAudioStreams.forEach((audioStream: any) => {
       const midId = Number(audioStream.midId);
       const userId = usersAudioTrackToIdMap[midId];
-
       if (userId) {
         if (!remoteStreams[userId]) {
           remoteStreams[userId] = {
             userId: Number(userId),
             audioTrack: null,
             videoTrack: null,
+            mid: String(midId),
           };
         }
 
@@ -54,6 +56,7 @@ const VideoGrid = ({
             userId: Number(userId),
             audioTrack: null,
             videoTrack: null,
+            mid: String(midId),
           };
         }
 
@@ -61,19 +64,22 @@ const VideoGrid = ({
       }
     });
 
-    const participants = Object.values(remoteStreams);
+    const participantsSteams = Object.values(remoteStreams);
     if (localStream) {
-      participants.unshift(localStream);
+      participantsSteams.unshift(localStream);
     }
 
-    return participants;
+    return participantsSteams;
   };
 
   const participantsToShow = adaptParticipantsToShow();
-  const activeSpeaker = 1
+  // const activeSpeaker = 1
+  // console.log(participantsToShow, 'participantsToShowparticipantsToShowparticipantsToShow');
+  const isLocalUser = localUserId != null;
   // const activeSpeaker = useHighlightSpeaker(peerConnection, usersAudioTrackToIdMap) // for Highlight need to test it in nearest future
-
+  const activeSpeaker = useHighlightSpeaker(peerConnection, participantsToShow, isLocalUser, localUserId, isMuted);
   const totalParticipants = participantsToShow.length;
+// console.log(totalParticipants, 'totalParticipantstotalParticipants');
 
   // check it for share screen, user who shared screen should be the first one in list
   // const sharingScreenStream = participantsToShow.find((stream) => stream?.userId === Number(sharingOwner));
@@ -103,13 +109,15 @@ const VideoGrid = ({
   };
 
   const renderStream = (item: any, index: number) => {
-    const isActive = Number(activeSpeaker) === Number(item.userId);
+    // const isActive = activeSpeaker !== null && Number(activeSpeaker) === Number(item.userId);
+    const isActive =
+      activeSpeaker !== null && Number(activeSpeaker) === Number(item.userId);
     const mediaStream = new MediaStream();
     if (item?.videoTrack) mediaStream.addTrack(item?.videoTrack);
     if (item?.audioTrack) mediaStream.addTrack(item?.audioTrack);
-    const user = participants.find((user: User) => user.id === item.userId) as UserInMeeting;
+    const user = participants?.find((user: User) => user.id === item.userId) as UserInMeeting;
     const lastNameInitial = user?.lastName?.charAt?.(0) || "";
-
+  
     return (
       <View key={item?.id || index} style={getGridStyle({ total: totalParticipants, idx: index })}>
         {isActive && (
@@ -121,7 +129,7 @@ const VideoGrid = ({
           />
         )}
         <View style={styles.videoContainer}>
-          {(!item?.userId && isVideoOff) || !user.isVideoOn ? (
+          {(!item?.userId && isVideoOff) || !user?.isVideoOn ? (
             <View style={[styles.cameraOffContainer]}>
               {user?.photo?.link ?
                 <Image source={{ uri: user.photo.link }} style={{ width: moderateScale(88), height: moderateScale(88), borderRadius: moderateScale(100) }} />
@@ -139,8 +147,8 @@ const VideoGrid = ({
               />
             </View>
           )}
-          <Text style={styles.userName}>{user.firstName} {lastNameInitial}.</Text>
-          {!user.isAudioOn &&
+          <Text style={styles.userName}>{user?.firstName} {lastNameInitial}.</Text>
+          {!user?.isAudioOn &&
             <Icon
               name="microMuted"
               style={{
@@ -154,7 +162,6 @@ const VideoGrid = ({
       </View>
     );
   };
-
 
   return (
     <View style={styles.container}>

@@ -3,13 +3,14 @@ import {
 } from 'react';
 import { Socket } from 'socket.io-client';
 import { getSocket, initializeSocket } from './webRtcSocketInstance';
-import { mediaDevices, MediaStreamTrack, RTCIceCandidate, RTCPeerConnection, RTCSessionDescription, RTCView } from 'react-native-webrtc';
+import { mediaDevices, MediaStreamTrack, RTCIceCandidate, RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { ROUTES } from 'src/navigation/RoutesTypes';
 import { useAuthMeQuery, useGetUsersByIdMutation } from 'src/api/userApi/userApi';
 import inCallManager from 'react-native-incall-manager';
 import { ScreensEnum } from 'src/navigation/ScreensEnum';
 import AudioRecord from "react-native-audio-record";
+import Config from "react-native-config"
 
 export type Photo = {
   id: string;
@@ -79,9 +80,8 @@ export interface ParticipantsInfo {
 }
 
 export interface ISubtitle {
-  userName: string;
-  message: string;
-  time: string;
+  speakerId: number;
+  text: string;
 }
 
 export enum UserActions {
@@ -94,7 +94,6 @@ export enum UserActions {
   StartRecording = 'start-recording',
   StopRecording = 'stop-recording',
 }
-
 
 export type AudioStream = {
   audioTrack: MediaStreamTrack;
@@ -113,8 +112,15 @@ export interface RemoteStream {
   mid: string;
 }
 
+
+export interface LocalStream {
+  userId: number | string;
+  audioTrack: MediaStreamTrack | null;
+  videoTrack: MediaStreamTrack | null;
+}
+
 export interface IUsersAudioTrackToIdMap {
-  [midId: number]: string;
+  [key: number]: string;
 }
 
 export interface IUsersVideoTrackToIdMap {
@@ -139,12 +145,14 @@ const config = {
   ],
 };
 
+const sttUrl = Config.STT_URL
+
 const SUBTITLES_QUEUE_LIMIT = 3;
 const TRIES_LIMIT = 7;
 let RETRY_ATTEMPT: number = 0;
 
 const useWebRtc = () => {
-  const [localStream, setLocalStream] = useState<RemoteStream | null>(null);
+  const [localStream, setLocalStream] = useState<LocalStream | null>(null);
   const peerConnection = useRef<RTCPeerConnection | null>(null);
   const [participants, setParticipants] = useState<User[]>([]);
   const [error, setError] = useState<any | string | null>(null);
@@ -183,119 +191,124 @@ const useWebRtc = () => {
   const offerStatusCheckRef = useRef<ReturnType<typeof setInterval>>();
 
   const [activeSpeakerId, setActiveSpeakerId] = useState<number | null>(null);
-  const [isSTTOpened, setSTTOpen] = useState<boolean>(false);
+  // const [isSTTOpened, setSTTOpen] = useState<boolean>(false);
 
   const STTSocket = useRef<WebSocket | null>(null);
   const sttLanguageRef = useRef<string | undefined>(authMeData?.language?.code?.toLowerCase?.());
   const isConnectingRef = useRef<boolean>(false);
-  const allLanguagesRef = useRef<string[] | undefined>(['en', 'hi']);
+  const allLanguagesRef = useRef<string[]>(['en', 'hi']); // Default to 'en' and 'hi'
 
   const pendingCandidates: RTCIceCandidate[] = [];
 
   const audioLevelMapRef = useRef<Record<string, number>>({});
-  const [transceiversInfo, setTransceiversInfo] = useState<RemoteStream[]>([]);
 
-  const sttLanguagesRef = useRef<any[]>([
+  const sttLanguagesRef = useRef<any>([
     authMeData?.language?.code
   ]);
 
   let isRecording = false;
-  const audioCheckIntervalRef = useRef<ReturnType<typeof setInterval>>();
+  // const audioCheckIntervalRef = useRef<ReturnType<typeof setInterval>>();
+  // const [transceiversInfo, setTransceiversInfo] = useState<RemoteStream[]>([]);
 
-  const [subtitlesQueue, setSubtitesQueue] = useState<any[]>([]);
+  const [subtitlesQueue, setSubtitlesQueue] = useState<ISubtitle[]>([]);
+  const [sharingOwner, setSharingOwner] = useState<number | null>(null);
 
     let collectorAr: Float32Array[] = [];
-
-console.log(isSTTOpened, 'isSTTOpened');
-console.log(subtitlesQueue, 'subtitlesQueue');
-
-console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
-
-  socketRef.current = getSocket()
+    const screenTrackMidIdRef = useRef<string>();
+    const [sharedScreen, setSharedScreen] = useState<MediaStreamTrack | null>(null);
 
   useEffect(() => {
-    if (!socketRef.current) {
-      initializeSocket().then(() => {
-        socketRef.current = getSocket()
+    const setupSocket = async () => {
+      if (!socketRef.current) {
+        await initializeSocket();
+        socketRef.current = getSocket();
         peerConnection.current = createPeerConnection();
-      })
-      return;
-    }
+       setTimeout(() => {
+        startCall();
+       }, 2000)
+      }
+  
+      if (socketRef.current && !socketRef.current.connected) {
+        socketRef.current.connect();
+      }
+  
+      if (socketRef.current) {
+        socketRef.current.onAny(handleOnAny);
+        socketRef.current.on('offer', handleOffer);
+        socketRef.current.on('answer', handleAnswer);
+        socketRef.current.on('candidate', handleCandidate);
+        socketRef.current.on('user-joined', handleUserJoined);
+        socketRef.current.on("screen-share-updated", (e) => setIsScreenShare(e?.isSharing));
+        socketRef.current.on('sharing-participant-joined', handleScreenShareJoined);
+  
+        socketRef.current.on('mute-audio', userToggledMedia);
+        socketRef.current.on('unmute-audio', userToggledMedia);
+        socketRef.current.on('mute-video', userToggledMedia);
+        socketRef.current.on('unmute-video', userToggledMedia);
+  
+        socketRef.current.on('transceiver-info', handleTransceiver);
+        socketRef.current.on('client-disconnected', handleClientDisconnected);
+        socketRef.current.on('error', handleSocketError);
+        socketRef.current.on('chat-message', handleChatMessage);
+      }
+    };
+  
+    setupSocket();
+  
+      if (socketRef.current) {
+        disconnectSocketEvents();
+    };
+  }, [roomId]);
+  
 
-    if (!socketRef.current.connected) {
-      socketRef.current.connect();
-    }
-    socketRef.current.onAny(handleOnAny);
-    // socketRef.current.on('offer', (event) => checkPeerConnection(() => handleOffer(event)));
-    // socketRef.current.on('answer', (event) => checkPeerConnection(() => handleAnswer(event)));
-    socketRef.current.on('offer', handleOffer);
-    socketRef.current.on('answer', handleAnswer);
-    socketRef.current.on('candidate', handleCandidate);
-    socketRef.current.on('user-joined', handleUserJoined);
-    socketRef.current.on("screen-share-updated", (e) => setIsScreenShare(e?.isSharing))
+  // const handleAudioCheck = () => {
+  //   const peerConnection = peerConnectionRef.current;
+  //   if (!peerConnection) return;
 
-    socketRef.current.on('mute-audio', userToggledMedia);
-    socketRef.current.on('unmute-audio', userToggledMedia);
-    socketRef.current.on('mute-video', userToggledMedia);
-    socketRef.current.on('unmute-video', userToggledMedia)
+  //   try {
+  //     peerConnection.getStats().then(stats => {
+  //       let maxAudioLevel = 0; // Track the highest audio level
+  //       let newActiveSpeakerId: number | null = null;
 
-    socketRef.current.on('transceiver-info', handleTransceiver);
-    socketRef.current.on('client-disconnected', handleClientDisconnected);
-    socketRef.current.on('error', handleSocketError);
+  //       stats.forEach(report => {
+  //         if (
+  //           report.type === "inbound-rtp" &&
+  //           report.kind === "audio" &&
+  //           report.audioLevel !== undefined
+  //         ) {
+  //           const trackId = report.trackIdentifier || report.trackId; // Unique ID of the audio track
+  //           const userId = transceiversInfo!.find(
+  //             str => str.audioTrack!.id === trackId,
+  //           )?.userId;
 
-    socketRef.current.on('chat-message', handleChatMessage);
+  //           if (userId) {
+  //             audioLevelMapRef.current[userId] = report.audioLevel;
 
-    peerConnection.current = createPeerConnection();
-    // return () => {
-    //   disconnectSocketEvents()
-    //   endCall();
-    // };
-  }, [socketRef.current, roomId]);
+  //             // Update the max audio level and corresponding user
+  //             if (report.audioLevel > maxAudioLevel) {
+  //               maxAudioLevel = report.audioLevel;
+  //               newActiveSpeakerId = userId;
+  //             }
+  //           }
+  //         }
+  //       });
 
-  const handleAudioCheck = () => {
-    if (!peerConnection.current) return;
-
-    try {
-      peerConnection.current?.getStats().then(stats => {
-        let maxAudioLevel = 0;
-        let newActiveSpeakerId: number | null = null;
-
-        stats.forEach((report: any) => {
-          if (
-            report.type === "inbound-rtp" &&
-            report.kind === "audio" &&
-            report.audioLevel !== undefined
-          ) {
-            const trackId = report.trackIdentifier || report.trackId;
-            const userId = transceiversInfo!.find(
-              str => str.audioTrack!.id === trackId,
-            )?.userId;
-
-            if (userId) {
-              audioLevelMapRef.current[userId] = report.audioLevel;
-
-              if (report.audioLevel > maxAudioLevel) {
-                maxAudioLevel = report.audioLevel;
-                newActiveSpeakerId = Number(userId) || null;
-              }
-            }
-          }
-        });
-
-        if (maxAudioLevel > 0.01) {
-          setActiveSpeakerId(newActiveSpeakerId!);
-        } else {
-          setActiveSpeakerId(null);
-        }
-      });
-    } catch (error) {
-      console.error("Error fetching audio levels:", error);
-    }
-  };
+  //       // Update the active speaker if audio level crosses a threshold
+  //       if (maxAudioLevel > 0.01) {
+  //         // Example threshold, adjust as needed
+  //         setActiveSpeakerId(newActiveSpeakerId!);
+  //       } else {
+  //         // Reset active speaker if no significant audio detected
+  //         setActiveSpeakerId(null);
+  //       }
+  //     });
+  //   } catch (error) {
+  //     console.error("Error fetching audio levels:", error);
+  //   }
+  // };
 
   const onSTTSocketMessage = (event: WebSocketMessageEvent) => {
-    console.log("onSocketMessage: ", !!JSON.parse(event.data));
-    return;
+    console.log("onSocketMessage: ", JSON.parse(event.data));
   };
 
   const disconnectSocketEvents = () => {
@@ -313,8 +326,10 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
         'unmute-audio',
         'mute-video',
         'unmute-video',
+        'screen-share-updated',
+        'sharing-participant-joined',
       ];
-  
+
       events.forEach(event => socketRef.current?.off(event));
     }
   }
@@ -360,12 +375,19 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
       })
 
       pc.addEventListener('track', (event) => {
+        console.log('Receive track in ontrack', event);
         const midId = event.transceiver.mid || '';
-        if (event?.track?.kind === 'video') {
-          setRemoteVideoStreams((prevStreams) => {
-            const exists = prevStreams.some((stream) => stream.videoTrack.id === event?.track?.id);
 
-            if (!exists && event?.track) {
+        if (event?.track?.kind === 'video') {
+          if (midId === screenTrackMidIdRef.current) {
+            setSharedScreen(event.track);
+            return;
+          }
+
+          setRemoteVideoStreams((prevStreams) => {
+            const exists = prevStreams.some((stream) => stream.videoTrack.id === event.track?.id);
+
+            if (!exists && event.track) {
               const newVideoStream: VideoStream = {
                 videoTrack: event.track,
                 midId: midId,
@@ -376,13 +398,13 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
 
             return prevStreams;
           });
-        } else if (event?.track?.kind === 'audio') {
+        } else if (event.track?.kind === 'audio') {
           setRemoteAudioStreams((prevStreams) => {
             const exists = prevStreams.some((stream) => stream.audioTrack.id === event?.track?.id);
 
-            if (!exists && event.track) {
+            if (!exists && event?.track) {
               const newAudioStream: AudioStream = {
-                audioTrack: event.track,
+                audioTrack: event?.track,
                 midId: midId,
               };
 
@@ -417,14 +439,14 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
       }, 2000);
   };
 
-  const startCall = async ({isAudioOn, isVideoOn}:{isAudioOn: boolean, isVideoOn: boolean}) => {
+  const startCall = async () => {
     try {
           socketRef.current?.emit('join', {
             roomId,
             language: 'en',
             status: {
-              isAudioOn,
-              isVideoOn,
+              isAudioOn: !isMuted,
+              isVideoOn: !isVideoOff,
               isSharingOn: false,
               isRecordingOn: false,
             },
@@ -452,6 +474,10 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
     remoteVideoStreams?.forEach(t => t?.videoTrack?.release?.());
     peerConnection.current?.close()
 
+    if (STTSocket.current) {
+      STTSocket.current.close();
+      STTSocket.current = null;
+    }
     peerConnection.current = null
     disconnectSocketEvents();
     peerConnection.current = null
@@ -482,12 +508,44 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
     }
   };
 
+//   const [localMediaStream, setLocalMediaStream] = useState(null);
+// console.log(localMediaStream, 'localMediaStream');
+
+//   const startScreenShare = async () => {
+//     try {
+//       const mediaStream = await mediaDevices.getDisplayMedia();
+//       console.log(mediaStream, 'mediaStreammediaStream');
+//       setLocalMediaStream(mediaStream);
+
+//       // Add tracks to peer connection
+//       mediaStream.getTracks().forEach(track => {
+//         console.log(track, 'tracktracktracktrack');
+        
+//         // peerConnection.addTrack(track, mediaStream);
+//       });
+
+//     } catch (err) {
+//       console.error('Error starting screen share:', err);
+//     }
+//   };
+
+//   const stopScreenShare = () => {
+//     if (localMediaStream) {
+//       // Stop all tracks
+//       localMediaStream?.getTracks().forEach(track => track.stop());
+//       console.log(localMediaStream, 'localMediaStreamlocalMediaStream');
+      
+//       setLocalMediaStream(null);
+//     }
+//   };
+
   const handleOfferCheck = async () => {
     try {
       RETRY_ATTEMPT++;
       if (RETRY_ATTEMPT > TRIES_LIMIT)
         throw new Error("Something wrong with connection");
       if (peerConnection.current?.signalingState !== "stable") return;
+      
       const offer = await peerConnection.current.createOffer({});
       await peerConnection.current.setLocalDescription(offer);
       socketRef.current!.emit("offer", {
@@ -545,64 +603,79 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
     }
   };
 
-  const handleUserJoined = async (event: { userId: string, actionStatus: ActionStatus, participantsInfo: ParticipantsInfo[] }) => {
+  const handleUserJoined = async ({ userId, participantsInfo }: { userId: string, participantsInfo: ParticipantsInfo[] }) => {
     try {
-    if (!peerConnection.current) {
-      peerConnection.current = createPeerConnection();
-    }
-      // sttUrlRef.current = 'wss://c17836126.plavno.app:20277';
-      const existingUserIds = new Set(participants.map((participant) => participant.id));
-      const usersToFetch = event.participantsInfo.filter((participant) => !existingUserIds.has(participant.userId));
-      const userFetchPromises = usersToFetch.map(async participant => await getUsersById({ id: Number(participant.userId) }).unwrap());
-      const results = await Promise.allSettled(userFetchPromises);
+       sttUrlRef.current = sttUrl as string;
+       const existingUserIds = new Set(participants.map((participant) => participant.id));
+ 
+       const usersToFetch = participantsInfo.filter((participant) => !existingUserIds.has(participant.userId));
+       const userFetchPromises = usersToFetch.map(async participant => await getUsersById({ id: Number(participant.userId) }).unwrap());
+
+       const results = await Promise.allSettled(userFetchPromises);
+ 
+       const newUsers = results
+         .map((result, index) => {
+           if (result.status === 'fulfilled') {
+             const user = result.value.user;
+ 
+             return {
+               ...user,
+               isAudioOn: participantsInfo[index].status.isAudioOn,
+               isVideoOn: participantsInfo[index].status.isVideoOn,
+             };
+           } else {
+             console.error(`Failed to fetch user ${participantsInfo[index].userId}:`, result.reason);
+             return null;
+           }
+         })
+         .filter(Boolean);
+
+       setParticipants((prev: any) => {
+         const existingUserIds = new Set(prev.map((participant: any) => participant.id));
+        if(newUsers){
+          return [
+            ...prev,
+            ...newUsers.filter((newUser) => !existingUserIds.has(newUser?.id)),
+          ];
+        }
+        return prev
+       });
+
+      const anySharingOn = participantsInfo.some((p) => p.status.isSharingOn);
+
+      setIsScreenShare(anySharingOn);
 
       const stream = await mediaDevices.getUserMedia({
         audio: true,
         video: true,
       });
-
-       const newUsers = results
-      .map((result, index) => {
-        if (result.status === 'fulfilled') {
-          const user = result.value.user;
-          return {
-            ...user,
-            isAudioOn: event.participantsInfo[index].status.isAudioOn,
-            isVideoOn: event.participantsInfo[index].status.isVideoOn,
-          };
-
-        } else {
-          console.error(`Failed to fetch user ${event.participantsInfo[index].userId}:`, result.reason);
-          return null;
-        }
-      })
-      .filter(Boolean);
-      setParticipants((prev) => {
-        const existingUserIds = new Set(prev.map((participant) => participant.id));
-      
-        return [
-          ...prev,
-          ...newUsers.filter((newUser): newUser is any => newUser !== null && !existingUserIds.has(newUser.id)),
-        ];
-      });
-
-      if (userRefId.current && !localStream) {
+      if (userRefId.current) {
         setLocalStream({
           userId: userRefId.current,
           audioTrack: stream.getAudioTracks()[0] || null,
           videoTrack: stream.getVideoTracks()[0] || null,
-        } as RemoteStream);
+        });
       }
 
-      await stream.getTracks().forEach((track) => {
-        if (peerConnection.current) {
-          peerConnection.current.addTrack(track, stream);
-        }
-      });
-      if (offerStatusCheckRef.current) {
-        clearInterval(offerStatusCheckRef.current);
+      if (!peerConnection.current) {
+        peerConnection.current = createPeerConnection();
       }
-      checkPeerConnection(handleOfferCheck)
+
+        stream.getTracks().forEach((track) => {
+          if (peerConnection.current) {
+            peerConnection.current.addTrack(track, stream);
+            const [audioTrack] = stream.getAudioTracks();
+            setUsersAudioTrackToIdMap((prevMap) => ({
+              ...prevMap,
+              transceiverId: audioTrack?.id,
+              userId: userId,
+            }));
+          }
+        });
+        if (offerStatusCheckRef.current) {
+          clearInterval(offerStatusCheckRef.current);
+        }
+        checkPeerConnection(handleOfferCheck)
     } catch (error) {
       console.error('Error handling user join:', error);
     }
@@ -628,6 +701,11 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
     pendingCandidates.length = 0;
   };
 
+  const handleScreenShareJoined = ({ userId }: { userId: number }) => {
+    setIsScreenShare(true);
+    setSharingOwner(userId);
+  };
+
   const handleCandidate = async ({ candidate }: { candidate: RTCIceCandidate }) => {
     try {
       if (peerConnection.current) {
@@ -648,64 +726,30 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
     }
   }, [authMeData?.language?.code])
 
-  const handleChangedRoomLanguage = ({ languages }: {languages: any}) => {
-    console.log("handleChangedRoomLanguage: ", languages);
-    sttLanguagesRef.current = languages;
+  const handleChangedRoomLanguage = (language: string) => {
+    console.log("handleChangedRoomLanguage: ", language);
+    sttLanguagesRef.current = language;
   };
 
   const handleTransceiver = async ({
     mid,
     userId,
     kind,
+    type,
   }: {
     mid: string | null;
-    userId: number;
+    userId: string | number;
     kind: string;
+    type: string;
   }) => {
-    const isUserExists = participants.some((user) => user.id === userId);
-
     const userIdStr = String(userId);
-
-    if (!isUserExists) {
-      try {
-        const userData = await getUsersById({ id: userId }).unwrap()
-        setParticipants((prev) => {
-          const isUserExist = prev.some(
-            (participant) => participant.id === userData?.user?.id,
-          );
-
-          if (isUserExist) {
-            return prev;
-          }
-
-          return [...prev, userData.user] as User[];
-        });
-
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-    }
-
-    const existingStream = transceiversInfo?.find(
-      stream => stream.mid === String(mid) || stream?.userId === userId,
-    );
-    if (!existingStream) {
-      setTransceiversInfo(current =>
-        current.concat({ mid: String(mid), userId, audioTrack: null, videoTrack: null }),
-      );
-    } else {
-      const updatedStream = { ...existingStream };
-      updatedStream.userId = userId;
-      setTransceiversInfo(current =>
-        current.map(stream =>
-          stream.mid === updatedStream.mid ? updatedStream : stream,
-        ),
-      );
-    }
 
     if (mid) {
       const midId = Number(mid);
-
+      if (type === 'screen') {
+        screenTrackMidIdRef.current = mid;
+        return;
+      }
       if (kind === 'audio') {
         setUsersAudioTrackToIdMap((prevMap) => ({
           ...prevMap,
@@ -764,10 +808,6 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
       });
       return updatedMap;
     });
-
-    setTransceiversInfo(current =>
-      current.filter(stream => stream.userId !== userId),
-    );
 
     setUsersAudioTrackToIdMap((prevMap) => {
       const updatedMap = { ...prevMap };
@@ -873,7 +913,6 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
 
 
   const startStreaming = async () => {
-    console.log("captureAndSendAudio");
     if (isRecording) {
       isRecording = false;
       AudioRecord.stop();
@@ -883,16 +922,17 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
       channels: 1, // Mono
       bitsPerSample: 16, // 16-bit audio
       audioSource: 6, // Use the microphone as the audio source
-      wavFile: "newTest.wav", // default 'audio.wav'
+      wavFile: "audio.wav", // default 'audio.wav'
     });
     AudioRecord.start();
     isRecording = true;
-    AudioRecord.on("data", (data: any) =>
+    AudioRecord.on("data", (data: any) =>{
       addToBufferAndSend(
         data,
         sttLanguageRef.current || 'en',
         allLanguagesRef.current || [] ,
-      ),
+      )
+      }
     );
   };
 
@@ -929,47 +969,12 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
   const handlePeerDataChannelMessage = (event: any) => {
     console.log("handlePeerDataChannelMessage: ", event);
     const data = JSON.parse(event.data);
-    const { userId, language, text, participantId, participantLang } = data;
-    setSubtitesQueue(handleSubtitles(data));
+    setSubtitlesQueue(handleSubtitles(data));
   };
 
   useEffect(() => {
     sttLanguageRef.current = authMeData?.language?.code?.toLowerCase?.();
   }, [authMeData]);
-
-  useEffect(() => {
-    console.log('Stt url ' + sttUrlRef.current);
-    console.log(`WebSocket state: ${STTSocket.current?.readyState}`);
-
-    if (!sttUrlRef.current) {
-      return;
-    }
-
-    STTSocket.current = new WebSocket(sttUrlRef.current);
-    console.log(`WebSocket state: ${STTSocket.current?.readyState}`);
-    console.log('UseSttConnection hook initialized');
-
-    STTSocket.current.onopen = () => {
-      onSocketOpen();
-    };
-
-    STTSocket.current.onmessage = (event) => {
-      console.log(event, 'eventeventeventeventeventevent');
-    };
-
-    STTSocket.current.onerror = (event: Event) => {
-      const error = event
-        setError(error as any);
-      console.error('WebSocket error', error);
-    };
-
-    STTSocket.current.onclose = (event) => {
-      console.log(event, 'event close');
-    };
-    return () => {
-      console.log('Unmount Stt hook');
-    };
-  }, [sttUrlRef?.current, socketRef]);
 
     const addToBufferAndSend = async (
       data: string,
@@ -989,8 +994,6 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
             allLangs: allLanguagesRef.current,
             audio: float32ArrayToBase64(audio),
           };
-  // console.log(packet, 'packetpacketpacket');
-          // Send the packet via WebSocket
           STTSocket.current.send(JSON.stringify(packet));
           collectorAr = [];
         } else {
@@ -1009,10 +1012,9 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
     );
 
   const captureAndSendAudio = () => {
-    console.log("captureAndSendAudio");
     if (isRecording) {
       isRecording = false;
-      handleClearInterval(audioCheckIntervalRef.current);
+      // handleClearInterval(audioCheckIntervalRef.current);
       AudioRecord.stop();
     }
     AudioRecord.init({
@@ -1023,14 +1025,15 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
       wavFile: "newTest.wav", // default 'audio.wav'
     });
     AudioRecord.start();
-    audioCheckIntervalRef.current = setInterval(handleAudioCheck, 1000); // Polling every 100ms
+    // audioCheckIntervalRef.current = setInterval(handleAudioCheck, 1000); // Polling every 100ms
     isRecording = true;
-    AudioRecord.on("data", (data: any) =>
+    AudioRecord.on("data", (data: any) =>{
       addToBufferAndSend(
         data,
         currentLanguageRef.current,
         sttLanguagesRef.current,
-      ),
+      )
+    }
     );
   };
 
@@ -1042,8 +1045,6 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
 
   const handleSetSTTSocket = ({sttUrl} : { sttUrl: string }) => {
     STTSocket.current = new WebSocket(sttUrl);
-    console.log({ STTSocket });
-
     STTSocket.current.onopen = onSTTSocketOpen;
     STTSocket.current.onmessage = onSTTSocketMessage;
 
@@ -1056,13 +1057,14 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
 
     STTSocket.current.onclose = event => {
       console.log("STTOnclose: ", event);
+      AudioRecord.stop();
     };
   };
+
   const onSTTSocketOpen = () => {
     if (!userRefId.current) return;
-    setSTTOpen(true);
     console.log("STT SEND: ");
-    STTSocket.current!.send(
+    STTSocket.current?.send(
       JSON.stringify({
         uid: `tester-${userRefId.current}`,
         language: sttLanguageRef.current,
@@ -1085,13 +1087,13 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
     }
     const isAudio = type === 'audio';
     if(isAudio){
-      setIsMuted((prev) => !prev)
       if (!isMuted) {
         console.log("Microphone muted. Stopping recording...");
         AudioRecord.stop();
+        setIsMuted((prev) => !prev)
       } else {
         console.log("Microphone unmuted. Restarting recording...");
-        // captureAndSendAudio();
+        captureAndSendAudio();
       }
     } else {
       setIsVideoOff((prev) => !prev)
@@ -1156,9 +1158,13 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
     usersVideoTrackToIdMap,
     peerConnection: peerConnection.current,
     rtcError: error,
+    subtitlesQueue,
     
     sttUrl: sttUrlRef,
+    localUserId: userRefId.current,
+    allLanguagesRef: allLanguagesRef,
 
+    handleChangedRoomLanguage,
     toggleMedia,
     startCall,
     endCall,
@@ -1166,6 +1172,8 @@ console.log(activeSpeakerId, 'activeSpeakerIdactiveSpeakerIdactiveSpeakerId');
     toggleSpeaker,
     switchCamera,
     setLocalStream,
+    // startScreenShare,
+    // stopScreenShare
   };
 };
 
