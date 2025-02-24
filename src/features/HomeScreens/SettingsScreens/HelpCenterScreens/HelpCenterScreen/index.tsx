@@ -68,7 +68,6 @@ const HelpCenterScreen = () => {
       isBackButton
       title={t("HelpCenter")}
       isCenterTitle
-      keyboardVerticalOffset={isIOS() ? moderateScale(-100) : undefined}
     >
       <View style={[helpers.flex1, helpers.gap20]}>
         <View>
@@ -89,7 +88,7 @@ const HelpCenterScreen = () => {
         </View>
       </View>
       <CustomButton
-        style={{ bottom: moderateScale(30) }}
+        style={{ bottom: isIOS() ? moderateScale(10) : 0 }}
         text={t("ContactSupport")}
         rightIcon={"nextArrow"}
         onPress={() => {

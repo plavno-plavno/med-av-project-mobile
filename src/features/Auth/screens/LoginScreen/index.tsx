@@ -44,6 +44,7 @@ const LoginScreen = () => {
       const res = await emailLogin({
         email: values.email,
         password: values.password,
+        deviceId: notificationToken || null,
       }).unwrap()
       console.log(res?.token, "accessToken")
       await Keychain.setGenericPassword("accessToken", res?.token, {

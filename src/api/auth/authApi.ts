@@ -20,12 +20,13 @@ export const authApi = createApi({
   reducerPath: "authApi",
   endpoints: (builder) => ({
     emailLogin: builder.mutation<IEmailLoginResponse, ILoginRequest>({
-      query: ({ email, password }) => ({
+      query: ({ email, password, deviceId }) => ({
         url: "auth/email/login",
         method: "POST",
         body: {
           email,
           password,
+          deviceId,
         },
       }),
     }),

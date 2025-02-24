@@ -4,6 +4,7 @@ export interface IEmailRequest {
 export interface ILoginRequest {
   email: string
   password: string
+  deviceId: string | null
 }
 
 export interface IEmailLoginResponse {
