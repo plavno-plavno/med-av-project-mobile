@@ -92,19 +92,20 @@ const VideoGrid = ({
   //   participantsToShow.splice(index, 1);
   // }
 
-  RNSoundLevel.start(250)
-
   useEffect(() => {
     if (isMuted) {
       RNSoundLevel.stop()
-    }
-    RNSoundLevel.onNewFrame = (data) => {
-      if (data?.value > -40) {
-        setActiveHostSpeaker(true)
-      } else {
-        setActiveHostSpeaker(false)
+    } else {
+      RNSoundLevel.start(250)
+      RNSoundLevel.onNewFrame = (data) => {
+        if (data?.value > -40) {
+          setActiveHostSpeaker(true)
+        } else {
+          setActiveHostSpeaker(false)
+        }
       }
     }
+
     return () => {
       RNSoundLevel.stop()
     }
@@ -131,16 +132,23 @@ const VideoGrid = ({
   const renderStream = (item: any, index: number) => {
     const isActive =
       item?.userId === localUserId
-        ? activeHostSpeacker
+        ? activeHostSpeacker && !isMuted
         : activeSpeaker !== null &&
           Number(activeSpeaker) === Number(item?.userId)
+
     const mediaStream = new MediaStream()
+
     if (item?.videoTrack) mediaStream.addTrack(item?.videoTrack)
     if (item?.audioTrack) mediaStream.addTrack(item?.audioTrack)
+
     const user = participants?.find(
       (user: User) => user.id === item.userId
     ) as UserInMeeting
     const lastNameInitial = user?.lastName?.charAt?.(0) || ""
+
+    const isMicMuted = item?.userId === localUserId ? isMuted : !user?.isAudioOn
+    const isCameraOff =
+      item?.userId === localUserId ? isVideoOff : !user?.isVideoOn
 
     return (
       <View
@@ -156,8 +164,8 @@ const VideoGrid = ({
           />
         )}
         <View style={styles.videoContainer}>
-          {(!item?.userId && isVideoOff) || !user?.isVideoOn ? (
-            <View style={[styles.cameraOffContainer]}>
+          {isCameraOff ? (
+            <View style={styles.cameraOffContainer}>
               {user?.photo?.link ? (
                 <Image
                   source={{ uri: user.photo.link }}
@@ -174,7 +182,6 @@ const VideoGrid = ({
           ) : (
             <View
               style={{
-                margin: moderateScale(2),
                 borderRadius: moderateScale(12),
                 overflow: "hidden",
               }}
@@ -190,7 +197,7 @@ const VideoGrid = ({
           <Text style={styles.userName}>
             {user?.firstName} {lastNameInitial}.
           </Text>
-          {!user?.isAudioOn && (
+          {isMicMuted && (
             <Icon
               name="microMuted"
               style={{
@@ -221,7 +228,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: moderateScale(4),
     justifyContent: "center",
-    overflow: "hidden",
   },
   video: {
     borderRadius: moderateScale(12),
@@ -240,17 +246,19 @@ const styles = StyleSheet.create({
     position: "relative",
     borderRadius: moderateScale(12),
     overflow: "hidden",
-    width: "99%",
-    height: "98%",
-    marginTop: 2,
-    marginLeft: 2,
+    width: "100%",
+    height: "100%",
+    padding: moderateScale(2),
   },
   cameraOffContainer: {
     backgroundColor: colors.charcoal,
     justifyContent: "center",
     alignItems: "center",
+    overflow: "hidden",
+    borderRadius: moderateScale(12),
     width: "100%",
     height: "100%",
+    padding: moderateScale(2),
   },
   activeSpeakerBorder: {
     position: "absolute",
@@ -258,7 +266,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    borderRadius: moderateScale(16),
+    borderRadius: moderateScale(12),
   },
   userName: {
     position: "absolute",

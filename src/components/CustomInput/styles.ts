@@ -44,9 +44,10 @@ export const styles = StyleSheet.create({
   textAreaInput: {
     minHeight: moderateScale(150),
     maxHeight: moderateScale(150),
+    maxWidth: "95%",
     paddingHorizontal: moderateScale(12),
     paddingVertical: moderateScale(12),
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   dropdownStyle: {
     ...fontFamilies.interManropeRegular16,

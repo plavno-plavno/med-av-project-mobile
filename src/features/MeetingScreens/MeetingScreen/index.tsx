@@ -17,9 +17,9 @@ import { Toast } from "react-native-toast-message/lib/src/Toast"
 import { useTranslation } from "react-i18next"
 import { useKeepAwake } from "@sayem314/react-native-keep-awake"
 import Subtitles from "src/components/Subtitles"
-import { NativeEventEmitter, NativeModules } from 'react-native';
+import { NativeEventEmitter, NativeModules } from "react-native"
 import Loading from "src/components/Loading"
-const { ScreenRecorder } = NativeModules;
+const { ScreenRecorder } = NativeModules
 
 type ParamList = {
   Detail: {
@@ -74,7 +74,7 @@ const MeetingScreen = () => {
   const sheetCatiptionsRef = useRef<BottomSheetMethods>(null)
   const sheetParticipantsRef = useRef<BottomSheetMethods>(null)
 
-  const [isStarted, setIsStarted] = useState(false);
+  const [isStarted, setIsStarted] = useState(false)
 
   const handleChatOpen = () => {
     sheetChatRef.current?.open()
@@ -87,47 +87,46 @@ const MeetingScreen = () => {
   }
 
   useEffect(() => {
-    const eventEmitter = new NativeEventEmitter(ScreenRecorder);
-  
+    const eventEmitter = new NativeEventEmitter(ScreenRecorder)
+
     const chunkListener = eventEmitter.addListener("onChunk", (base64Chunk) => {
-      console.log("Received chunk:", base64Chunk);
-      sendChunkToServer(base64Chunk);
-    });
-  
+      console.log("Received chunk:", base64Chunk)
+      sendChunkToServer(base64Chunk)
+    })
+
     return () => {
-      chunkListener.remove();
-    };
-  }, []);
+      chunkListener.remove()
+    }
+  }, [])
 
   const startRecording = async () => {
     try {
       // const filePath = await ScreenRecorder.startRecording();
       // console.log("Recording started:", filePath);
-      setIsStarted(true);
+      setIsStarted(true)
     } catch (error) {
-      console.error("Failed to start recording:", error);
+      console.error("Failed to start recording:", error)
     }
-  };
+  }
 
   const stopRecording = async () => {
     try {
       // const filePath = await ScreenRecorder.stopRecording();
       // console.log("Recording stopped:", filePath);
-      setIsStarted(false);
+      setIsStarted(false)
     } catch (error) {
-      console.error("Failed to stop recording:", error);
+      console.error("Failed to stop recording:", error)
     }
-  };
+  }
 
   const sendChunkToServer = async (base64Chunk: any) => {
     try {
-      const binaryData = atob(base64Chunk);
-      console.log("Sending chunk to server:", binaryData);
-
+      const binaryData = atob(base64Chunk)
+      console.log("Sending chunk to server:", binaryData)
     } catch (error) {
-      console.error("Failed to send chunk:", error);
+      console.error("Failed to send chunk:", error)
     }
-  };
+  }
 
   const callTopActions = [
     {
@@ -144,7 +143,9 @@ const MeetingScreen = () => {
       name: "screenRecordStart",
       onPress: () => {
         instanceMeetingOwner
-          ? isStarted ? stopRecording() : startRecording()
+          ? isStarted
+            ? stopRecording()
+            : startRecording()
           : Toast.show({
               type: "error",
               text1: t("OnlyCreatorCanStartScreenRecording"),
@@ -184,7 +185,7 @@ const MeetingScreen = () => {
     },
   ]
 
-  if(!participants.length){
+  if (!participants.length) {
     return <Loading />
   }
   return (
@@ -219,7 +220,7 @@ const MeetingScreen = () => {
             peerConnection={peerConnection}
             localUserId={localUserId}
           />
-          <Subtitles isActive={isCaptionOn} subtitlesQueue={subtitlesQueue}/>
+          <Subtitles isActive={isCaptionOn} subtitlesQueue={subtitlesQueue} />
         </View>
         <View>
           <FlatList

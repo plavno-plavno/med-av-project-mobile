@@ -264,6 +264,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
       !secureTextEntry &&
       inputType !== "dropdown" &&
       inputType !== "colorPicker" &&
+      inputType !== "textArea" &&
       !rightIconProps
 
     const isError = handleError || error
