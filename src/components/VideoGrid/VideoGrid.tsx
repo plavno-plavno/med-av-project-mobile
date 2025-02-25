@@ -1,17 +1,18 @@
-import React from "react";
-import { View, StyleSheet, ViewStyle, Image, Text } from "react-native";
-import { moderateScale } from "react-native-size-matters";
-import { MediaStream, RTCView } from "react-native-webrtc";
-import LinearGradient from "react-native-linear-gradient";
-import colors from "src/assets/colors";
-import { Icon } from "@components";
-import { RemoteStream, User } from "src/hooks/useWebRtc";
-import useHighlightSpeaker from "src/hooks/useHighlightSpeaker";
-import { fontFamilies, fontWeights } from "@utils/theme";
+import React, { useEffect } from "react"
+import { View, StyleSheet, ViewStyle, Image, Text } from "react-native"
+import { moderateScale } from "react-native-size-matters"
+import { MediaStream, RTCView } from "react-native-webrtc"
+import LinearGradient from "react-native-linear-gradient"
+import colors from "src/assets/colors"
+import { Icon } from "@components"
+import { RemoteStream, User } from "src/hooks/useWebRtc"
+import useHighlightSpeaker from "src/hooks/useHighlightSpeaker"
+import { fontFamilies, fontWeights } from "@utils/theme"
+import RNSoundLevel from "react-native-sound-level"
 
 export interface UserInMeeting extends User {
-  isAudioOn: boolean | null;
-  isVideoOn: boolean | null;
+  isAudioOn: boolean | null
+  isVideoOn: boolean | null
 }
 
 const VideoGrid = ({
@@ -26,12 +27,13 @@ const VideoGrid = ({
   localUserId,
   isMuted,
 }: any) => {
+  const [activeHostSpeacker, setActiveHostSpeaker] = React.useState(false)
   const adaptParticipantsToShow = (): RemoteStream[] => {
-    const remoteStreams: Record<string | number, RemoteStream> = {};
+    const remoteStreams: Record<string | number, RemoteStream> = {}
 
     remoteAudioStreams.forEach((audioStream: any) => {
-      const midId = Number(audioStream.midId);
-      const userId = usersAudioTrackToIdMap[midId];
+      const midId = Number(audioStream.midId)
+      const userId = usersAudioTrackToIdMap[midId]
       if (userId) {
         if (!remoteStreams[userId]) {
           remoteStreams[userId] = {
@@ -39,16 +41,16 @@ const VideoGrid = ({
             audioTrack: null,
             videoTrack: null,
             mid: String(midId),
-          };
+          }
         }
 
-        remoteStreams[userId].audioTrack = audioStream.audioTrack;
+        remoteStreams[userId].audioTrack = audioStream.audioTrack
       }
-    });
+    })
 
     remoteVideoStreams.forEach((videoStream: any) => {
-      const midId = Number(videoStream.midId);
-      const userId = usersVideoTrackToIdMap[midId];
+      const midId = Number(videoStream.midId)
+      const userId = usersVideoTrackToIdMap[midId]
 
       if (userId) {
         if (!remoteStreams[userId]) {
@@ -57,29 +59,29 @@ const VideoGrid = ({
             audioTrack: null,
             videoTrack: null,
             mid: String(midId),
-          };
+          }
         }
 
-        remoteStreams[userId].videoTrack = videoStream.videoTrack;
+        remoteStreams[userId].videoTrack = videoStream.videoTrack
       }
-    });
+    })
 
-    const participantsSteams = Object.values(remoteStreams);
+    const participantsSteams = Object.values(remoteStreams)
     if (localStream) {
-      participantsSteams.unshift(localStream);
+      participantsSteams.unshift(localStream)
     }
 
-    return participantsSteams;
-  };
+    return participantsSteams
+  }
 
-  const participantsToShow = adaptParticipantsToShow();
+  const participantsToShow = adaptParticipantsToShow()
   // const activeSpeaker = 1
   // console.log(participantsToShow, 'participantsToShowparticipantsToShowparticipantsToShow');
-  const isLocalUser = localUserId != null;
+  const isLocalUser = localUserId != null
   // const activeSpeaker = useHighlightSpeaker(peerConnection, usersAudioTrackToIdMap) // for Highlight need to test it in nearest future
-  const activeSpeaker = useHighlightSpeaker(peerConnection, participantsToShow, isLocalUser, localUserId, isMuted);
-  const totalParticipants = participantsToShow.length;
-// console.log(totalParticipants, 'totalParticipantstotalParticipants');
+  const activeSpeaker = useHighlightSpeaker(peerConnection, participantsToShow)
+  const totalParticipants = participantsToShow.length
+  // console.log(totalParticipants, 'totalParticipantstotalParticipants');
 
   // check it for share screen, user who shared screen should be the first one in list
   // const sharingScreenStream = participantsToShow.find((stream) => stream?.userId === Number(sharingOwner));
@@ -90,36 +92,61 @@ const VideoGrid = ({
   //   participantsToShow.splice(index, 1);
   // }
 
+  RNSoundLevel.start(250)
+
+  useEffect(() => {
+    if (isMuted) {
+      RNSoundLevel.stop()
+    }
+    RNSoundLevel.onNewFrame = (data) => {
+      if (data?.value > -40) {
+        setActiveHostSpeaker(true)
+      } else {
+        setActiveHostSpeaker(false)
+      }
+    }
+    return () => {
+      RNSoundLevel.stop()
+    }
+  }, [isMuted])
+
   const getGridStyle = ({
     idx,
     total,
   }: {
-    idx?: number;
-    total: number;
+    idx?: number
+    total: number
   }): ViewStyle => {
-    if (total === 1) return { width: "100%", height: "100%" };
-    if (total === 2) return { width: "100%", height: "49.9%" };
+    if (total === 1) return { width: "100%", height: "100%" }
+    if (total === 2) return { width: "100%", height: "49.9%" }
     if (total === 3)
       return {
         width: idx === 2 ? "100%" : "49.3%",
         height: "49.6%",
-      };
-    if (total >= 4) return { width: "49.3%", height: "49.8%" };
-    return { width: "100%", height: "100%" };
-  };
+      }
+    if (total >= 4) return { width: "49.3%", height: "49.8%" }
+    return { width: "100%", height: "100%" }
+  }
 
   const renderStream = (item: any, index: number) => {
-    // const isActive = activeSpeaker !== null && Number(activeSpeaker) === Number(item.userId);
     const isActive =
-      activeSpeaker !== null && Number(activeSpeaker) === Number(item.userId);
-    const mediaStream = new MediaStream();
-    if (item?.videoTrack) mediaStream.addTrack(item?.videoTrack);
-    if (item?.audioTrack) mediaStream.addTrack(item?.audioTrack);
-    const user = participants?.find((user: User) => user.id === item.userId) as UserInMeeting;
-    const lastNameInitial = user?.lastName?.charAt?.(0) || "";
-  
+      item?.userId === localUserId
+        ? activeHostSpeacker
+        : activeSpeaker !== null &&
+          Number(activeSpeaker) === Number(item?.userId)
+    const mediaStream = new MediaStream()
+    if (item?.videoTrack) mediaStream.addTrack(item?.videoTrack)
+    if (item?.audioTrack) mediaStream.addTrack(item?.audioTrack)
+    const user = participants?.find(
+      (user: User) => user.id === item.userId
+    ) as UserInMeeting
+    const lastNameInitial = user?.lastName?.charAt?.(0) || ""
+
     return (
-      <View key={item?.id || index} style={getGridStyle({ total: totalParticipants, idx: index })}>
+      <View
+        key={item?.id || index}
+        style={getGridStyle({ total: totalParticipants, idx: index })}
+      >
         {isActive && (
           <LinearGradient
             colors={["#70DDE3", "#9FF8E1", "#B8FFC6"]}
@@ -131,14 +158,27 @@ const VideoGrid = ({
         <View style={styles.videoContainer}>
           {(!item?.userId && isVideoOff) || !user?.isVideoOn ? (
             <View style={[styles.cameraOffContainer]}>
-              {user?.photo?.link ?
-                <Image source={{ uri: user.photo.link }} style={{ width: moderateScale(88), height: moderateScale(88), borderRadius: moderateScale(100) }} />
-                :
+              {user?.photo?.link ? (
+                <Image
+                  source={{ uri: user.photo.link }}
+                  style={{
+                    width: moderateScale(88),
+                    height: moderateScale(88),
+                    borderRadius: moderateScale(100),
+                  }}
+                />
+              ) : (
                 <Icon name="avatarEmpty" />
-              }
+              )}
             </View>
           ) : (
-            <View style={{ margin: moderateScale(2), borderRadius: moderateScale(12), overflow: 'hidden' }}>
+            <View
+              style={{
+                margin: moderateScale(2),
+                borderRadius: moderateScale(12),
+                overflow: "hidden",
+              }}
+            >
               <RTCView
                 mirror={true}
                 streamURL={mediaStream?.toURL?.()}
@@ -147,8 +187,10 @@ const VideoGrid = ({
               />
             </View>
           )}
-          <Text style={styles.userName}>{user?.firstName} {lastNameInitial}.</Text>
-          {!user?.isAudioOn &&
+          <Text style={styles.userName}>
+            {user?.firstName} {lastNameInitial}.
+          </Text>
+          {!user?.isAudioOn && (
             <Icon
               name="microMuted"
               style={{
@@ -157,22 +199,20 @@ const VideoGrid = ({
                 right: moderateScale(12),
               }}
             />
-          }
+          )}
         </View>
       </View>
-    );
-  };
+    )
+  }
 
   return (
     <View style={styles.container}>
-      {participantsToShow.map((item, index) =>
-        renderStream(item, index)
-      )}
+      {participantsToShow.map((item, index) => renderStream(item, index))}
     </View>
-  );
-};
+  )
+}
 
-export default VideoGrid;
+export default VideoGrid
 
 const styles = StyleSheet.create({
   container: {
@@ -221,11 +261,11 @@ const styles = StyleSheet.create({
     borderRadius: moderateScale(16),
   },
   userName: {
-    position: 'absolute',
+    position: "absolute",
     left: moderateScale(12),
     bottom: moderateScale(12),
     ...fontFamilies.interManropeBold16,
     ...fontWeights.fontWeight600,
     color: colors.white,
-  }
-});
+  },
+})
