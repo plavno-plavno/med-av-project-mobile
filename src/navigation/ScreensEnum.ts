@@ -20,8 +20,7 @@ export enum ScreensEnum {
   MY_REQUEST_DETAILS = "MY_REQUEST_DETAILS",
   FAQ = "FAQ",
   CONTACT_SUPPORT = "CONTACT_SUPPORT",
-  // TERMS_OF_USE = "TERMS_OF_USE",
-  // PRIVACY_POLICY = "PRIVACY_POLICY",
+  PRIVACY_FILES = "PRIVACY_FILES",
   // Bottom tab routes
   MAIN = "MAIN",
   CALENDAR = "Calendar",

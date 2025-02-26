@@ -38,7 +38,6 @@ const ContactSupportScreen = () => {
   const [topicId, setTopicId] = useState<number | null>(null)
 
   const handleAddTopic = async (values: IFormValues) => {
-    console.log(values, "values")
     try {
       const res = await addTopic({
         message: values.message as string,
@@ -59,8 +58,7 @@ const ContactSupportScreen = () => {
 
   return (
     <>
-      <ScreenWrapper isBackButton title={t("ContactSupport")} isCenterTitle 
-      >
+      <ScreenWrapper isBackButton title={t("ContactSupport")} isCenterTitle>
         <View style={[helpers.flex1]}>
           <KeyboardAwareScrollView
             extraScrollHeight={screenHeight * (isIOS() ? 0.2 : 0.3)}

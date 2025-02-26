@@ -1,7 +1,5 @@
 import { createApi } from "@reduxjs/toolkit/query/react"
 import { baseQueryWithReAuth } from ".."
-import { IPostMediaRequest, IPostMediaResponse } from "./types"
-import { AnyObject } from "yup"
 
 export const mediaApi = createApi({
   baseQuery: baseQueryWithReAuth,
@@ -24,7 +22,13 @@ export const mediaApi = createApi({
         }
       },
     }),
+    privacyFiles: builder.query<any, void>({
+      query: () => ({
+        url: "media/getPrivacyFiles",
+        method: "GET",
+      }),
+    }),
   }),
 })
 
-export const { useMediaUploadMutation } = mediaApi
+export const { useMediaUploadMutation, usePrivacyFilesQuery } = mediaApi
