@@ -25,7 +25,7 @@ export const getGridStyle = ({
 }: {
   idx?: number
   total: number
-  sharingOwner?: boolean
+  sharingOwner?: number
 }): ViewStyle => {
   return sharingOwner
     ? getSharedGridStyle(total)
