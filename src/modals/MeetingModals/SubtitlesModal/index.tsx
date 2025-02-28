@@ -26,7 +26,6 @@ type FlatListItem = SubtitlesContent | LanguagesContent
 interface IParticipantsModal {
   sheetRef: React.RefObject<BottomSheetMethods>
   setIsCaptionOn: (val: boolean) => void
-  setSubtitleLanguage: (val: string) => void
   isCaptionOn: boolean
   allLanguagesRef: MutableRefObject<string[]>;
   handleChangedRoomLanguage: (arg0: string) => void
@@ -37,7 +36,6 @@ const SubtitlesModal = ({
   setIsCaptionOn,
   isCaptionOn,
   allLanguagesRef,
-  setSubtitleLanguage,
   handleChangedRoomLanguage,
 }: IParticipantsModal) => {
   const { t } = useTranslation()
@@ -113,7 +111,6 @@ const SubtitlesModal = ({
   }
 
   const handleSelectLanguage = () => {
-    setSubtitleLanguage(selectedLanguage)
     setIsChangeLanguageMode(false)
   }
 
@@ -133,6 +130,7 @@ const SubtitlesModal = ({
           sheetRef={sheetRef}
         />
         <FlatList
+          removeClippedSubviews={false}
           contentContainerStyle={
             isChangeLanguageMode ? helpers.gap4 : helpers.gap12
           }

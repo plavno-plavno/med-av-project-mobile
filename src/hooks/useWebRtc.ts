@@ -138,6 +138,7 @@ type ParamList = {
     hash: string
     isMuted?: boolean
     isVideoOff?: boolean
+    meetId?: string;
   }
 }
 
@@ -195,6 +196,7 @@ const useWebRtc = () => {
 
   const [getUsersById] = useGetUsersByIdMutation()
   const roomId = route?.params?.hash
+  const meetId = route.params?.meetId
 
   const socketRef = useRef<Socket | null>(null)
 
@@ -231,6 +233,10 @@ const useWebRtc = () => {
     null
   )
 
+  const wsRef = useRef<WebSocket | null>(null);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+
+
   useEffect(() => {
     const setupSocket = async () => {
       if (!socketRef.current) {
@@ -252,9 +258,6 @@ const useWebRtc = () => {
         socketRef.current.on("answer", handleAnswer)
         socketRef.current.on("candidate", handleCandidate)
         socketRef.current.on("user-joined", handleUserJoined)
-        socketRef.current.on("screen-share-updated", (e) =>
-          setIsScreenShare(e?.isSharing)
-        )
         socketRef.current.on(
           "sharing-participant-joined",
           handleScreenShareJoined
@@ -264,6 +267,9 @@ const useWebRtc = () => {
         socketRef.current.on("unmute-audio", userToggledMedia)
         socketRef.current.on("mute-video", userToggledMedia)
         socketRef.current.on("unmute-video", userToggledMedia)
+
+        socketRef.current.on(UserActions.StartShareScreen, handleStartSharing);
+        socketRef.current.on(UserActions.StopShareScreen, handleStopSharing);
 
         socketRef.current.on("transceiver-info", handleTransceiver)
         socketRef.current.on("client-disconnected", handleClientDisconnected)
@@ -277,7 +283,18 @@ const useWebRtc = () => {
     if (socketRef.current) {
       disconnectSocketEvents()
     }
-  }, [roomId])
+  }, [roomId, meetId])
+
+  const handleStartSharing = ({ userId }: { userId: number }) => {
+    setIsScreenSharing(true);
+    setSharingOwner(userId);
+  };
+
+  const handleStopSharing = () => {
+    setIsScreenSharing(false);
+    setSharingOwner(null);
+  };
+
 
   // const handleAudioCheck = () => {
   //   const peerConnection = peerConnectionRef.current;
@@ -468,6 +485,7 @@ const useWebRtc = () => {
       socketRef.current?.emit("join", {
         roomId,
         language: "en",
+        meetId: meetId,
         status: {
           isAudioOn: !isMuted,
           isVideoOn: !isVideoOff,
@@ -495,14 +513,20 @@ const useWebRtc = () => {
     remoteAudioStreams?.forEach((t) => t?.audioTrack?.release?.())
     remoteVideoStreams?.forEach((t) => t?.videoTrack?.stop?.())
     remoteVideoStreams?.forEach((t) => t?.videoTrack?.release?.())
-    peerConnection.current?.close()
-
+    if(peerConnection.current){
+      peerConnection.current?.close()
+    }
+    if(socketRef.current){
+      socketRef.current?.close()
+    }
+    setRemoteVideoStreams
     if (STTSocket.current) {
       STTSocket.current.close()
       STTSocket.current = null
     }
     peerConnection.current = null
     disconnectSocketEvents()
+    AudioRecord.stop()
     peerConnection.current = null
     reset({
       index: 0,
@@ -1002,7 +1026,7 @@ const useWebRtc = () => {
     if (STTSocket.current?.readyState === WebSocket.OPEN) {
       STTSocket.current?.send(
         JSON.stringify({
-          uid: `tester-${userRefId.current}`,
+          uid: `tester-${userRefId.current}-${socketRef.current?.id}`,
           language: sttLanguageRef.current,
           task: "transcribe",
           model: "large-v3",
@@ -1101,6 +1125,8 @@ const useWebRtc = () => {
 
   const handleSetSTTSocket = ({ sttUrl }: { sttUrl: string }) => {
     STTSocket.current = new WebSocket(sttUrl)
+    console.log( STTSocket.current, ' STTSocket.current STTSocket.current STTSocket.current');
+    
     STTSocket.current.onopen = onSTTSocketOpen
     STTSocket.current.onmessage = onSTTSocketMessage
 
@@ -1116,13 +1142,14 @@ const useWebRtc = () => {
       AudioRecord.stop()
     }
   }
-
+  
   const onSTTSocketOpen = () => {
+    console.log(socketRef.current?.id, 'socketRef.current?.id');
     if (!userRefId.current) return
     console.log("STT SEND: ")
     STTSocket.current?.send(
       JSON.stringify({
-        uid: `tester-${userRefId.current}`,
+        uid: `tester-${userRefId.current}-${socketRef.current?.id}`,
         language: sttLanguageRef.current,
         task: "transcribe",
         model: "large-v3",
@@ -1223,10 +1250,12 @@ const useWebRtc = () => {
     peerConnection: peerConnection.current,
     rtcError: error,
     subtitlesQueue,
+    sharedScreen,
 
     sttUrl: sttUrlRef,
     localUserId: userRefId.current,
     allLanguagesRef: allLanguagesRef,
+    wsRef,
 
     handleChangedRoomLanguage,
     toggleMedia,
@@ -1236,8 +1265,6 @@ const useWebRtc = () => {
     toggleSpeaker,
     switchCamera,
     setLocalStream,
-    // startScreenShare,
-    // stopScreenShare
   }
 }
 

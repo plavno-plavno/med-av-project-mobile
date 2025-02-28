@@ -28,6 +28,10 @@ export interface IGetCalendarEventDetailsResponse {
   timezone: Timezone
 }
 
+export interface IGetCalendarEventHashResponse extends IGetCalendarEventDetailsResponse{
+  meetId: string
+}
+
 export interface IRole {
   __entity: string
   description: string

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
-import { FlatList, Text, View } from "react-native"
+import { Alert, FlatList, Text, View } from "react-native"
 import useWebRtc from "src/hooks/useWebRtc"
 import { styles } from "./styles"
 import { Icon } from "@components"
@@ -17,9 +17,51 @@ import { Toast } from "react-native-toast-message/lib/src/Toast"
 import { useTranslation } from "react-i18next"
 import { useKeepAwake } from "@sayem314/react-native-keep-awake"
 import Subtitles from "src/components/Subtitles"
-import { NativeEventEmitter, NativeModules } from "react-native"
 import Loading from "src/components/Loading"
+import Config from "react-native-config"
+import { NativeEventEmitter, NativeModules } from "react-native"
 const { ScreenRecorder } = NativeModules
+
+import { Linking, Platform } from "react-native"
+import RNFS from "react-native-fs"
+
+const openRecordedVideo = async () => {
+  try {
+    const filePath = await ScreenRecorder.getRecordedFilePath();
+    if (!filePath) {
+      Alert.alert("Error", "No recorded file found.");
+      return;
+    }
+
+    const exists = await RNFS.exists(filePath);
+    if (!exists) {
+      Alert.alert("Error", "Recorded file not found.");
+      return;
+    }
+
+    const fileInfo = await RNFS.stat(filePath);
+    console.log(`File size: ${fileInfo.size} bytes`);
+
+    if (fileInfo.size < 1024) {
+      Alert.alert("Error", "Recorded file is too small or corrupted.");
+      return;
+    }
+
+    const newPath = `${RNFS.DownloadDirectoryPath}/screen_record.mp4`;
+    await RNFS.copyFile(filePath, newPath);
+    console.log(`File copied to: ${newPath}`);
+
+    // 🔴 Переконаємось, що файл має правильні права доступу
+    await RNFS.scanFile(newPath);
+
+    Linking.openURL(`file://${newPath}`).catch(() => Alert.alert("Error", "Failed to open video."));
+  } catch (error) {
+    console.error("Failed to get recorded file:", error);
+    Alert.alert("Error", "Failed to retrieve recorded file.");
+  }
+};
+
+const recordingUrl = Config.SOCKET_RECORDING_URL
 
 type ParamList = {
   Detail: {
@@ -31,8 +73,6 @@ type ParamList = {
     isMuted?: boolean
   }
 }
-
-const CHUNK_SIZE = 1024 * 1024 // 1MB chunks
 
 const MeetingScreen = () => {
   const { t } = useTranslation()
@@ -51,11 +91,11 @@ const MeetingScreen = () => {
     remoteVideoStreams,
     usersVideoTrackToIdMap,
     peerConnection,
-    sttUrl,
     localUserId,
     allLanguagesRef,
     subtitlesQueue,
-
+    sharedScreen,
+    wsRef,
     endCall,
     toggleMedia,
     switchCamera,
@@ -66,9 +106,10 @@ const MeetingScreen = () => {
   useKeepAwake()
   useStatusBar("light-content", colors.dark)
   const [isCaptionOn, setIsCaptionOn] = React.useState(false)
-  const [subtitleLanguage, setSubtitleLanguage] = React.useState("")
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const { isCreatorMode, title, hash, instanceMeetingOwner } = route.params
+  const startTimeRef = useRef<number | null>(null);
+  const recordingNameRef = useRef<string | null>(null);
 
   const sheetChatRef = useRef<BottomSheetMethods>(null)
   const sheetCatiptionsRef = useRef<BottomSheetMethods>(null)
@@ -87,42 +128,126 @@ const MeetingScreen = () => {
   }
 
   useEffect(() => {
-    const eventEmitter = new NativeEventEmitter(ScreenRecorder)
-
-    const chunkListener = eventEmitter.addListener("onChunk", (base64Chunk) => {
-      console.log("Received chunk:", base64Chunk)
-      sendChunkToServer(base64Chunk)
-    })
-
+    const eventEmitter = new NativeEventEmitter(ScreenRecorder);
+    const chunkListener = eventEmitter.addListener("onVideoChunk", (base64Chunk) => {
+      console.log("Received chunk:", base64Chunk);
+      sendChunkToServer(base64Chunk);
+    });
+  
     return () => {
-      chunkListener.remove()
-    }
-  }, [])
+      chunkListener.remove();
+    };
+  }, []);
 
   const startRecording = async () => {
     try {
-      // const filePath = await ScreenRecorder.startRecording();
-      // console.log("Recording started:", filePath);
-      setIsStarted(true)
+      console.log(wsRef.current?.readyState, 'wsRef.current?.readyState');
+      
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        recordingNameRef.current = `recording-${Date.now()}`;
+        startTimeRef.current = Date.now();
+        await ScreenRecorder.startRecording();
+
+        console.log("Recording started:")
+        setIsStarted(true)
+      }
     } catch (error) {
-      console.error("Failed to start recording:", error)
+      console.error(
+        "Failed to start recording:",
+        { ScreenRecorder, froMNATIVE: NativeModules.ScreenRecorder },
+        error
+      )
     }
   }
 
   const stopRecording = async () => {
     try {
-      // const filePath = await ScreenRecorder.stopRecording();
-      // console.log("Recording stopped:", filePath);
-      setIsStarted(false)
+      if(ScreenRecorder && isStarted) {
+      await ScreenRecorder.stopRecording()
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        const duration = startTimeRef.current ? Math.floor((Date.now() - startTimeRef.current) / 1000) : 0;
+        const data = {
+          fileName: recordingNameRef.current,
+            fileExtension: 'mp4',
+            action: 'end',
+            meetId: roomId,
+            userId: localUserId,
+            duration,
+        }
+        console.log(data, 'datadatadata');
+        
+        wsRef.current.send(
+          JSON.stringify({
+            fileName: recordingNameRef.current,
+            fileExtension: 'mp4',
+            action: 'end',
+            meetId: roomId,
+            userId: localUserId,
+            duration,
+          }),
+        );
+      }
+      startTimeRef.current = null;
+      openRecordedVideo();
+    }
+    setIsStarted(false)
     } catch (error) {
       console.error("Failed to stop recording:", error)
     }
   }
 
+useEffect(() => {
+  let reconnectTimeout: NodeJS.Timeout | null = null;
+
+  const connectWebSocket = () => {
+    if (wsRef.current) {
+      wsRef.current.close();
+    }
+
+    wsRef.current = new WebSocket(recordingUrl!);
+
+    wsRef.current.onopen = () => {
+      console.log("WebSocket connected");
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+        reconnectTimeout = null;
+      }
+    };
+
+    wsRef.current.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      console.log("WebSocket connection error. Reconnecting...");
+      if (!reconnectTimeout) {
+        reconnectTimeout = setTimeout(connectWebSocket, 3000);
+      }
+    };
+
+    wsRef.current.onclose = () => {
+      console.warn("WebSocket connection closed");
+    };
+  };
+
+  connectWebSocket();
+
+  return () => {
+    if (reconnectTimeout) clearTimeout(reconnectTimeout);
+    wsRef.current?.close();
+  };
+}, []);
+  
   const sendChunkToServer = async (base64Chunk: any) => {
     try {
-      const binaryData = atob(base64Chunk)
-      console.log("Sending chunk to server:", binaryData)
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        console.log('here');
+        wsRef.current.send(
+          JSON.stringify({
+            fileName: recordingNameRef.current,
+            fileExtension: 'mp4',
+            chunks: base64Chunk,
+            action: 'stream',
+          }),
+        );
+    }
     } catch (error) {
       console.error("Failed to send chunk:", error)
     }
@@ -158,7 +283,10 @@ const MeetingScreen = () => {
   const callBottomActions = [
     {
       name: "callEnd",
-      onPress: endCall,
+      onPress: () => {
+        stopRecording()
+        endCall()
+      },
     },
     {
       name: isVideoOff ? "cameraOff" : "cameraOn",
@@ -219,6 +347,7 @@ const MeetingScreen = () => {
             participants={participants}
             peerConnection={peerConnection}
             localUserId={localUserId}
+            sharedScreen={sharedScreen}
           />
           <Subtitles isActive={isCaptionOn} subtitlesQueue={subtitlesQueue} />
         </View>
@@ -246,7 +375,6 @@ const MeetingScreen = () => {
       </SafeAreaView>
       <Portal>
         <SubtitlesModal
-          setSubtitleLanguage={setSubtitleLanguage}
           sheetRef={sheetCatiptionsRef}
           setIsCaptionOn={setIsCaptionOn}
           isCaptionOn={isCaptionOn}

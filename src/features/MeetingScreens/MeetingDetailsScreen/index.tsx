@@ -11,6 +11,7 @@ import { copyToClipboard } from "@utils/clipboard"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 import { mediaDevices, MediaStream, RTCView } from "react-native-webrtc"
+import { useGetCalendarEventByHashQuery } from "src/api/calendarApi/calendarApi"
 
 type ParamList = {
   Detail: {
@@ -29,6 +30,9 @@ const MeetingDetailsScreen = () => {
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [preview, setPreview] = useState<MediaStream>();
+
+  const {data: getCalendarEventByHashData} = useGetCalendarEventByHashQuery({hash: String(hash)})
+
 
   const toggleAudio = () => {
     if (preview) {
@@ -116,6 +120,7 @@ const MeetingDetailsScreen = () => {
                 isCreatorMode: isCreatorMode,
                 title: title,
                 instanceMeetingOwner: true,
+                meetId: getCalendarEventByHashData?.meetId,
               })
             }}
           />

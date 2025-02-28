@@ -9,6 +9,9 @@ import { RemoteStream, User } from "src/hooks/useWebRtc"
 import useHighlightSpeaker from "src/hooks/useHighlightSpeaker"
 import { fontFamilies, fontWeights } from "@utils/theme"
 import RNSoundLevel from "react-native-sound-level"
+import { isIOS } from "@utils/platformChecker"
+import Video from "react-native-video"
+import WebView from "react-native-webview"
 
 export interface UserInMeeting extends User {
   isAudioOn: boolean | null
@@ -26,8 +29,9 @@ const VideoGrid = ({
   peerConnection,
   localUserId,
   isMuted,
+  sharedScreen,
 }: any) => {
-  const [activeHostSpeacker, setActiveHostSpeaker] = React.useState(false)
+  const [activeHostSpeaker, setActiveHostSpeaker] = React.useState(false)
   const adaptParticipantsToShow = (): RemoteStream[] => {
     const remoteStreams: Record<string | number, RemoteStream> = {}
 
@@ -98,7 +102,7 @@ const VideoGrid = ({
     } else {
       RNSoundLevel.start(250)
       RNSoundLevel.onNewFrame = (data) => {
-        if (data?.value > -40) {
+        if (data?.value > (isIOS() ? -40 : -130)) {
           setActiveHostSpeaker(true)
         } else {
           setActiveHostSpeaker(false)
@@ -132,9 +136,9 @@ const VideoGrid = ({
   const renderStream = (item: any, index: number) => {
     const isActive =
       item?.userId === localUserId
-        ? activeHostSpeacker && !isMuted
+        ? activeHostSpeaker && !isMuted
         : activeSpeaker !== null &&
-          Number(activeSpeaker) === Number(item?.userId)
+        Number(activeSpeaker) === Number(item?.userId)
 
     const mediaStream = new MediaStream()
 
@@ -212,8 +216,27 @@ const VideoGrid = ({
     )
   }
 
+  const sharedScreenStream = new MediaStream();
+  if (sharedScreen) sharedScreenStream.addTrack(sharedScreen);
+
   return (
     <View style={styles.container}>
+      {sharedScreenStream?.getVideoTracks().length > 0 && (
+        <View
+          style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: moderateScale(12),
+            overflow: 'hidden',
+          }}
+        >
+          <RTCView
+            streamURL={sharedScreenStream.toURL()}
+            style={{ width: '100%', height: '100%' }}
+            objectFit="cover"
+          />
+        </View>
+      )}
       {participantsToShow.map((item, index) => renderStream(item, index))}
     </View>
   )

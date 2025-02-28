@@ -12,7 +12,7 @@ interface Props {
 const Subtitles = ({ isActive, subtitlesQueue }: Props) => {
   if (!isActive) return null
   return (
-    <View style={styles.container}>
+    <View style={styles.container} removeClippedSubviews={false}>
       {subtitlesQueue.map(subtitle => (
         <Text style={styles.text}>{subtitle.text}</Text>
       ))}

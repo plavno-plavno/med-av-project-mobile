@@ -95,6 +95,7 @@ const useSttConnection = ({ sttUrl, isAudioOn }: IUseSttConnectionProps) => {
     allLanguagesRef.current = allLanguagesCodes;
     setAllLanguages(allLanguagesCodes);
   };
+console.log(socketRef.current, 'socketRef.currentsocketRef.current');
 
   const onSocketOpen = () => {
     setIsSttConnected(true);

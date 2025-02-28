@@ -1,100 +1,121 @@
 import Foundation
 import ReplayKit
 import React
-import AVFoundation
 
 @objc(ScreenRecorder)
 class ScreenRecorder: RCTEventEmitter {
 
-    private var assetWriter: AVAssetWriter?
-    private var videoInput: AVAssetWriterInput?
     private var isRecording = false
-    private var chunkSize: Int = 1024 * 1024 // 1MB chunks
-    private var buffer: Data = Data()
+    private var chunkSize: Int = 1024 * 1024 // Default chunk size: 1 MB
+    private var accumulator = Data() // Accumulate video data
+    private var frameCount = 0
+    private let frameSkip = 3 // Skip every 3 frames to reduce processing
 
-    override static func requiresMainQueueSetup() -> Bool {
-        return true
+    override func supportedEvents() -> [String]! {
+        print("Supported events requested")
+        return ["onVideoChunk"]
     }
 
-    @objc func startRecording(_ resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    // Встановлення розміру чанку
+    @objc func setChunkSize(_ size: Int) {
+        chunkSize = size
+        print("Chunk size set to \(chunkSize) bytes")
+    }
+
+    // Початок запису та збору чанків
+    @objc func startRecording(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         if isRecording {
             reject("ALREADY_RECORDING", "Recording is already in progress", nil)
             return
         }
 
-        let fileURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("recording.mp4")
-        do {
-            assetWriter = try AVAssetWriter(outputURL: fileURL, fileType: .mp4)
-            let videoOutputSettings: [String: Any] = [
-                AVVideoCodecKey: AVVideoCodecType.h264,
-                AVVideoWidthKey: UIScreen.main.bounds.width,
-                AVVideoHeightKey: UIScreen.main.bounds.height
-            ]
-            videoInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoOutputSettings)
-            videoInput?.expectsMediaDataInRealTime = true
-            print("videoInput", videoInput)
-            if let videoInput = videoInput, assetWriter!.canAdd(videoInput) {
-                assetWriter!.add(videoInput)
+        isRecording = true
+        let recorder = RPScreenRecorder.shared()
+        recorder.isMicrophoneEnabled = true // Увімкнути запис мікрофона, якщо потрібно
+
+        recorder.startCapture(handler: { [weak self] (sampleBuffer, bufferType, error) in
+            guard let self = self else { return }
+
+            if let error = error {
+                print("Capture error: \(error.localizedDescription)")
+                return
             }
 
-            assetWriter!.startWriting()
-            assetWriter!.startSession(atSourceTime: CMTime.zero)
-            isRecording = true
-            print("assetWriter", assetWriter)
-
-            print("self.buffer", self.buffer)
-            resolve(fileURL.absoluteString)
-
-        //     DispatchQueue.global().async {
-        //     while self.isRecording {
-        //         self.emitChunk(self.buffer)
-        //         sleep(3) // Simulating periodic chunk emission
-        //     }
-        // }
-         DispatchQueue.global().async {
-            while self.isRecording {
-                self.emitChunk(self.buffer)
-                sleep(3)
+            if bufferType == .video {
+                self.processVideoSample(sampleBuffer)
             }
-        }
-        } catch {
-            reject("RECORDING_ERROR", "Failed to start recording", error)
-        }
+        }, completionHandler: { error in
+            if let error = error {
+                reject("START_CAPTURE_FAILED", error.localizedDescription, error)
+            } else {
+                resolve("Recording started")
+            }
+        })
     }
 
-    @objc func stopRecording(_ resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
-        guard isRecording, let assetWriter = assetWriter else {
+    // Зупинка запису
+    @objc func stopRecording(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard isRecording else {
             reject("NOT_RECORDING", "No recording in progress", nil)
             return
         }
 
-        videoInput?.markAsFinished()
-        assetWriter.finishWriting {
+        let recorder = RPScreenRecorder.shared()
+        recorder.stopCapture { [weak self] error in
+            guard let self = self else { return }
+
             self.isRecording = false
-            resolve(assetWriter.outputURL.absoluteString)
-        }
-    }
-
-    @objc func sendVideoAsChunks(_ filePath: String, chunkSize: Int, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
-        let fileURL = URL(fileURLWithPath: filePath)
-        do {
-            let videoData = try Data(contentsOf: fileURL)
-            let chunks = stride(from: 0, to: videoData.count, by: chunkSize).map {
-                videoData.subdata(in: $0 ..< min($0 + chunkSize, videoData.count))
+            if let error = error {
+                reject("STOP_CAPTURE_FAILED", error.localizedDescription, error)
+            } else {
+                resolve("Recording stopped")
             }
-            NSLog("chunks", chunks)
-            resolve(chunks)
-        } catch {
-            reject("FILE_ERROR", "Failed to read video file", error)
         }
     }
 
-    override func supportedEvents() -> [String]! {
-        return ["onChunk"]
+    // Обробка відео-кадрів
+    private func processVideoSample(_ sampleBuffer: CMSampleBuffer) {
+        frameCount += 1
+        if frameCount % frameSkip != 0 {
+            return // Пропускаємо кожен N-ий кадр
+        }
+
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            print("Failed to get pixel buffer")
+            return
+        }
+
+        if let compressedData = convertPixelBufferToJPEGData(pixelBuffer) {
+            accumulator.append(compressedData)
+        }
+
+        print("Accumulated data size: \(accumulator.count) bytes")
+
+        if accumulator.count >= chunkSize {
+            let chunk = accumulator.prefix(chunkSize)
+            sendChunkToJS(chunk)
+            accumulator.removeFirst(chunkSize)
+            print("Chunk sent: \(chunk.count) bytes, remaining: \(accumulator.count) bytes")
+        }
     }
 
-    private func emitChunk(_ chunk: Data) {
+    // Конвертація CVPixelBuffer у стиснутий JPEG
+    private func convertPixelBufferToJPEGData(_ pixelBuffer: CVPixelBuffer) -> Data? {
+        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+        let context = CIContext()
+        
+        guard let jpegData = context.jpegRepresentation(of: ciImage, colorSpace: CGColorSpaceCreateDeviceRGB(), options: [:]) else {
+            print("Failed to convert to JPEG")
+            return nil
+        }
+        
+        return jpegData
+    }
+
+    // Відправка чанку у JS
+    private func sendChunkToJS(_ chunk: Data) {
         let base64Chunk = chunk.base64EncodedString()
-        self.sendEvent(withName: "onChunk", body: base64Chunk)
+        print("Sending chunk to JS: \(base64Chunk.prefix(50))...") // Логуємо перші 50 символів
+        self.sendEvent(withName: "onVideoChunk", body: ["chunk": base64Chunk])
     }
 }

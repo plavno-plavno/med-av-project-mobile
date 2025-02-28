@@ -4,6 +4,7 @@ import {
   ICreateInstantEventResponse,
   IGetCalendarEventDetailsRequest,
   IGetCalendarEventDetailsResponse,
+  IGetCalendarEventHashResponse,
   IGetCalendarEventsResponse,
   IPostCalendarEventsRequest,
   IPostCalendarEventsResponse,
@@ -118,6 +119,12 @@ export const calendarApi = createApi({
         method: "GET",
       }),
     }),
+    getCalendarEventByHash: builder.query<IGetCalendarEventHashResponse, {hash: string}>({
+      query: ({hash}) => ({
+        url: `calendar/eventId/${hash}`,
+        method: "GET",
+      }),
+    }),
   }),
 })
 
@@ -130,4 +137,5 @@ export const {
   useGetCalendarEventsQuery,
   useGetCalendarEventDetailsQuery,
   useGetCalendarRecentQuery,
+  useGetCalendarEventByHashQuery,
 } = calendarApi
