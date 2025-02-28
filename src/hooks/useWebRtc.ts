@@ -138,7 +138,7 @@ type ParamList = {
     hash: string
     isMuted?: boolean
     isVideoOff?: boolean
-    meetId?: string;
+    meetId?: string
   }
 }
 
@@ -233,9 +233,8 @@ const useWebRtc = () => {
     null
   )
 
-  const wsRef = useRef<WebSocket | null>(null);
-  const [isScreenSharing, setIsScreenSharing] = useState(false);
-
+  const wsRef = useRef<WebSocket | null>(null)
+  const [isScreenSharing, setIsScreenSharing] = useState(false)
 
   useEffect(() => {
     const setupSocket = async () => {
@@ -268,8 +267,8 @@ const useWebRtc = () => {
         socketRef.current.on("mute-video", userToggledMedia)
         socketRef.current.on("unmute-video", userToggledMedia)
 
-        socketRef.current.on(UserActions.StartShareScreen, handleStartSharing);
-        socketRef.current.on(UserActions.StopShareScreen, handleStopSharing);
+        socketRef.current.on(UserActions.StartShareScreen, handleStartSharing)
+        socketRef.current.on(UserActions.StopShareScreen, handleStopSharing)
 
         socketRef.current.on("transceiver-info", handleTransceiver)
         socketRef.current.on("client-disconnected", handleClientDisconnected)
@@ -286,15 +285,14 @@ const useWebRtc = () => {
   }, [roomId, meetId])
 
   const handleStartSharing = ({ userId }: { userId: number }) => {
-    setIsScreenSharing(true);
-    setSharingOwner(userId);
-  };
+    setIsScreenSharing(true)
+    setSharingOwner(userId)
+  }
 
   const handleStopSharing = () => {
-    setIsScreenSharing(false);
-    setSharingOwner(null);
-  };
-
+    setIsScreenSharing(false)
+    setSharingOwner(null)
+  }
 
   // const handleAudioCheck = () => {
   //   const peerConnection = peerConnectionRef.current;
@@ -513,10 +511,10 @@ const useWebRtc = () => {
     remoteAudioStreams?.forEach((t) => t?.audioTrack?.release?.())
     remoteVideoStreams?.forEach((t) => t?.videoTrack?.stop?.())
     remoteVideoStreams?.forEach((t) => t?.videoTrack?.release?.())
-    if(peerConnection.current){
+    if (peerConnection.current) {
       peerConnection.current?.close()
     }
-    if(socketRef.current){
+    if (socketRef.current) {
       socketRef.current?.close()
     }
     setRemoteVideoStreams
@@ -1125,8 +1123,11 @@ const useWebRtc = () => {
 
   const handleSetSTTSocket = ({ sttUrl }: { sttUrl: string }) => {
     STTSocket.current = new WebSocket(sttUrl)
-    console.log( STTSocket.current, ' STTSocket.current STTSocket.current STTSocket.current');
-    
+    console.log(
+      STTSocket.current,
+      " STTSocket.current STTSocket.current STTSocket.current"
+    )
+
     STTSocket.current.onopen = onSTTSocketOpen
     STTSocket.current.onmessage = onSTTSocketMessage
 
@@ -1142,9 +1143,9 @@ const useWebRtc = () => {
       AudioRecord.stop()
     }
   }
-  
+
   const onSTTSocketOpen = () => {
-    console.log(socketRef.current?.id, 'socketRef.current?.id');
+    console.log(socketRef.current?.id, "socketRef.current?.id")
     if (!userRefId.current) return
     console.log("STT SEND: ")
     STTSocket.current?.send(
@@ -1265,6 +1266,7 @@ const useWebRtc = () => {
     toggleSpeaker,
     switchCamera,
     setLocalStream,
+    sharingOwner,
   }
 }
 

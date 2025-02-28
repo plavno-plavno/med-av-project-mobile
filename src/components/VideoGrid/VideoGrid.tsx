@@ -10,8 +10,8 @@ import useHighlightSpeaker from "src/hooks/useHighlightSpeaker"
 import { fontFamilies, fontWeights } from "@utils/theme"
 import RNSoundLevel from "react-native-sound-level"
 import { isIOS } from "@utils/platformChecker"
-import Video from "react-native-video"
-import WebView from "react-native-webview"
+import { useTranslation } from "react-i18next"
+import { getGridStyle } from "@utils/gridStyle"
 
 export interface UserInMeeting extends User {
   isAudioOn: boolean | null
@@ -30,7 +30,9 @@ const VideoGrid = ({
   localUserId,
   isMuted,
   sharedScreen,
+  sharingOwner,
 }: any) => {
+  const { t } = useTranslation()
   const [activeHostSpeaker, setActiveHostSpeaker] = React.useState(false)
   const adaptParticipantsToShow = (): RemoteStream[] => {
     const remoteStreams: Record<string | number, RemoteStream> = {}
@@ -85,7 +87,6 @@ const VideoGrid = ({
   // const activeSpeaker = useHighlightSpeaker(peerConnection, usersAudioTrackToIdMap) // for Highlight need to test it in nearest future
   const activeSpeaker = useHighlightSpeaker(peerConnection, participantsToShow)
   const totalParticipants = participantsToShow.length
-  // console.log(totalParticipants, 'totalParticipantstotalParticipants');
 
   // check it for share screen, user who shared screen should be the first one in list
   // const sharingScreenStream = participantsToShow.find((stream) => stream?.userId === Number(sharingOwner));
@@ -115,30 +116,12 @@ const VideoGrid = ({
     }
   }, [isMuted])
 
-  const getGridStyle = ({
-    idx,
-    total,
-  }: {
-    idx?: number
-    total: number
-  }): ViewStyle => {
-    if (total === 1) return { width: "100%", height: "100%" }
-    if (total === 2) return { width: "100%", height: "49.9%" }
-    if (total === 3)
-      return {
-        width: idx === 2 ? "100%" : "49.3%",
-        height: "49.6%",
-      }
-    if (total >= 4) return { width: "49.3%", height: "49.8%" }
-    return { width: "100%", height: "100%" }
-  }
-
   const renderStream = (item: any, index: number) => {
     const isActive =
       item?.userId === localUserId
         ? activeHostSpeaker && !isMuted
         : activeSpeaker !== null &&
-        Number(activeSpeaker) === Number(item?.userId)
+          Number(activeSpeaker) === Number(item?.userId)
 
     const mediaStream = new MediaStream()
 
@@ -153,11 +136,20 @@ const VideoGrid = ({
     const isMicMuted = item?.userId === localUserId ? isMuted : !user?.isAudioOn
     const isCameraOff =
       item?.userId === localUserId ? isVideoOff : !user?.isVideoOn
+    const morePeopleWithSharing = totalParticipants - 2
+    const morePeople = totalParticipants - 4
+    const isShowMorePeopleScreenShare =
+      sharingOwner && totalParticipants >= 3 && index === 1
+    const isShowMorePeople = totalParticipants >= 7 && index === 5
 
     return (
       <View
         key={item?.id || index}
-        style={getGridStyle({ total: totalParticipants, idx: index })}
+        style={getGridStyle({
+          idx: index,
+          total: totalParticipants,
+          sharingOwner,
+        })}
       >
         {isActive && (
           <LinearGradient
@@ -168,7 +160,19 @@ const VideoGrid = ({
           />
         )}
         <View style={styles.videoContainer}>
-          {isCameraOff ? (
+          {isShowMorePeopleScreenShare ? (
+            <View style={styles.cameraOffContainer}>
+              <Text style={styles.text}>
+                {morePeopleWithSharing} {t("morePeople")}
+              </Text>
+            </View>
+          ) : isShowMorePeople ? (
+            <View style={styles.cameraOffContainer}>
+              <Text style={styles.text}>
+                {morePeople} {t("morePeople")}
+              </Text>
+            </View>
+          ) : isCameraOff ? (
             <View style={styles.cameraOffContainer}>
               {user?.photo?.link ? (
                 <Image
@@ -198,6 +202,7 @@ const VideoGrid = ({
               />
             </View>
           )}
+
           <Text style={styles.userName}>
             {user?.firstName} {lastNameInitial}.
           </Text>
@@ -216,23 +221,16 @@ const VideoGrid = ({
     )
   }
 
-  const sharedScreenStream = new MediaStream();
-  if (sharedScreen) sharedScreenStream.addTrack(sharedScreen);
+  const sharedScreenStream = new MediaStream()
+  if (sharedScreen) sharedScreenStream.addTrack(sharedScreen)
 
   return (
     <View style={styles.container}>
-      {sharedScreenStream?.getVideoTracks().length > 0 && (
-        <View
-          style={{
-            width: '100%',
-            height: '100%',
-            borderRadius: moderateScale(12),
-            overflow: 'hidden',
-          }}
-        >
+      {sharingOwner && (
+        <View style={styles.sharingContainer}>
           <RTCView
             streamURL={sharedScreenStream.toURL()}
-            style={{ width: '100%', height: '100%' }}
+            style={{ width: "100%", height: "100%" }}
             objectFit="cover"
           />
         </View>
@@ -251,6 +249,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: moderateScale(4),
     justifyContent: "center",
+    overflow: "hidden",
+  },
+  sharingContainer: {
+    width: "100%",
+    height: "50%",
+    borderRadius: moderateScale(12),
+    overflow: "hidden",
   },
   video: {
     borderRadius: moderateScale(12),
@@ -298,5 +303,14 @@ const styles = StyleSheet.create({
     ...fontFamilies.interManropeBold16,
     ...fontWeights.fontWeight600,
     color: colors.white,
+  },
+  morePeopleContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  text: {
+    ...fontFamilies.interManropeSemiBold16,
+    ...fontWeights.fontWeight600,
+    color: colors.ghostWhite,
   },
 })
