@@ -6,12 +6,18 @@ import { CustomButton, Icon } from "@components"
 import { useTranslation } from "react-i18next"
 import { helpers } from "@utils/theme"
 import colors from "src/assets/colors"
-import { RouteProp, useFocusEffect, useNavigation, useRoute } from "@react-navigation/native"
+import {
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native"
 import { copyToClipboard } from "@utils/clipboard"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 import { mediaDevices, MediaStream, RTCView } from "react-native-webrtc"
 import { useGetCalendarEventByHashQuery } from "src/api/calendarApi/calendarApi"
+import { useAuthMeQuery } from "src/api/userApi/userApi"
 
 type ParamList = {
   Detail: {
@@ -26,50 +32,55 @@ const MeetingDetailsScreen = () => {
   const { navigate } = useNavigation<ROUTES>()
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const { hash, isCreatorMode, title } = route.params
+  const { data: authMe } = useAuthMeQuery()
 
-  const [isVideoOff, setIsVideoOff] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [preview, setPreview] = useState<MediaStream>();
+  const [isVideoOff, setIsVideoOff] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
+  const [preview, setPreview] = useState<MediaStream>()
 
-  const {data: getCalendarEventByHashData} = useGetCalendarEventByHashQuery({hash: String(hash)})
-
+  const { data: getCalendarEventByHashData } = useGetCalendarEventByHashQuery({
+    hash: String(hash),
+  })
+  const isMeetingOwner = authMe?.id === getCalendarEventByHashData?.createdById
 
   const toggleAudio = () => {
     if (preview) {
-      preview.getAudioTracks().forEach(track => {
-        track.enabled = !track.enabled;
-      });
+      preview.getAudioTracks().forEach((track) => {
+        track.enabled = !track.enabled
+      })
     }
-    setIsMuted(prev => !prev);
-  };
-  
+    setIsMuted((prev) => !prev)
+  }
+
   const toggleVideo = () => {
     if (preview) {
-      preview.getVideoTracks().forEach(track => {
-        track.enabled = !track.enabled;
-      });
+      preview.getVideoTracks().forEach((track) => {
+        track.enabled = !track.enabled
+      })
     }
-    setIsVideoOff(prev => !prev);
-  };
+    setIsVideoOff((prev) => !prev)
+  }
 
-  useFocusEffect(useCallback(() => {
-    const initialize = async () => {
-      let mediaConstraints = {
-        audio: true,
-        video: {
-          frameRate: 30,
-          facingMode: "user",
-        },
+  useFocusEffect(
+    useCallback(() => {
+      const initialize = async () => {
+        let mediaConstraints = {
+          audio: true,
+          video: {
+            frameRate: 30,
+            facingMode: "user",
+          },
+        }
+        const stream = await mediaDevices.getUserMedia(mediaConstraints)
+        setPreview(stream)
       }
-      const stream = await mediaDevices.getUserMedia(mediaConstraints)
-      setPreview(stream)
-    }
       initialize()
       return () => {
-        preview?.getTracks().forEach(t => t.stop());
-        preview?.getTracks().forEach(t => t.release());
+        preview?.getTracks().forEach((t) => t.stop())
+        preview?.getTracks().forEach((t) => t.release())
       }
-  }, []))
+    }, [])
+  )
 
   return (
     <ScreenWrapper title={title || hash} isBackButton isCenterTitle>
@@ -119,7 +130,7 @@ const MeetingDetailsScreen = () => {
                 isVideoOff: isVideoOff,
                 isCreatorMode: isCreatorMode,
                 title: title,
-                instanceMeetingOwner: true,
+                instanceMeetingOwner: isMeetingOwner,
                 meetId: getCalendarEventByHashData?.meetId,
               })
             }}

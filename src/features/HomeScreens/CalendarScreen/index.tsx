@@ -7,7 +7,7 @@ import {
 import ScreenWrapper from "src/components/ScreenWrapper"
 import WeekDays from "src/components/Calendar/WeekDays"
 import colors from "src/assets/colors"
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native"
+import { ActivityIndicator, Text, TouchableOpacity } from "react-native"
 import { useAppSelector } from "src/hooks/redux"
 import { useGetCalendarEventsQuery } from "src/api/calendarApi/calendarApi"
 import { useFocusEffect } from "@react-navigation/native"
@@ -22,7 +22,6 @@ import DetailsEventModal from "src/modals/DetailsEventModal"
 import moment from "moment"
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 import { useTimezoneQuery } from "src/api/auth/authApi"
-import { helpers } from "@utils/theme"
 
 const today = moment().format("YYYY-MM-DD")
 
@@ -126,7 +125,11 @@ const CalendarScreen = () => {
       event
     )
     return (
-      <TouchableOpacity {...touchableOpacityProps} key={event?.id}>
+      <TouchableOpacity
+        {...touchableOpacityProps}
+        key={event?.id}
+        style={[styles.eventContainer, touchableOpacityProps.style]}
+      >
         <Text
           style={[
             styles.eventText,

@@ -27,7 +27,7 @@ interface IParticipantsModal {
   sheetRef: React.RefObject<BottomSheetMethods>
   setIsCaptionOn: (val: boolean) => void
   isCaptionOn: boolean
-  allLanguagesRef: MutableRefObject<string[]>;
+  allLanguagesRef: MutableRefObject<string[]>
   handleChangedRoomLanguage: (arg0: string) => void
 }
 
@@ -49,14 +49,15 @@ const SubtitlesModal = ({
     if (authMeData?.language?.code) {
       setSelectedLanguage(authMeData?.language?.code?.toLowerCase?.())
     }
-  }, [authMeData?.language?.code]);
+  }, [authMeData?.language?.code])
 
   useEffect(() => {
     if (languageOptions?.length) {
-      allLanguagesRef.current = languageOptions.map(lang => lang.code.toLowerCase());
+      allLanguagesRef.current = languageOptions.map((lang) =>
+        lang.code.toLowerCase()
+      )
     }
-  }, [languageOptions]);
-
+  }, [languageOptions])
 
   const handleToggleSubtitles = () => {
     setIsCaptionOn(!isCaptionOn)
@@ -70,7 +71,7 @@ const SubtitlesModal = ({
   const subtitlesContent: SubtitlesContent[] = [
     {
       id: 1,
-      title: isCaptionOn ? t('HideSubtitles') : t("ShowSubtitles"),
+      title: isCaptionOn ? t("HideSubtitles") : t("ShowSubtitles"),
       icon: "showSubtitles",
       onPress: handleToggleSubtitles,
     },
@@ -104,7 +105,9 @@ const SubtitlesModal = ({
           }}
         >
           <Text style={styles.title}>{item.name}</Text>
-          {selectedLanguage === item.code?.toLowerCase?.() && <Icon name={"checkCoral"} />}
+          {selectedLanguage === item.code?.toLowerCase?.() && (
+            <Icon name={"checkCoral"} />
+          )}
         </TouchableOpacity>
       )
     }
@@ -113,11 +116,17 @@ const SubtitlesModal = ({
   const handleSelectLanguage = () => {
     setIsChangeLanguageMode(false)
   }
+  const handleOnClose = () => {
+    setIsChangeLanguageMode(false)
+    setTimeout(() => {
+      sheetRef.current?.close()
+    })
+  }
 
   return (
     <BottomSheet
       ref={sheetRef}
-      height={isChangeLanguageMode ? screenHeight * 0.4 : screenHeight * 0.3}
+      height={isChangeLanguageMode ? screenHeight * 0.9 : screenHeight * 0.3}
       backdropMaskColor={colors.blackOpacity08}
       style={styles.bottomSheet}
       disableBodyPanning
@@ -127,27 +136,29 @@ const SubtitlesModal = ({
           handleBackButtonPress={() => setIsChangeLanguageMode(false)}
           isBackButton={isChangeLanguageMode}
           title={isChangeLanguageMode ? t("ChangeLanguage") : t("Subtitles")}
-          sheetRef={sheetRef}
+          onClose={handleOnClose}
         />
         <FlatList
+          showsVerticalScrollIndicator={false}
           removeClippedSubviews={false}
-          contentContainerStyle={
-            isChangeLanguageMode ? helpers.gap4 : helpers.gap12
-          }
+          contentContainerStyle={[
+            isChangeLanguageMode ? helpers.gap4 : helpers.gap12,
+          ]}
           data={isChangeLanguageMode ? languagesContent : subtitlesContent}
           renderItem={renderItem}
           keyExtractor={(item) =>
             String(item.id || (item as LanguagesContent).id)
           }
         />
-        {isChangeLanguageMode && (
-          <CustomButton
-            type="primary"
-            text={t("Select")}
-            onPress={handleSelectLanguage}
-          />
-        )}
       </View>
+      {isChangeLanguageMode && (
+        <CustomButton
+          type="primary"
+          text={t("Select")}
+          onPress={handleSelectLanguage}
+          style={styles.selectButton}
+        />
+      )}
     </BottomSheet>
   )
 }

@@ -165,7 +165,6 @@ const MeetingScreen = () => {
       )
     }
   }
-
   const stopRecording = async () => {
     try {
       if (ScreenRecorder && isStarted) {

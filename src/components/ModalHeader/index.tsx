@@ -9,17 +9,17 @@ import { useTranslation } from "react-i18next"
 interface IModalHeader {
   title: string
   participants?: User[]
-  sheetRef: React.RefObject<BottomSheetMethods>
   isBackButton?: boolean
+  onClose: () => void
   handleBackButtonPress?: () => void
 }
 
 const ModalHeader = ({
   title,
   participants,
-  sheetRef,
   isBackButton,
   handleBackButtonPress,
+  onClose,
 }: IModalHeader) => {
   const { t } = useTranslation()
   return (
@@ -30,7 +30,7 @@ const ModalHeader = ({
             onPress={handleBackButtonPress}
             style={styles.container}
           >
-            <Icon name={"backArrow"} />
+            <Icon name={"backArrowGray"} />
           </TouchableOpacity>
         )}
         <Text style={styles.title}>
@@ -38,7 +38,7 @@ const ModalHeader = ({
         </Text>
       </View>
 
-      <Icon name="closeButton" onPress={() => sheetRef.current?.close()} />
+      <Icon name="closeButton" onPress={onClose} />
     </View>
   )
 }
