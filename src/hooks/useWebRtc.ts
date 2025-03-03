@@ -1150,7 +1150,7 @@ const useWebRtc = () => {
     console.log("STT SEND: ")
     STTSocket.current?.send(
       JSON.stringify({
-        uid: `tester-${userRefId.current}-${socketRef.current?.id}`,
+        uid: `tester-${userRefId.current}`,
         language: sttLanguageRef.current,
         task: "transcribe",
         model: "large-v3",

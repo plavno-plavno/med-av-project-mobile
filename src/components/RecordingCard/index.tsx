@@ -93,9 +93,12 @@ const RecordingCard = ({
   }
 
   const handleDownloadRecord = async ({ id }: { id: number }) => {
-    await downloadRecordings({ id }).then((record) => {
+    try {
+      const record = await downloadRecordings({ id }).unwrap();
       onRecordDownload({ record })
-    })
+    } catch (error) {
+      console.log(error, 'error handleDownloadRecord');
+    }
   }
   return (
     <View style={styles.container}>
