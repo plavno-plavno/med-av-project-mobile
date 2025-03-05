@@ -1,10 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
-import {
-  FlatList,
-  PermissionsAndroid,
-  Text,
-  View,
-} from "react-native"
+import { FlatList, Text, View } from "react-native"
 import useWebRtc from "src/hooks/useWebRtc"
 import { styles } from "./styles"
 import { Icon } from "@components"
@@ -22,12 +17,12 @@ import { Toast } from "react-native-toast-message/lib/src/Toast"
 import { useTranslation } from "react-i18next"
 import { useKeepAwake } from "@sayem314/react-native-keep-awake"
 import Subtitles from "src/components/Subtitles"
-import useSttConnection from "src/hooks/useSttConnection"
-import RNFS from "react-native-fs"
-import RNFetchBlob from "react-native-blob-util"
-import base64 from "base64-js"
+import Loading from "src/components/Loading"
+import Config from "react-native-config"
 import { NativeEventEmitter, NativeModules } from "react-native"
 const { ScreenRecorder } = NativeModules
+
+const recordingUrl = Config.SOCKET_RECORDING_URL
 
 type ParamList = {
   Detail: {
@@ -40,10 +35,10 @@ type ParamList = {
   }
 }
 
-const CHUNK_SIZE = 1024 * 1024 // 1MB chunks
-
 const MeetingScreen = () => {
   const { t } = useTranslation()
+  const route = useRoute<RouteProp<ParamList, "Detail">>()
+  const { isCreatorMode, title, hash, instanceMeetingOwner } = route.params
   const {
     localStream,
     isMuted,
@@ -59,39 +54,31 @@ const MeetingScreen = () => {
     remoteVideoStreams,
     usersVideoTrackToIdMap,
     peerConnection,
-    sttUrl,
-
+    localUserId,
+    allLanguagesRef,
+    subtitlesQueue,
+    sharedScreen,
+    wsRef,
     endCall,
     toggleMedia,
     switchCamera,
     toggleSpeaker,
+    sharingOwner,
     sendMessage,
-    startCall,
-  } = useWebRtc()
-  // const { stopStreaming, isSttConnected, toggleSttMicrophoneMute, handleChangeSttLanguage, subtitles } = useSttConnection({ sttUrl,
-  //   isAudioOn: !isMuted });
-  // console.log(isSttConnected, 'isSttConnectedisSttConnected');
-  // console.log(subtitles, 'subtitlessubtitlessubtitlessubtitlessubtitles');
-
+    handleChangedRoomLanguage,
+  } = useWebRtc(instanceMeetingOwner!)
   useKeepAwake()
   useStatusBar("light-content", colors.dark)
   const [isCaptionOn, setIsCaptionOn] = React.useState(false)
-  const [subtitleLanguage, setSubtitleLanguage] = React.useState("")
-  const route = useRoute<RouteProp<ParamList, "Detail">>()
-  const { isCreatorMode, title, hash, instanceMeetingOwner } = route.params
+ 
+  const startTimeRef = useRef<number | null>(null)
+  const recordingNameRef = useRef<string | null>(null)
 
   const sheetChatRef = useRef<BottomSheetMethods>(null)
   const sheetCatiptionsRef = useRef<BottomSheetMethods>(null)
   const sheetParticipantsRef = useRef<BottomSheetMethods>(null)
 
   const [isStarted, setIsStarted] = useState(false)
-
-  useEffect(() => {
-    startCall({
-      isVideoOn: !route.params?.isVideoOff,
-      isAudioOn: !route.params?.isMuted,
-    })
-  }, [])
 
   const handleChatOpen = () => {
     sheetChatRef.current?.open()
@@ -105,7 +92,6 @@ const MeetingScreen = () => {
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(ScreenRecorder)
-
     const chunkListener = eventEmitter.addListener(
       "onVideoChunk",
       (base64Chunk) => {
@@ -121,11 +107,13 @@ const MeetingScreen = () => {
 
   const startRecording = async () => {
     try {
-      // ScreenRecorder.setChunkSize(1024 * 1024) // 1MB chunks, or any other desired size
-
-      await ScreenRecorder.startRecording()
-      console.log("Recording started:")
-      setIsStarted(true)
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        recordingNameRef.current = `recording-${Date.now()}`
+        startTimeRef.current = Date.now()
+        await ScreenRecorder.startRecording();
+        console.log("Recording started")
+        setIsStarted(true)
+      }
     } catch (error) {
       console.error(
         "Failed to start recording:",
@@ -134,21 +122,86 @@ const MeetingScreen = () => {
       )
     }
   }
-
   const stopRecording = async () => {
     try {
-      await ScreenRecorder.stopRecording()
-      console.log("Recording stopped:")
+      if (ScreenRecorder && isStarted) {
+        await ScreenRecorder.stopRecording()
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+          const duration = startTimeRef.current
+            ? Math.floor((Date.now() - startTimeRef.current) / 1000)
+            : 0
+
+          wsRef.current.send(
+            JSON.stringify({
+              fileName: recordingNameRef.current,
+              fileExtension: "mp4",
+              action: "end",
+              meetId: roomId,
+              userId: localUserId,
+              duration,
+            })
+          )
+        }
+        startTimeRef.current = null
+      }
       setIsStarted(false)
     } catch (error) {
       console.error("Failed to stop recording:", error)
     }
   }
 
+  useEffect(() => {
+    let reconnectTimeout: NodeJS.Timeout | null = null
+
+    const connectWebSocket = () => {
+      if (wsRef.current) {
+        wsRef.current.close()
+      }
+
+      wsRef.current = new WebSocket(recordingUrl!)
+
+      wsRef.current.onopen = () => {
+        console.log("WebSocket connected")
+        if (reconnectTimeout) {
+          clearTimeout(reconnectTimeout)
+          reconnectTimeout = null
+        }
+      }
+
+      wsRef.current.onerror = (error) => {
+        console.error("WebSocket error:", error)
+        console.log("WebSocket connection error. Reconnecting...")
+        if (!reconnectTimeout) {
+          reconnectTimeout = setTimeout(connectWebSocket, 3000)
+        }
+      }
+
+      wsRef.current.onclose = () => {
+        console.warn("WebSocket connection closed")
+      }
+    }
+
+    connectWebSocket()
+
+    return () => {
+      if (reconnectTimeout) clearTimeout(reconnectTimeout)
+      wsRef.current?.close()
+    }
+  }, [])
+
   const sendChunkToServer = async (base64Chunk: any) => {
     try {
-      const binaryData = atob(base64Chunk)
-      console.log("Sending chunk to server:", binaryData)
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(
+          JSON.stringify({
+            fileName: recordingNameRef.current,
+            fileExtension: "mp4",
+            chunks: base64Chunk,
+            action: "stream",
+          })          
+        )
+        console.log('chunk sent');
+      }
     } catch (error) {
       console.error("Failed to send chunk:", error)
     }
@@ -184,7 +237,10 @@ const MeetingScreen = () => {
   const callBottomActions = [
     {
       name: "callEnd",
-      onPress: endCall,
+      onPress: () => {
+        stopRecording()
+        endCall()
+      },
     },
     {
       name: isVideoOff ? "cameraOff" : "cameraOn",
@@ -211,6 +267,9 @@ const MeetingScreen = () => {
     },
   ]
 
+  if (!participants.length) {
+    return <Loading />
+  }
   return (
     <>
       <SafeAreaView edges={["top"]} style={styles.container}>
@@ -241,8 +300,11 @@ const MeetingScreen = () => {
             usersVideoTrackToIdMap={usersVideoTrackToIdMap}
             participants={participants}
             peerConnection={peerConnection}
+            localUserId={localUserId}
+            sharedScreen={sharedScreen}
+            sharingOwner={sharingOwner}
           />
-          <Subtitles isActive={isCaptionOn} />
+          <Subtitles isActive={isCaptionOn} subtitlesQueue={subtitlesQueue} />
         </View>
         <View>
           <FlatList
@@ -268,10 +330,11 @@ const MeetingScreen = () => {
       </SafeAreaView>
       <Portal>
         <SubtitlesModal
-          setSubtitleLanguage={setSubtitleLanguage}
           sheetRef={sheetCatiptionsRef}
           setIsCaptionOn={setIsCaptionOn}
           isCaptionOn={isCaptionOn}
+          handleChangedRoomLanguage={handleChangedRoomLanguage}
+          allLanguagesRef={allLanguagesRef}
         />
         <ParticipantsModal
           isCreatorMode={isCreatorMode}

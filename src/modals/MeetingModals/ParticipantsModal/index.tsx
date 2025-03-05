@@ -45,6 +45,7 @@ const ParticipantsModal = ({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={helpers.gap12}
           style={styles.content}
+          removeClippedSubviews={false}
         >
           {participants.map((participant, index) => {
             return (

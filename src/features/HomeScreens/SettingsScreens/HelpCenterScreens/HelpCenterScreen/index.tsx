@@ -2,11 +2,12 @@ import { CustomButton } from "@components"
 import { useFocusEffect, useNavigation } from "@react-navigation/native"
 import { isIOS } from "@utils/platformChecker"
 import { helpers } from "@utils/theme"
-import { useCallback, useEffect } from "react"
+import React, { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { FlatList, View } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import { useGetMessageCountQuery } from "src/api/helpCenterApi/helpCenterApi"
+import { usePrivacyFilesQuery } from "src/api/mediaApi/mediaApi"
 import NavigationItem from "src/components/NavigationItem"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { ROUTES } from "src/navigation/RoutesTypes"
@@ -18,6 +19,8 @@ const HelpCenterScreen = () => {
   const navigation = useNavigation<ROUTES>()
 
   const { data: messageCount, refetch } = useGetMessageCountQuery()
+  const { data: privacyFiles, isLoading: isPrivacyLoading } =
+    usePrivacyFilesQuery()
 
   const helpCenterTopics = [
     {
@@ -37,24 +40,23 @@ const HelpCenterScreen = () => {
       },
     },
   ]
-  const privacyPolicyTopics = [
-    {
-      title: t("TermsOfUse"),
-      leftIcon: "privacyPolicy" as IconName,
-      rightIcon: "openArrow" as IconName,
-      onPress: () => {
-        // navigation.navigate(ScreensEnum.TERMS_OF_USE, {})
+  const privacyPolicyTopics = privacyFiles?.flatMap((item: any) => {
+    const title = item.tag === "privacy" ? t("PrivacyPolicy") : t("TermsOfUse")
+    return [
+      {
+        title,
+        leftIcon: "privacyPolicy" as IconName,
+        rightIcon: "openArrow" as IconName,
+        onPress: () => {
+          navigation.navigate(ScreensEnum.PRIVACY_FILES, {
+            link: item.link,
+            title: title,
+            isLoading: isPrivacyLoading,
+          })
+        },
       },
-    },
-    {
-      title: t("PrivacyPolicy"),
-      leftIcon: "privacyPolicy" as IconName,
-      rightIcon: "openArrow" as IconName,
-      onPress: () => {
-        // navigation.navigate(ScreensEnum.PRIVACY_POLICY, {})
-      },
-    },
-  ]
+    ]
+  })
 
   useWebSocket(refetch)
 
@@ -64,12 +66,7 @@ const HelpCenterScreen = () => {
     }, [])
   )
   return (
-    <ScreenWrapper
-      isBackButton
-      title={t("HelpCenter")}
-      isCenterTitle
-      keyboardVerticalOffset={isIOS() ? moderateScale(-100) : undefined}
-    >
+    <ScreenWrapper isBackButton title={t("HelpCenter")} isCenterTitle>
       <View style={[helpers.flex1, helpers.gap20]}>
         <View>
           <FlatList
@@ -88,8 +85,9 @@ const HelpCenterScreen = () => {
           />
         </View>
       </View>
+
       <CustomButton
-        style={{ bottom: moderateScale(30) }}
+        style={{ bottom: isIOS() ? moderateScale(10) : 0 }}
         text={t("ContactSupport")}
         rightIcon={"nextArrow"}
         onPress={() => {

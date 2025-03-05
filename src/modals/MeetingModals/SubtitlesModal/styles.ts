@@ -9,11 +9,12 @@ export const styles = StyleSheet.create({
   },
   container: {
     flexGrow: 1,
-    height: "80%",
+    height: "85%",
     justifyContent: "space-between",
     paddingHorizontal: moderateScale(20),
     backgroundColor: colors.white,
     gap: moderateScale(24),
+    paddingBottom: moderateScale(20),
   },
   title: {
     ...fontFamilies.interManropeSemiBold16,
@@ -32,5 +33,10 @@ export const styles = StyleSheet.create({
     paddingVertical: moderateScale(16),
     paddingHorizontal: moderateScale(12),
     backgroundColor: colors.aquaHaze,
+  },
+  selectButton: {
+    width: "90%",
+    bottom: moderateScale(10),
+    left: moderateScale(20),
   },
 })

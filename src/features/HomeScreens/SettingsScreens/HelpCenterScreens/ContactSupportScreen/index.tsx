@@ -21,6 +21,7 @@ import Toast from "react-native-toast-message"
 import { useNavigation } from "@react-navigation/native"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
+import { isIOS } from "@utils/platformChecker"
 
 interface IFormValues {
   topic: HelpTopicEntity | null | string
@@ -37,7 +38,6 @@ const ContactSupportScreen = () => {
   const [topicId, setTopicId] = useState<number | null>(null)
 
   const handleAddTopic = async (values: IFormValues) => {
-    console.log(values, "values")
     try {
       const res = await addTopic({
         message: values.message as string,
@@ -61,7 +61,7 @@ const ContactSupportScreen = () => {
       <ScreenWrapper isBackButton title={t("ContactSupport")} isCenterTitle>
         <View style={[helpers.flex1]}>
           <KeyboardAwareScrollView
-            extraScrollHeight={screenHeight * 0.2}
+            extraScrollHeight={screenHeight * (isIOS() ? 0.2 : 0.3)}
             bounces={false}
             enableOnAndroid
             enableAutomaticScroll
@@ -151,7 +151,7 @@ export default ContactSupportScreen
 const styles = StyleSheet.create({
   button: {
     position: "absolute",
-    bottom: moderateScale(20),
+    bottom: isIOS() ? moderateScale(10) : 0,
     left: moderateScale(0),
     right: moderateScale(0),
   },

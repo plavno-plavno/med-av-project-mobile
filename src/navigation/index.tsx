@@ -31,6 +31,8 @@ import HelpCenterScreen from "src/features/HomeScreens/SettingsScreens/HelpCente
 import ContactSupportScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/ContactSupportScreen"
 import MyRequestsScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/MyRequestsScreens/MyRequestsScreen"
 import MyRequestsDetailsScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/MyRequestsScreens/MyRequestsDetailsScreen"
+import PrivacyPolicyScreen from "src/features/PrivacyPolicyScreen"
+
 const Stack = createNativeStackNavigator()
 
 const Navigation: React.FC = () => {
@@ -196,6 +198,10 @@ const Navigation: React.FC = () => {
         <Stack.Screen
           name={ScreensEnum.CONTACT_SUPPORT}
           component={ContactSupportScreen}
+        />
+        <Stack.Screen
+          name={ScreensEnum.PRIVACY_FILES}
+          component={PrivacyPolicyScreen}
         />
         <Stack.Screen name={ScreensEnum.MEETING} component={MeetingScreen} />
         <Stack.Screen name={ScreensEnum.MAIN} component={BottomTabNavigator} />

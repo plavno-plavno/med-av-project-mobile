@@ -21,4 +21,8 @@ export const styles = StyleSheet.create({
     ...fontWeights.fontWeight500,
     color: colors.ghostWhite,
   },
+  eventContainer: {
+    minHeight: moderateScale(21),
+    paddingTop: moderateScale(1),
+  },
 })

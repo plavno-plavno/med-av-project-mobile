@@ -1,6 +1,6 @@
-import { StyleSheet } from "react-native"
+import { FlatList, StyleSheet } from "react-native"
 import { isIOS } from "@utils/platformChecker"
-import React from "react"
+import React, { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { moderateScale } from "react-native-size-matters"
 import ScreenWrapper from "src/components/ScreenWrapper"
@@ -8,15 +8,37 @@ import RecordingCard from "src/components/RecordingCard"
 import NoData from "src/components/NoData"
 import { useGetRecordingsQuery } from "src/api/helpCenterApi/helpCenterApi"
 import Loading from "src/components/Loading"
+import { IRecordingsEntity } from "src/api/helpCenterApi/types"
 
 const MyRecordsScreen = () => {
   const { t } = useTranslation()
 
+  const [page, setPage] = React.useState(1)
+
   const { data: recordingsData, isLoading: recordingsLoading } =
     useGetRecordingsQuery({
       limit: 10,
-      page: 1,
+      page,
     })
+
+  const [recordings, setRecordings] = React.useState<IRecordingsEntity[]>([])
+  const isRecordingsLoadingMore =
+    recordingsData && recordings.length < recordingsData?.total
+
+  const onRecordsLoad = () => {
+    if (isRecordingsLoadingMore) {
+      setPage((prev) => prev + 1)
+    }
+  }
+
+  useEffect(() => {
+    if (isRecordingsLoadingMore) {
+      setRecordings((prev: IRecordingsEntity[]) => [
+        ...prev,
+        ...recordingsData?.data,
+      ])
+    }
+  }, [recordingsData])
 
   return (
     <>
@@ -31,11 +53,21 @@ const MyRecordsScreen = () => {
         ) : !recordingsData?.data?.length ? (
           <NoData />
         ) : (
-          <RecordingCard
-            id={1}
-            title="Title"
-            duration="RecordDuration"
-            time="RecordTimeSave"
+          <FlatList
+            onEndReached={onRecordsLoad}
+            onEndReachedThreshold={0.5}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ gap: moderateScale(8) }}
+            data={recordings}
+            renderItem={({ item }) => (
+              <RecordingCard
+                id={item?.id}
+                title={item?.title}
+                duration={item?.duration}
+                date={item?.createdAt}
+              />
+            )}
+            keyExtractor={(item) => String(item?.id)}
           />
         )}
       </ScreenWrapper>

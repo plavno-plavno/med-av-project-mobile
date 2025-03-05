@@ -90,11 +90,13 @@ const MeetingChatModal = ({
         disableBodyPanning
         disableKeyboardHandling
         keyboardBehavior="interactive"
+        removeClippedSubviews={false}
       >
         <View style={styles.container}>
           <View style={[helpers.ph20, helpers.flex1]}>
             <ModalHeader title={t("Chat")} sheetRef={sheetRef} />
             <FlatList
+              removeClippedSubviews={false}
               keyExtractor={(_item, index) => String(index)}
               extraData={renderedMessages}
               data={renderedMessages}

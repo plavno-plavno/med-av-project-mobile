@@ -2,21 +2,20 @@ import { fontFamilies, fontWeights } from "@utils/theme"
 import { View, Text, StyleSheet } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import colors from "src/assets/colors"
-import { useAppSelector, useAppDispatch } from "src/hooks/redux"
-import { setSubtitles } from "src/redux/slices/calendarSlice/subtitlesSlice"
+import { ISubtitle } from "src/hooks/useWebRtc"
 
-interface ISubtitles {
+interface Props {
   isActive: boolean
+  subtitlesQueue: ISubtitle[];
 }
 
-const Subtitles = ({ isActive }: ISubtitles) => {
-  //REDUX: for subtitles
-  const { subtitles } = useAppSelector((state) => state.subtitles)
-  const dispatch = useAppDispatch()
+const Subtitles = ({ isActive, subtitlesQueue }: Props) => {
   if (!isActive) return null
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>{subtitles}</Text>
+    <View style={styles.container} removeClippedSubviews={false}>
+      {subtitlesQueue.map(subtitle => (
+        <Text style={styles.text}>{subtitle.text}</Text>
+      ))}
     </View>
   )
 }
@@ -32,7 +31,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.mirage,
     padding: moderateScale(16),
     borderRadius: moderateScale(16),
-    maxHeight: moderateScale(86),
+    minHeight: moderateScale(44),
   },
   text: {
     ...fontFamilies.interManropeBold14,

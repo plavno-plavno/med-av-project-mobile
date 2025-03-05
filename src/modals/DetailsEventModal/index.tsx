@@ -127,8 +127,7 @@ const DetailsEventModal = ({
                       onClose()
                       navigate(ScreensEnum.MEETING_DETAILS, {
                         hash: eventDetailsData?.hash,
-                        title: eventDetailsData?.title,
-                        isCreatorMode,
+                        ownerEmail: eventDetailsData?.createdBy?.email,
                       })
                     }}
                   />

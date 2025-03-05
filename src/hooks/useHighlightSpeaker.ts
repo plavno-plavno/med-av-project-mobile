@@ -2,25 +2,26 @@ import { useCallback, useRef, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { RTCPeerConnection } from "react-native-webrtc";
 
-const useHighlightSpeaker = (peerConnection: RTCPeerConnection | null, usersAudioTrackToIdMap: any) => {
+const useHighlightSpeaker = (peerConnection: RTCPeerConnection | null, participantsToShow: any) => {
   const [activeSpeaker, setActiveSpeaker] = useState<number | null>(null);
 
   const audioLevelMapRef = useRef<{ [key: string]: number }>({});
   const audioLevelHistory = useRef<{ [key: string]: number[] }>({});
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const CHECK_INTERVAL_MS = 500;
+  const CHECK_INTERVAL_MS = 200;
 
   const checkAudioLevels = async () => {
+    try{
     if (!peerConnection) return;
     
     const stats = await peerConnection.getStats();
     let maxAudioLevel = 0;
     let newActiveSpeakerId: string | null = null;
 
-    stats?.forEach((report: { type: string; kind: string; trackIdentifier: any; trackId: any; audioLevel: number; }) => {
+    stats?.forEach((report: { type: string; kind: string; trackIdentifier: any; trackId: any; audioLevel: number; mid: number}) => {
       if (report.type === "inbound-rtp" && report.kind === "audio") {
         const trackMidId = report?.mid
-        const userId = usersAudioTrackToIdMap[trackMidId];
+        const userId = participantsToShow?.find((track: any) => track?.mid === String(trackMidId))?.userId;
         if (userId) {
           const audioLevel = report.audioLevel ?? 0;
           audioLevelMapRef.current[userId] = audioLevel;
@@ -47,6 +48,10 @@ const useHighlightSpeaker = (peerConnection: RTCPeerConnection | null, usersAudi
     });
 
     setActiveSpeaker(newActiveSpeakerId ?? null);
+    } catch (error) {
+      console.log(error, 'error checkAudioLevels');
+      setActiveSpeaker(null);
+    }
   };
 
   useFocusEffect(
@@ -60,7 +65,7 @@ const useHighlightSpeaker = (peerConnection: RTCPeerConnection | null, usersAudi
           console.log("Stopped audio level checks.");
         }
       };
-    }, [peerConnection, usersAudioTrackToIdMap])
+    }, [peerConnection, participantsToShow])
   );
 
   return activeSpeaker;
