@@ -3,7 +3,9 @@ import { useEffect } from 'react';
 import messaging from '@react-native-firebase/messaging';
 import PushNotification from 'react-native-push-notification';
 import PushNotificationIOS from '@react-native-community/push-notification-ios';
-import { isAndroid } from '../utils/platformChecker';
+import { isAndroid, isIOS } from '../utils/platformChecker';
+import { navigate } from 'src/navigation/RootNavigation';
+import { ScreensEnum } from 'src/navigation/ScreensEnum';
 
 PushNotification.createChannel(
   {
@@ -29,7 +31,12 @@ const NotificationController = (props: any) => {
 
       onNotification: function (notification) {
         console.log("NOTIFICATION:", notification);
-
+        if (notification?.data) {
+          navigate(ScreensEnum.MEETING_DETAILS, {
+            hash: notification?.data?.eventId,
+            ownerEmail: notification?.data?.ownerEmail,
+          })
+        }
         notification.finish(PushNotificationIOS.FetchResult.NoData);
       },
 
@@ -56,6 +63,10 @@ const NotificationController = (props: any) => {
     messaging().onNotificationOpenedApp((remoteMessage) => {
       console.log('Notification caused app to open from background state:', remoteMessage);
       if (!!remoteMessage && !!remoteMessage.data) {
+        navigate(ScreensEnum.MEETING_DETAILS, {
+          hash: remoteMessage?.data?.eventId,
+          ownerEmail: remoteMessage?.data?.ownerEmail,
+        })
         console.log(remoteMessage, 'remoteMessage onNotificationOpenedApp');
       }
     });
@@ -65,7 +76,13 @@ const NotificationController = (props: any) => {
       .then((remoteMessage) => {
         console.log('Notification caused app to open from quit state:', remoteMessage);
         if (remoteMessage) {
-          if (!!remoteMessage && !!remoteMessage.data) {
+          if (!!remoteMessage.data) {
+            setTimeout(() => {
+              navigate(ScreensEnum.MEETING_DETAILS, {
+                hash: remoteMessage?.data?.eventId,
+                ownerEmail: remoteMessage?.data?.ownerEmail,
+              })
+            }, isIOS() ? 1000 : 3000);
             console.log(remoteMessage, 'remoteMessage getInitialNotification');
           }
         }

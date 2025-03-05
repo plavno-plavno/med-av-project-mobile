@@ -23,7 +23,7 @@ type ParamList = {
   Detail: {
     title: string
     hash?: string
-    isCreatorMode?: boolean
+    ownerEmail?: string
   }
 }
 
@@ -31,8 +31,10 @@ const MeetingDetailsScreen = () => {
   const { t } = useTranslation()
   const { navigate } = useNavigation<ROUTES>()
   const route = useRoute<RouteProp<ParamList, "Detail">>()
-  const { hash, isCreatorMode, title } = route.params
+  const { hash, ownerEmail } = route.params
+
   const { data: authMe } = useAuthMeQuery()
+  const isCreatorMode = authMe?.email === ownerEmail
 
   const [isVideoOff, setIsVideoOff] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
@@ -41,7 +43,8 @@ const MeetingDetailsScreen = () => {
   const { data: getCalendarEventByHashData } = useGetCalendarEventByHashQuery({
     hash: String(hash),
   })
-  const isMeetingOwner = authMe?.id === getCalendarEventByHashData?.createdById
+  
+  const isMeetingOwner = authMe?.id === getCalendarEventByHashData?.createdBy?.id
 
   const toggleAudio = () => {
     if (preview) {
@@ -83,7 +86,7 @@ const MeetingDetailsScreen = () => {
   )
 
   return (
-    <ScreenWrapper title={title || hash} isBackButton isCenterTitle>
+    <ScreenWrapper title={getCalendarEventByHashData?.title || hash} isBackButton isCenterTitle>
       <View style={styles.container}>
         <View style={styles.videoContainer}>
           {preview && !isVideoOff ? (
@@ -129,7 +132,7 @@ const MeetingDetailsScreen = () => {
                 isMuted: isMuted,
                 isVideoOff: isVideoOff,
                 isCreatorMode: isCreatorMode,
-                title: title,
+                title: getCalendarEventByHashData?.title,
                 instanceMeetingOwner: isMeetingOwner,
                 meetId: getCalendarEventByHashData?.meetId,
               })

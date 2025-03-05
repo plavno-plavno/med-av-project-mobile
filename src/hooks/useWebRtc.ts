@@ -18,6 +18,7 @@ import inCallManager from "react-native-incall-manager"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 import AudioRecord from "react-native-audio-record"
 import Config from "react-native-config"
+import { base64ToFloat32Array, float32ArrayToBase64, Float32ConcatAll, resampleTo16kHZ } from "@utils/audioData"
 
 export type Photo = {
   id: string
@@ -158,7 +159,7 @@ const SUBTITLES_QUEUE_LIMIT = 3
 const TRIES_LIMIT = 7
 let RETRY_ATTEMPT: number = 0
 
-const useWebRtc = () => {
+const useWebRtc = (instanceMeetingOwner: boolean) => {
   const [localStream, setLocalStream] = useState<LocalStream | null>(null)
   const peerConnection = useRef<RTCPeerConnection | null>(null)
   const [participants, setParticipants] = useState<User[]>([])
@@ -204,26 +205,14 @@ const useWebRtc = () => {
 
   const offerStatusCheckRef = useRef<ReturnType<typeof setInterval>>()
 
-  const [activeSpeakerId, setActiveSpeakerId] = useState<number | null>(null)
-  // const [isSTTOpened, setSTTOpen] = useState<boolean>(false);
-
   const STTSocket = useRef<WebSocket | null>(null)
-  const sttLanguageRef = useRef<string | undefined>(
-    authMeData?.language?.code?.toLowerCase?.()
+  const sttLanguageRef = useRef<string>(
+    authMeData?.language?.code?.toLowerCase?.() || 'en'
   )
-  const isConnectingRef = useRef<boolean>(false)
   const allLanguagesRef = useRef<string[]>(["en", "hi"]) // Default to 'en' and 'hi'
-
   const pendingCandidates: RTCIceCandidate[] = []
 
-  const audioLevelMapRef = useRef<Record<string, number>>({})
-
-  const sttLanguagesRef = useRef<any>([authMeData?.language?.code])
-
   let isRecording = false
-  // const audioCheckIntervalRef = useRef<ReturnType<typeof setInterval>>();
-  // const [transceiversInfo, setTransceiversInfo] = useState<RemoteStream[]>([]);
-
   const [subtitlesQueue, setSubtitlesQueue] = useState<ISubtitle[]>([])
   const [sharingOwner, setSharingOwner] = useState<number | null>(null)
 
@@ -234,7 +223,6 @@ const useWebRtc = () => {
   )
 
   const wsRef = useRef<WebSocket | null>(null)
-  const [isScreenSharing, setIsScreenSharing] = useState(false)
 
   useEffect(() => {
     const setupSocket = async () => {
@@ -285,60 +273,12 @@ const useWebRtc = () => {
   }, [roomId, meetId])
 
   const handleStartSharing = ({ userId }: { userId: number }) => {
-    setIsScreenSharing(true)
     setSharingOwner(userId)
   }
 
   const handleStopSharing = () => {
-    setIsScreenSharing(false)
     setSharingOwner(null)
   }
-
-  // const handleAudioCheck = () => {
-  //   const peerConnection = peerConnectionRef.current;
-  //   if (!peerConnection) return;
-
-  //   try {
-  //     peerConnection.getStats().then(stats => {
-  //       let maxAudioLevel = 0; // Track the highest audio level
-  //       let newActiveSpeakerId: number | null = null;
-
-  //       stats.forEach(report => {
-  //         if (
-  //           report.type === "inbound-rtp" &&
-  //           report.kind === "audio" &&
-  //           report.audioLevel !== undefined
-  //         ) {
-  //           const trackId = report.trackIdentifier || report.trackId; // Unique ID of the audio track
-  //           const userId = transceiversInfo!.find(
-  //             str => str.audioTrack!.id === trackId,
-  //           )?.userId;
-
-  //           if (userId) {
-  //             audioLevelMapRef.current[userId] = report.audioLevel;
-
-  //             // Update the max audio level and corresponding user
-  //             if (report.audioLevel > maxAudioLevel) {
-  //               maxAudioLevel = report.audioLevel;
-  //               newActiveSpeakerId = userId;
-  //             }
-  //           }
-  //         }
-  //       });
-
-  //       // Update the active speaker if audio level crosses a threshold
-  //       if (maxAudioLevel > 0.01) {
-  //         // Example threshold, adjust as needed
-  //         setActiveSpeakerId(newActiveSpeakerId!);
-  //       } else {
-  //         // Reset active speaker if no significant audio detected
-  //         setActiveSpeakerId(null);
-  //       }
-  //     });
-  //   } catch (error) {
-  //     console.error("Error fetching audio levels:", error);
-  //   }
-  // };
 
   const onSTTSocketMessage = (event: WebSocketMessageEvent) => {
     console.log("onSocketMessage: ", JSON.parse(event.data))
@@ -490,6 +430,7 @@ const useWebRtc = () => {
           isSharingOn: false,
           isRecordingOn: false,
         },
+        isOwner: instanceMeetingOwner,
       })
 
       inCallManager.setSpeakerphoneOn(true)
@@ -552,7 +493,7 @@ const useWebRtc = () => {
       setLocalStream(null)
     }
   }
-
+  // sharing screen
   //   const [localMediaStream, setLocalMediaStream] = useState(null);
   // console.log(localMediaStream, 'localMediaStream');
 
@@ -801,8 +742,13 @@ const useWebRtc = () => {
 
   const handleChangedRoomLanguage = (language: string) => {
     console.log("handleChangedRoomLanguage: ", language)
-    sttLanguagesRef.current = language
+    sttLanguageRef.current = language?.toLowerCase()
+    socketRef.current?.emit('change-language', {
+      roomId,
+      language: language?.toLowerCase(),
+    });
   }
+
 
   const handleTransceiver = async ({
     mid,
@@ -926,119 +872,6 @@ const useWebRtc = () => {
     }
   }
 
-  const handleClearInterval = (
-    int: string | number | NodeJS.Timeout | null | undefined
-  ) => {
-    if (int) {
-      clearInterval(int)
-      int = null
-    }
-  }
-
-  const base64ToFloat32Array = (base64: string): Float32Array => {
-    const binaryString = atob(base64)
-    const len = binaryString.length
-    const bytes = new Uint8Array(len)
-
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binaryString.charCodeAt(i)
-    }
-
-    return new Float32Array(bytes.buffer)
-  }
-
-  const Float32ConcatAll = (arrays: Float32Array[]): Float32Array => {
-    const totalLength = arrays.reduce((acc, arr) => acc + arr.length, 0)
-    const result = new Float32Array(totalLength)
-
-    let offset = 0
-    for (const arr of arrays) {
-      result.set(arr, offset)
-      offset += arr.length
-    }
-
-    return result
-  }
-
-  const resampleTo16kHZ = (
-    audioData: Float32Array | number[],
-    origSampleRate = 44100
-  ) => {
-    const data = new Float32Array(audioData)
-    const targetLength = Math.round(data.length * (16000 / origSampleRate))
-    const resampledData = new Float32Array(targetLength)
-    const springFactor = (data.length - 1) / (targetLength - 1)
-    resampledData[0] = data[0]
-    resampledData[targetLength - 1] = data[data.length - 1]
-
-    for (let i = 1; i < targetLength - 1; i++) {
-      const index = i * springFactor
-      const leftIndex = Math.floor(index)
-      const rightIndex = Math.ceil(index)
-      const fraction = index - leftIndex
-      resampledData[i] =
-        data[leftIndex] + (data[rightIndex] - data[leftIndex]) * fraction
-    }
-
-    return resampledData
-  }
-
-  const float32ArrayToBase64 = (float32Array: Float32Array): string => {
-    const uint8Array = new Uint8Array(float32Array.buffer)
-
-    let binaryString = ""
-
-    for (let i = 0; i < uint8Array.length; i++) {
-      binaryString += String.fromCharCode(uint8Array[i])
-    }
-
-    return btoa(binaryString)
-  }
-
-  const startStreaming = async () => {
-    if (isRecording) {
-      isRecording = false
-      AudioRecord.stop()
-    }
-    AudioRecord.init({
-      sampleRate: 44100, // 16 kHz
-      channels: 1, // Mono
-      bitsPerSample: 16, // 16-bit audio
-      audioSource: 6, // Use the microphone as the audio source
-      wavFile: "audio.wav", // default 'audio.wav'
-    })
-    AudioRecord.start()
-    isRecording = true
-    AudioRecord.on("data", (data: any) => {
-      addToBufferAndSend(
-        data,
-        sttLanguageRef.current || "en",
-        allLanguagesRef.current || []
-      )
-    })
-  }
-
-  const onSocketOpen = () => {
-    isConnectingRef.current = false
-
-    if (STTSocket.current?.readyState === WebSocket.OPEN) {
-      STTSocket.current?.send(
-        JSON.stringify({
-          uid: `tester-${userRefId.current}-${socketRef.current?.id}`,
-          language: sttLanguageRef.current,
-          task: "transcribe",
-          model: "large-v3",
-          use_vad: true,
-        })
-      )
-    }
-
-    console.log("Socket connected.")
-    console.log(`WebSocket state: ${STTSocket.current?.readyState}`)
-
-    startStreaming()
-  }
-
   const handleSubtitles = (newEl: any) => (prev: any[]) => {
     let newAr = [...prev, newEl]
     if (newAr.length > SUBTITLES_QUEUE_LIMIT) {
@@ -1054,8 +887,10 @@ const useWebRtc = () => {
   }
 
   useEffect(() => {
-    sttLanguageRef.current = authMeData?.language?.code?.toLowerCase?.()
-  }, [authMeData])
+    if(authMeData && !sttLanguageRef.current){
+      sttLanguageRef.current = authMeData?.language?.code?.toLowerCase?.() || 'en'
+    }
+  }, [authMeData, sttLanguageRef.current])
 
   const addToBufferAndSend = async (
     data: string,
@@ -1071,8 +906,8 @@ const useWebRtc = () => {
       if (STTSocket.current?.readyState === WebSocket.OPEN) {
         const audio = Float32ConcatAll(collectorAr)
         const packet = {
-          speakerLang: sttLanguageRef.current,
-          allLangs: allLanguagesRef.current,
+          speakerLang: language,
+          allLangs: sttLanguages,
           audio: float32ArrayToBase64(audio),
         }
         STTSocket.current.send(JSON.stringify(packet))
@@ -1088,12 +923,9 @@ const useWebRtc = () => {
     }
   }
 
-  const currentLanguageRef = useRef<string>(authMeData?.language?.code!)
-
   const captureAndSendAudio = () => {
     if (isRecording) {
       isRecording = false
-      // handleClearInterval(audioCheckIntervalRef.current);
       AudioRecord.stop()
     }
     AudioRecord.init({
@@ -1104,13 +936,12 @@ const useWebRtc = () => {
       wavFile: "newTest.wav", // default 'audio.wav'
     })
     AudioRecord.start()
-    // audioCheckIntervalRef.current = setInterval(handleAudioCheck, 1000); // Polling every 100ms
     isRecording = true
     AudioRecord.on("data", (data: any) => {
       addToBufferAndSend(
         data,
-        currentLanguageRef.current,
-        sttLanguagesRef.current
+        sttLanguageRef.current?.toLowerCase?.() || 'en',
+        allLanguagesRef.current,
       )
     })
   }
@@ -1123,10 +954,6 @@ const useWebRtc = () => {
 
   const handleSetSTTSocket = ({ sttUrl }: { sttUrl: string }) => {
     STTSocket.current = new WebSocket(sttUrl)
-    console.log(
-      STTSocket.current,
-      " STTSocket.current STTSocket.current STTSocket.current"
-    )
 
     STTSocket.current.onopen = onSTTSocketOpen
     STTSocket.current.onmessage = onSTTSocketMessage

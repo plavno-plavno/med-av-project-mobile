@@ -31,7 +31,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.mirage,
     padding: moderateScale(16),
     borderRadius: moderateScale(16),
-    maxHeight: moderateScale(86),
     minHeight: moderateScale(44),
   },
   text: {

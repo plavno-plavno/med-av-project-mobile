@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
-import { Alert, FlatList, Text, View } from "react-native"
+import { FlatList, Text, View } from "react-native"
 import useWebRtc from "src/hooks/useWebRtc"
 import { styles } from "./styles"
 import { Icon } from "@components"
@@ -22,47 +22,6 @@ import Config from "react-native-config"
 import { NativeEventEmitter, NativeModules } from "react-native"
 const { ScreenRecorder } = NativeModules
 
-import { Linking, Platform } from "react-native"
-import RNFS from "react-native-fs"
-
-const openRecordedVideo = async () => {
-  try {
-    const filePath = await ScreenRecorder.getRecordedFilePath()
-    if (!filePath) {
-      Alert.alert("Error", "No recorded file found.")
-      return
-    }
-
-    const exists = await RNFS.exists(filePath)
-    if (!exists) {
-      Alert.alert("Error", "Recorded file not found.")
-      return
-    }
-
-    const fileInfo = await RNFS.stat(filePath)
-    console.log(`File size: ${fileInfo.size} bytes`)
-
-    if (fileInfo.size < 1024) {
-      Alert.alert("Error", "Recorded file is too small or corrupted.")
-      return
-    }
-
-    const newPath = `${RNFS.DownloadDirectoryPath}/screen_record.mp4`
-    await RNFS.copyFile(filePath, newPath)
-    console.log(`File copied to: ${newPath}`)
-
-    // 🔴 Переконаємось, що файл має правильні права доступу
-    await RNFS.scanFile(newPath)
-
-    Linking.openURL(`file://${newPath}`).catch(() =>
-      Alert.alert("Error", "Failed to open video.")
-    )
-  } catch (error) {
-    console.error("Failed to get recorded file:", error)
-    Alert.alert("Error", "Failed to retrieve recorded file.")
-  }
-}
-
 const recordingUrl = Config.SOCKET_RECORDING_URL
 
 type ParamList = {
@@ -78,6 +37,8 @@ type ParamList = {
 
 const MeetingScreen = () => {
   const { t } = useTranslation()
+  const route = useRoute<RouteProp<ParamList, "Detail">>()
+  const { isCreatorMode, title, hash, instanceMeetingOwner } = route.params
   const {
     localStream,
     isMuted,
@@ -105,12 +66,11 @@ const MeetingScreen = () => {
     sharingOwner,
     sendMessage,
     handleChangedRoomLanguage,
-  } = useWebRtc()
+  } = useWebRtc(instanceMeetingOwner!)
   useKeepAwake()
   useStatusBar("light-content", colors.dark)
   const [isCaptionOn, setIsCaptionOn] = React.useState(false)
-  const route = useRoute<RouteProp<ParamList, "Detail">>()
-  const { isCreatorMode, title, hash, instanceMeetingOwner } = route.params
+ 
   const startTimeRef = useRef<number | null>(null)
   const recordingNameRef = useRef<string | null>(null)
 
@@ -147,14 +107,11 @@ const MeetingScreen = () => {
 
   const startRecording = async () => {
     try {
-      console.log(wsRef.current?.readyState, "wsRef.current?.readyState")
-
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         recordingNameRef.current = `recording-${Date.now()}`
         startTimeRef.current = Date.now()
-        await ScreenRecorder.startRecording()
-
-        console.log("Recording started:")
+        await ScreenRecorder.startRecording();
+        console.log("Recording started")
         setIsStarted(true)
       }
     } catch (error) {
@@ -173,15 +130,6 @@ const MeetingScreen = () => {
           const duration = startTimeRef.current
             ? Math.floor((Date.now() - startTimeRef.current) / 1000)
             : 0
-          const data = {
-            fileName: recordingNameRef.current,
-            fileExtension: "mp4",
-            action: "end",
-            meetId: roomId,
-            userId: localUserId,
-            duration,
-          }
-          console.log(data, "datadatadata")
 
           wsRef.current.send(
             JSON.stringify({
@@ -195,7 +143,6 @@ const MeetingScreen = () => {
           )
         }
         startTimeRef.current = null
-        openRecordedVideo()
       }
       setIsStarted(false)
     } catch (error) {
@@ -245,15 +192,15 @@ const MeetingScreen = () => {
   const sendChunkToServer = async (base64Chunk: any) => {
     try {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
-        console.log("here")
         wsRef.current.send(
           JSON.stringify({
             fileName: recordingNameRef.current,
             fileExtension: "mp4",
             chunks: base64Chunk,
             action: "stream",
-          })
+          })          
         )
+        console.log('chunk sent');
       }
     } catch (error) {
       console.error("Failed to send chunk:", error)

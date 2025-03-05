@@ -5,12 +5,13 @@ import { Platform, StyleSheet, Text, View } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import RNFetchBlob from "react-native-blob-util"
 import {
-  useDownloadRecordingsMutation,
+  // useDownloadRecordingsMutation,
   useRemoveRecordingsMutation,
 } from "src/api/helpCenterApi/helpCenterApi"
 import colors from "src/assets/colors"
 import Share from "react-native-share"
 import { isAndroid } from "@utils/platformChecker"
+import * as Keychain from "react-native-keychain"
 
 const RecordingCard = ({
   id,
@@ -24,7 +25,7 @@ const RecordingCard = ({
   date?: string
 }) => {
   const [removeRecordings] = useRemoveRecordingsMutation()
-  const [downloadRecordings] = useDownloadRecordingsMutation()
+  // const [downloadRecordings] = useDownloadRecordingsMutation()
   const formatDuration = (totalSeconds: number) => {
     const hours = Math.floor(totalSeconds / 3600)
     const minutes = Math.floor((totalSeconds % 3600) / 60)
@@ -42,8 +43,7 @@ const RecordingCard = ({
     return moment(isoString).format("DD.MM.YYYY")
   }
 
-  //TODO: REFACTOR
-  const onRecordDownload = async (item: any) => {
+  const onRecordDownload = async () => {
     try {
       const { dirs } = RNFetchBlob.fs
       const dirToSave =
@@ -67,9 +67,12 @@ const RecordingCard = ({
         ios: configfb,
         android: configfb,
       })
-
+      const accessToken = await Keychain.getGenericPassword({
+        service: "accessToken",
+      })
+      if (!accessToken) return
       RNFetchBlob.config(configOptions || {})
-        .fetch("GET", item?.link, {})
+        .fetch("GET", `recordings/download/${id}`, { Authorization: `Bearer ${accessToken?.password}` })
         .then((res) => {
           if (Platform.OS === "ios") {
             RNFetchBlob.fs.writeFile(configfb.path, res.data, "base64")
@@ -78,24 +81,25 @@ const RecordingCard = ({
           if (isAndroid()) {
             console.log("file downloaded")
           }
+          Share.open({
+            url: `file://${res}`,
+            title: "Save or Share",
+          }).catch((error: any) => console.error("Error sharing file:", error))
         })
         .catch((e) => {
           console.log("invoice Download==>", e)
         })
 
-      Share.open({
-        url: `file://${item?.link}`,
-        title: "Save or Share",
-      }).catch((error: any) => console.error("Error sharing file:", error))
+      
     } catch (error: any) {
       console.error("Error saving file:", error?.message || error)
     }
   }
 
-  const handleDownloadRecord = async ({ id }: { id: number }) => {
+  const handleDownloadRecord = async () => {
     try {
-      const record = await downloadRecordings({ id }).unwrap();
-      onRecordDownload({ record })
+      // const record = await downloadRecordings({ id }).unwrap();
+      onRecordDownload()
     } catch (error) {
       console.log(error, 'error handleDownloadRecord');
     }
@@ -113,7 +117,7 @@ const RecordingCard = ({
       </View>
       <View style={[helpers.flexRow, helpers.gap12]}>
         <Icon name="deleteAccount" onPress={() => removeRecordings({ id })} />
-        <Icon name="download" onPress={() => handleDownloadRecord({ id })} />
+        <Icon name="download" onPress={handleDownloadRecord} />
       </View>
     </View>
   )
