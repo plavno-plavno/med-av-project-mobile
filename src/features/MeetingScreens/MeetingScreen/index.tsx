@@ -45,6 +45,7 @@ const MeetingScreen = () => {
     isMuted,
     isVideoOff,
     roomId,
+    meetId,
     participants,
     isSpeakerOn,
     isCameraSwitched,
@@ -96,9 +97,9 @@ const MeetingScreen = () => {
     const eventEmitter = new NativeEventEmitter(ScreenRecorder)
     const chunkListener = eventEmitter.addListener(
       "onVideoChunk",
-      (base64Chunk) => {
-        console.log("Received chunk:", base64Chunk)
-        sendChunkToServer(base64Chunk)
+      ({ chunk }) => {
+        console.log("Received chunk:", chunk)
+        sendChunkToServer(chunk)
       }
     )
 
@@ -110,7 +111,7 @@ const MeetingScreen = () => {
   const startRecording = async () => {
     try {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
-        recordingNameRef.current = `recording-${Date.now()}`
+        recordingNameRef.current = `recording-mobile-${Date.now()}`
         startTimeRef.current = Date.now()
         await ScreenRecorder.startRecording();
         console.log("Recording started")
@@ -144,9 +145,9 @@ const MeetingScreen = () => {
           wsRef.current.send(
             JSON.stringify({
               fileName: recordingNameRef.current,
-              fileExtension: "mp4",
+              fileExtension: "webm",
               action: "end",
-              meetId: roomId,
+              meetId,
               userId: localUserId,
               duration,
             })
@@ -212,7 +213,7 @@ const MeetingScreen = () => {
         wsRef.current.send(
           JSON.stringify({
             fileName: recordingNameRef.current,
-            fileExtension: "mp4",
+            fileExtension: "webm",
             chunks: base64Chunk,
             action: "stream",
           })          

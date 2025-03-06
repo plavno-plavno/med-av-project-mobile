@@ -168,9 +168,12 @@ class ScreenRecorderModule(reactContext: ReactApplicationContext) :
     }
 
     private fun sendChunkToJS(chunk: String) {
+        val payload = WritableNativeMap().apply {
+            putString("chunk", chunk)
+        }
         reactApplicationContext
             .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-            .emit("onVideoChunk", chunk)
+            .emit("onVideoChunk", payload)
     }
 
     private fun stopForegroundService() {

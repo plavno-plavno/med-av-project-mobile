@@ -1104,6 +1104,7 @@ const invitedParticipantsRef = useRef<User[]>([]);
     participants,
 
     roomId,
+    meetId,
 
     isSpeakerOn,
     isCameraSwitched,
