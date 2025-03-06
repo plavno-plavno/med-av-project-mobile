@@ -239,12 +239,12 @@ const ScheduleMeetingModal = ({
       const startDate = moment(
         `${formattedDate} ${values.startDate}`,
         "YYYY-MM-DD hh:mm A"
-      ).toISOString()
+      ).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
 
       const endDate = moment(
         `${formattedDate} ${values.endDate}`,
         "YYYY-MM-DD hh:mm A"
-      ).toISOString()
+      ).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
 
       const payload = {
         ...values,
@@ -254,7 +254,6 @@ const ScheduleMeetingModal = ({
       } as const
 
       const { date: _, ...payloadWithoutDate } = payload
-
       let res
       if (isEditMode) {
         res = await updateEvent({ ...payloadWithoutDate, id: eventId }).unwrap()
