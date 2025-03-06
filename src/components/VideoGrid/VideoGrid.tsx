@@ -25,6 +25,7 @@ const VideoGrid = ({
   participants,
   peerConnection,
   localUserId,
+  localUserSocketId,
   isMuted,
   sharedScreen,
   sharingOwner,
@@ -35,36 +36,36 @@ const VideoGrid = ({
 
     remoteAudioStreams.forEach((audioStream: any) => {
       const midId = Number(audioStream.midId)
-      const userId = usersAudioTrackToIdMap[midId]
-      if (userId) {
-        if (!remoteStreams[userId]) {
-          remoteStreams[userId] = {
-            userId: Number(userId),
+      const socketId = usersAudioTrackToIdMap[midId];
+      if (socketId) {
+        if (!remoteStreams[socketId]) {
+          remoteStreams[socketId] = {
+            socketId: socketId,
             audioTrack: null,
             videoTrack: null,
             mid: String(midId),
           }
         }
 
-        remoteStreams[userId].audioTrack = audioStream.audioTrack
+        remoteStreams[socketId].audioTrack = audioStream.audioTrack
       }
     })
 
     remoteVideoStreams.forEach((videoStream: any) => {
       const midId = Number(videoStream.midId)
-      const userId = usersVideoTrackToIdMap[midId]
+      const socketId = usersVideoTrackToIdMap[midId];
 
-      if (userId) {
-        if (!remoteStreams[userId]) {
-          remoteStreams[userId] = {
-            userId: Number(userId),
+      if (socketId) {
+        if (!remoteStreams[socketId]) {
+          remoteStreams[socketId] = {
+            socketId: socketId,
             audioTrack: null,
             videoTrack: null,
             mid: String(midId),
           }
         }
 
-        remoteStreams[userId].videoTrack = videoStream.videoTrack
+        remoteStreams[socketId].videoTrack = videoStream.videoTrack
       }
     })
 
@@ -76,11 +77,11 @@ const VideoGrid = ({
     // Sort the participants to ensure the active speaker comes first
     if (sharingOwner && totalParticipants >= 3) {
       const activeSpeakerStream = participantsSteams.find(
-        (stream) => stream.userId === activeSpeaker
+        (stream) => stream.socketId === activeSpeaker
       )
       // Remove the active speaker from the array if it exists
       const otherParticipants = participantsSteams.filter(
-        (stream) => stream.userId !== activeSpeaker
+        (stream) => stream.socketId !== activeSpeaker
       )
 
       // Put the active speaker at the start
@@ -90,11 +91,11 @@ const VideoGrid = ({
       }
     } else if (totalParticipants >= 7) {
       const activeSpeakerStream = participantsSteams.find(
-        (stream) => stream.userId === activeSpeaker
+        (stream) => stream.socketId === activeSpeaker
       )
       // Remove the active speaker from the array if it exists
       const otherParticipants = participantsSteams.filter(
-        (stream) => stream.userId !== activeSpeaker
+        (stream) => stream.socketId !== activeSpeaker
       )
 
       // Put the active speaker at the start
@@ -122,18 +123,18 @@ const VideoGrid = ({
     if (item?.audioTrack) mediaStream.addTrack(item?.audioTrack)
 
     const isActiveHighlighter =
-      item?.userId === localUserId
+      item?.socketId === localUserSocketId
         ? activeHostSpeaker && !isMuted
         : activeSpeaker !== null &&
-          Number(activeSpeaker) === Number(item?.userId)
+          activeSpeaker === item?.socketId
 
     const user = participants?.find(
-      (user: User) => user.id === item.userId
+      (user: User) => user.socketId === item.socketId
     ) as UserInMeeting
 
-    const isMicMuted = item?.userId === localUserId ? isMuted : !user?.isAudioOn
+    const isMicMuted = item?.socketId === localUserSocketId ? isMuted : !user?.isAudioOn
     const isCameraOff =
-      item?.userId === localUserId ? isVideoOff : !user?.isVideoOn
+      item?.socketId === localUserSocketId ? isVideoOff : !user?.isVideoOn
 
     return (
       <ParticipantItem
