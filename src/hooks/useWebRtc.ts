@@ -1065,6 +1065,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     participants,
 
     roomId,
+    meetId,
 
     isSpeakerOn,
     isCameraSwitched,
