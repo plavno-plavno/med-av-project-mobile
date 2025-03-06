@@ -3,7 +3,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { RTCPeerConnection } from "react-native-webrtc";
 
 const useHighlightSpeaker = (peerConnection: RTCPeerConnection | null, participantsToShow: any) => {
-  const [activeSpeaker, setActiveSpeaker] = useState<number | null>(null);
+  const [activeSpeaker, setActiveSpeaker] = useState<string | null>(null);
 
   const audioLevelMapRef = useRef<{ [key: string]: number }>({});
   const audioLevelHistory = useRef<{ [key: string]: number[] }>({});
@@ -21,27 +21,27 @@ const useHighlightSpeaker = (peerConnection: RTCPeerConnection | null, participa
     stats?.forEach((report: { type: string; kind: string; trackIdentifier: any; trackId: any; audioLevel: number; mid: number}) => {
       if (report.type === "inbound-rtp" && report.kind === "audio") {
         const trackMidId = report?.mid
-        const userId = participantsToShow?.find((track: any) => track?.mid === String(trackMidId))?.userId;
-        if (userId) {
+        const socketId = participantsToShow?.find((track: any) => track?.mid === String(trackMidId))?.socketId;
+        if (socketId) {
           const audioLevel = report.audioLevel ?? 0;
-          audioLevelMapRef.current[userId] = audioLevel;
+          audioLevelMapRef.current[socketId] = audioLevel;
 
-          if (!audioLevelHistory.current[userId]) {
-            audioLevelHistory.current[userId] = [];
+          if (!audioLevelHistory.current[socketId]) {
+            audioLevelHistory.current[socketId] = [];
           }
-          audioLevelHistory.current[userId].push(audioLevel);
+          audioLevelHistory.current[socketId].push(audioLevel);
 
-          if (audioLevelHistory.current[userId].length > 5) {
-            audioLevelHistory.current[userId].shift();
+          if (audioLevelHistory.current[socketId].length > 5) {
+            audioLevelHistory.current[socketId].shift();
           }
 
           const averageAudioLevel =
-            audioLevelHistory.current[userId].reduce((acc, val) => acc + val, 0) /
-            audioLevelHistory.current[userId].length;
+            audioLevelHistory.current[socketId].reduce((acc, val) => acc + val, 0) /
+            audioLevelHistory.current[socketId].length;
 
           if (averageAudioLevel > maxAudioLevel && averageAudioLevel > 0.01) {
             maxAudioLevel = averageAudioLevel;
-            newActiveSpeakerId = userId;
+            newActiveSpeakerId = socketId;
           }
         }
       }

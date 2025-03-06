@@ -19,6 +19,7 @@ import { ScreensEnum } from "src/navigation/ScreensEnum"
 import AudioRecord from "react-native-audio-record"
 import Config from "react-native-config"
 import { base64ToFloat32Array, float32ArrayToBase64, Float32ConcatAll, resampleTo16kHZ } from "@utils/audioData"
+import { useGetCalendarEventByHashQuery } from "src/api/calendarApi/calendarApi"
 
 export type Photo = {
   id: string
@@ -45,6 +46,7 @@ export interface Organization {
 }
 
 export interface User {
+  [x: string]: any
   id: number | string
   photo: Photo | null
   firstName: string
@@ -59,6 +61,7 @@ export interface User {
   age: string
   gender: string
   gmtDelta: number
+  socketId: string
   role: {
     id: number
     name: string
@@ -83,8 +86,9 @@ export interface ActionStatus {
 }
 
 export interface ParticipantsInfo {
-  userId: string
+  userId: number
   status: ActionStatus
+  socketId: string
 }
 
 export interface ISubtitle {
@@ -114,14 +118,14 @@ export type VideoStream = {
 }
 
 export interface RemoteStream {
-  userId: number | string
+  socketId: string;
   audioTrack: MediaStreamTrack | null
   videoTrack: MediaStreamTrack | null
   mid: string
 }
 
 export interface LocalStream {
-  userId: number | string
+  socketId: number | string
   audioTrack: MediaStreamTrack | null
   videoTrack: MediaStreamTrack | null
 }
@@ -199,6 +203,13 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   const roomId = route?.params?.hash
   const meetId = route.params?.meetId
 
+
+  const { data: getCalendarEventByHashData } = useGetCalendarEventByHashQuery({
+    hash: String(route?.params?.hash),
+  })
+
+const invitedParticipantsRef = useRef<User[]>([]);
+
   const socketRef = useRef<Socket | null>(null)
 
   const sttUrlRef = useRef<string | null>(null)
@@ -214,7 +225,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
   let isRecording = false
   const [subtitlesQueue, setSubtitlesQueue] = useState<ISubtitle[]>([])
-  const [sharingOwner, setSharingOwner] = useState<number | null>(null)
+  const [sharingOwner, setSharingOwner] = useState<string | null>(null)
 
   let collectorAr: Float32Array[] = []
   const screenTrackMidIdRef = useRef<string>()
@@ -255,6 +266,8 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         socketRef.current.on("mute-video", userToggledMedia)
         socketRef.current.on("unmute-video", userToggledMedia)
 
+        socketRef.current.off('participant-room-info', handleParticipantRoomInfo)
+
         socketRef.current.on(UserActions.StartShareScreen, handleStartSharing)
         socketRef.current.on(UserActions.StopShareScreen, handleStopSharing)
 
@@ -272,8 +285,8 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     }
   }, [roomId, meetId])
 
-  const handleStartSharing = ({ userId }: { userId: number }) => {
-    setSharingOwner(userId)
+  const handleStartSharing = ({ socketId }: { socketId: string }) => {
+    setSharingOwner(socketId)
   }
 
   const handleStopSharing = () => {
@@ -301,6 +314,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         "unmute-video",
         "screen-share-updated",
         "sharing-participant-joined",
+        'participant-room-info',
       ]
 
       events.forEach((event) => socketRef.current?.off(event))
@@ -602,52 +616,34 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   }) => {
     try {
       sttUrlRef.current = sttUrl as string
-      const existingUserIds = new Set(
-        participants.map((participant) => participant.id)
-      )
+      const usersAudioVideoMap: Record<string, { isAudioOn: boolean; isVideoOn: boolean, socketId: string }> = {};
+      participantsInfo.forEach((participant) => {
+        usersAudioVideoMap[participant.socketId] = {
+          isAudioOn: participant.status.isAudioOn,
+          isVideoOn: participant.status.isVideoOn,
+          socketId: participant.socketId,
+        };
+      });
 
-      const usersToFetch = participantsInfo.filter(
-        (participant) => !existingUserIds.has(participant.userId)
-      )
-      const userFetchPromises = usersToFetch.map(
-        async (participant) =>
-          await getUsersById({ id: Number(participant.userId) }).unwrap()
-      )
-
-      const results = await Promise.allSettled(userFetchPromises)
-
-      const newUsers = results
-        .map((result, index) => {
-          if (result.status === "fulfilled") {
-            const user = result.value.user
-
-            return {
-              ...user,
-              isAudioOn: participantsInfo[index].status.isAudioOn,
-              isVideoOn: participantsInfo[index].status.isVideoOn,
-            }
-          } else {
-            console.error(
-              `Failed to fetch user ${participantsInfo[index].userId}:`,
-              result.reason
-            )
-            return null
-          }
-        })
-        .filter(Boolean)
-
-      setParticipants((prev: any) => {
-        const existingUserIds = new Set(
-          prev.map((participant: any) => participant.id)
-        )
-        if (newUsers) {
-          return [
-            ...prev,
-            ...newUsers.filter((newUser) => !existingUserIds.has(newUser?.id)),
-          ]
-        }
-        return prev
-      })
+      setParticipants((_prev: any): any => {
+        const newUsers = participantsInfo.map(({ userId, socketId }) => {
+          const { firstName = 'Guest', lastName = '', photo = null } =
+            invitedParticipantsRef.current.find(({ id }) => userId === id) || {};
+          return {
+            userId,
+            socketId,
+            firstName,
+            lastName,
+            photo,
+            isAudioOn: usersAudioVideoMap[socketId].isAudioOn,
+            isVideoOn: usersAudioVideoMap[socketId].isVideoOn,
+          };
+        });
+        return [
+          // ...prev,
+          ...newUsers,
+        ];
+      });
 
       const anySharingOn = participantsInfo.some((p) => p.status.isSharingOn)
 
@@ -659,7 +655,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
       })
       if (userRefId.current) {
         setLocalStream({
-          userId: userRefId.current,
+          socketId: socketRef.current?.id ?? '',
           audioTrack: stream.getAudioTracks()[0] || null,
           videoTrack: stream.getVideoTracks()[0] || null,
         })
@@ -709,9 +705,9 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     pendingCandidates.length = 0
   }
 
-  const handleScreenShareJoined = ({ userId }: { userId: number }) => {
+  const handleScreenShareJoined = ({ socketId }: { socketId: string }) => {
     setIsScreenShare(true)
-    setSharingOwner(userId)
+    setSharingOwner(socketId)
   }
 
   const handleCandidate = async ({
@@ -752,17 +748,15 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
   const handleTransceiver = async ({
     mid,
-    userId,
     kind,
     type,
+    socketId,
   }: {
     mid: string | null
-    userId: string | number
     kind: string
     type: string
+    socketId: string
   }) => {
-    const userIdStr = String(userId)
-
     if (mid) {
       const midId = Number(mid)
       if (type === "screen") {
@@ -772,12 +766,12 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
       if (kind === "audio") {
         setUsersAudioTrackToIdMap((prevMap) => ({
           ...prevMap,
-          [midId]: userIdStr,
+          [midId]: socketId,
         }))
       } else if (kind === "video") {
         setUsersVideoTrackToIdMap((prevMap) => ({
           ...prevMap,
-          [midId]: userIdStr,
+          [midId]: socketId,
         }))
       }
     }
@@ -807,13 +801,13 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     })
   }
 
-  const handleClientDisconnected = ({ userId }: { userId: number }) => {
+  const handleClientDisconnected = ({ socketId }: { socketId: string }) => {
     setRemoteVideoStreams((prev) =>
       prev.filter((stream) => {
         const midId = Number(stream.midId)
         const userIdMap = usersVideoTrackToIdMap[midId]
 
-        return userIdMap !== userId.toString()
+        return userIdMap !== socketId;
       })
     )
 
@@ -821,14 +815,14 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
       prev.filter((stream) => {
         const midId = Number(stream.midId)
         const userIdMap = usersAudioTrackToIdMap[midId]
-        return userIdMap !== userId.toString()
+        return userIdMap !== socketId;
       })
     )
 
     setUsersVideoTrackToIdMap((prevMap) => {
       const updatedMap = { ...prevMap }
       Object.keys(updatedMap).forEach((key) => {
-        if (updatedMap[Number(key)] === userId.toString()) {
+        if (updatedMap[Number(key)] === socketId) {
           delete updatedMap[Number(key)]
         }
       })
@@ -838,17 +832,17 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     setUsersAudioTrackToIdMap((prevMap) => {
       const updatedMap = { ...prevMap }
       Object.keys(updatedMap).forEach((key) => {
-        if (updatedMap[Number(key)] === userId.toString()) {
+        if (updatedMap[Number(key)] === socketId) {
           delete updatedMap[Number(key)]
         }
       })
       return updatedMap
     })
 
-    setParticipants((prev) => prev.filter((user) => user.id !== userId))
+    setParticipants((prev) => prev.filter((user) => user.socketId !== socketId))
   }
 
-  const handleOnAny = (eventName: string, ...args: any[]) => {
+  const handleOnAny = (_eventName: string, ..._args: any[]) => {
     // console.log(`!!!!! Incoming event: ${eventName} !!!!`, args);
   }
 
@@ -914,7 +908,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         collectorAr = []
       } else {
         console.warn("WebSocket is not open. Saving audio locally.")
-        AudioRecord.stop().then((res: string) => {
+        AudioRecord.stop().then((_res: string) => {
           isRecording = false
         })
       }
@@ -977,7 +971,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     console.log("STT SEND: ")
     STTSocket.current?.send(
       JSON.stringify({
-        uid: `tester-${userRefId.current}`,
+        uid: `speaker-${userRefId.current}-${socketRef.current?.id}`,
         language: sttLanguageRef.current,
         task: "transcribe",
         model: "large-v3",
@@ -1031,33 +1025,78 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     socketRef?.current?.emit("action", {
       roomId,
       action,
-      userId: userRefId.current,
+      socketId: socketRef.current.id,
     })
 
     console.log(`Media toggled: ${type}, new state: ${track.enabled}`)
   }
 
   const userToggledMedia = ({
-    userId,
+    socketId,
     status,
   }: {
-    userId: string
+    socketId: string
     status: ActionStatus
   }) => {
-    setParticipants((prev) =>
-      prev.map((participant) =>
-        participant.id === userId
-          ? {
-              ...participant,
-              isAudioOn: status.isAudioOn,
-              isVideoOn: status.isVideoOn,
-            }
-          : participant
-      )
-    )
+    setParticipants((prev) => prev.map((participant) => participant.socketId === socketId
+    ? {
+      ...participant,
+      isAudioOn: status.isAudioOn,
+      isVideoOn: status.isVideoOn,
+    }
+    : participant,
+  ),
+  );
   }
 
+  const handleParticipantRoomInfo = async ({ participantsInfo }: { participantsInfo: ParticipantsInfo[] }) => {
+    const existingUserIds = new Set(participants?.map((participant) => participant.userId));
+
+    const usersToFetch = participantsInfo.filter((participant) => !existingUserIds.has(participant.userId));
+
+    const userFetchPromises = usersToFetch.map(
+      async (participant) =>
+        await getUsersById({ id: Number(participant.userId) }).unwrap()
+    )
+    const results = await Promise.allSettled(userFetchPromises);
+
+    const newUsers = results
+      .map((result, index) => {
+        if (result.status === 'fulfilled') {
+          const user = result.value.user;
+
+          return {
+            ...user,
+            isAudioOn: participantsInfo[index].status.isAudioOn,
+            isVideoOn: participantsInfo[index].status.isVideoOn,
+          };
+        } else {
+          console.error(`Failed to fetch user ${participantsInfo[index].userId}:`, result.reason);
+
+          return null;
+        }
+      })
+      .filter(Boolean);
+
+    setParticipants((prev: any): any => {
+      const existingUserIds = new Set(prev.map((participant: any) => participant.userId));
+
+      return [
+        // ...prev,
+        ...newUsers.filter((newUser) => !existingUserIds.has(newUser?.id)),
+      ];
+    });
+  };
+
+
+  useEffect(() => {
+    if (getCalendarEventByHashData) {
+      invitedParticipantsRef.current = getCalendarEventByHashData?.participants.map(({ user }: { user: any }) => user);
+    }
+  }, [getCalendarEventByHashData]);
+
   return {
+    socketRef,
     localStream,
     isMuted,
     isVideoOff,
@@ -1082,6 +1121,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
     sttUrl: sttUrlRef,
     localUserId: userRefId.current,
+    localUserSocketId: socketRef.current?.id,
     allLanguagesRef: allLanguagesRef,
     wsRef,
 

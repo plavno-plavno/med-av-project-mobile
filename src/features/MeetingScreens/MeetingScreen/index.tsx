@@ -40,6 +40,7 @@ const MeetingScreen = () => {
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const { isCreatorMode, title, hash, instanceMeetingOwner } = route.params
   const {
+    socketRef,
     localStream,
     isMuted,
     isVideoOff,
@@ -55,6 +56,7 @@ const MeetingScreen = () => {
     usersVideoTrackToIdMap,
     peerConnection,
     localUserId,
+    localUserSocketId,
     allLanguagesRef,
     subtitlesQueue,
     sharedScreen,
@@ -113,7 +115,15 @@ const MeetingScreen = () => {
         await ScreenRecorder.startRecording();
         console.log("Recording started")
         setIsStarted(true)
+
+        if(socketRef.current){
+        socketRef?.current?.emit("action", {
+          roomId,
+          action: 'start-recording',
+          socketId: socketRef.current.id,
+        })
       }
+    }
     } catch (error) {
       console.error(
         "Failed to start recording:",
@@ -141,6 +151,13 @@ const MeetingScreen = () => {
               duration,
             })
           )
+          if(socketRef.current){
+            socketRef?.current?.emit("action", {
+              roomId,
+              action: 'stop-recording',
+              socketId: socketRef.current.id,
+            })
+          }
         }
         startTimeRef.current = null
       }
@@ -301,6 +318,7 @@ const MeetingScreen = () => {
             participants={participants}
             peerConnection={peerConnection}
             localUserId={localUserId}
+            localUserSocketId={localUserSocketId}
             sharedScreen={sharedScreen}
             sharingOwner={sharingOwner}
           />
