@@ -133,8 +133,6 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
         }
         case "chip": {
           const [chipsInputValue, setChipsInputValue] = useState("")
-          console.log("\x1b[31m%s\x1b[0m", "chipsInputValue", chipsInputValue)
-          console.log("\x1b[31m%s\x1b[0m", "handleError", handleError)
           const handleChange = (val: string) => {
             if (handleError) {
               setHandleError("")
