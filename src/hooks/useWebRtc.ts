@@ -208,7 +208,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     hash: String(route?.params?.hash),
   })
 
-const invitedParticipantsRef = useRef<User[]>([]);
+  const invitedParticipantsRef = useRef<User[]>([]);
 
   const socketRef = useRef<Socket | null>(null)
 
@@ -472,7 +472,7 @@ const invitedParticipantsRef = useRef<User[]>([]);
     if (socketRef.current) {
       socketRef.current?.close()
     }
-    setRemoteVideoStreams
+    setRemoteVideoStreams([])
     if (STTSocket.current) {
       STTSocket.current.close()
       STTSocket.current = null
@@ -1050,40 +1050,34 @@ const invitedParticipantsRef = useRef<User[]>([]);
   }
 
   const handleParticipantRoomInfo = async ({ participantsInfo }: { participantsInfo: ParticipantsInfo[] }) => {
-    const existingUserIds = new Set(participants?.map((participant) => participant.userId));
+    const usersAudioVideoMap: Record<string, { isAudioOn: boolean; isVideoOn: boolean, socketId: string }> = {};
 
-    const usersToFetch = participantsInfo.filter((participant) => !existingUserIds.has(participant.userId));
+    participantsInfo.forEach((participant) => {
+      usersAudioVideoMap[participant.socketId] = {
+        isAudioOn: participant.status.isAudioOn,
+        isVideoOn: participant.status.isVideoOn,
+        socketId: participant.socketId,
+      };
+    });
 
-    const userFetchPromises = usersToFetch.map(
-      async (participant) =>
-        await getUsersById({ id: Number(participant.userId) }).unwrap()
-    )
-    const results = await Promise.allSettled(userFetchPromises);
+    setParticipants((_prev: any): any => {
+      const newUsers = participantsInfo.map(({ userId, socketId }) => {
+        const { firstName = 'Guest', lastName = '', photo = null } =
+          invitedParticipantsRef.current.find(({ id }) => userId === id) || {};
 
-    const newUsers = results
-      .map((result, index) => {
-        if (result.status === 'fulfilled') {
-          const user = result.value.user;
-
-          return {
-            ...user,
-            isAudioOn: participantsInfo[index].status.isAudioOn,
-            isVideoOn: participantsInfo[index].status.isVideoOn,
-          };
-        } else {
-          console.error(`Failed to fetch user ${participantsInfo[index].userId}:`, result.reason);
-
-          return null;
-        }
-      })
-      .filter(Boolean);
-
-    setParticipants((prev: any): any => {
-      const existingUserIds = new Set(prev.map((participant: any) => participant.userId));
+        return {
+          userId,
+          socketId,
+          firstName,
+          lastName,
+          photo,
+          isAudioOn: usersAudioVideoMap[socketId].isAudioOn,
+          isVideoOn: usersAudioVideoMap[socketId].isVideoOn,
+        };
+      });
 
       return [
-        // ...prev,
-        ...newUsers.filter((newUser) => !existingUserIds.has(newUser?.id)),
+        ...newUsers,
       ];
     });
   };

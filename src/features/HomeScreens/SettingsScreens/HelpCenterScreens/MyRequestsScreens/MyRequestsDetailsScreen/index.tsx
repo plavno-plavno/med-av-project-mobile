@@ -155,7 +155,7 @@ const MyRequestsDetailsScreen = () => {
       return false
     }
   }
-
+  
   const onDocumentPress = async (item: any) => {
     try {
       const { dirs } = RNFetchBlob.fs
@@ -167,14 +167,14 @@ const MyRequestsDetailsScreen = () => {
           useDownloadManager: true,
           notification: true,
           mediaScannable: true,
-          title: `test.pdf`,
-          path: `${dirs.DownloadDir}/test.pdf`,
+          title: `${item?.file?.name}.pdf`,
+          path: `${dirs.DownloadDir}/${item?.file?.name}.pdf`,
         },
         useDownloadManager: true,
         notification: true,
         mediaScannable: true,
-        title: "test.pdf",
-        path: `${dirToSave}/test.pdf`,
+        title: `${item?.file?.name}.pdf`,
+        path: `${dirToSave}/${item?.file?.name}.pdf`,
       }
       const configOptions = Platform.select({
         ios: configfb,

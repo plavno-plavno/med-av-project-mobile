@@ -1,17 +1,19 @@
 import { Icon } from "@components"
 import { fontFamilies, fontWeights, helpers } from "@utils/theme"
 import moment from "moment"
-import { Platform, StyleSheet, Text, View } from "react-native"
+import { StyleSheet, Text, View } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import RNFetchBlob from "react-native-blob-util"
 import {
-  // useDownloadRecordingsMutation,
   useRemoveRecordingsMutation,
 } from "src/api/helpCenterApi/helpCenterApi"
 import colors from "src/assets/colors"
 import Share from "react-native-share"
-import { isAndroid } from "@utils/platformChecker"
+import { isAndroid, isIOS } from "@utils/platformChecker"
 import * as Keychain from "react-native-keychain"
+import Config from "react-native-config"
+
+const baseURL = Config.BASE_API_URL
 
 const RecordingCard = ({
   id,
@@ -25,7 +27,6 @@ const RecordingCard = ({
   date?: string
 }) => {
   const [removeRecordings] = useRemoveRecordingsMutation()
-  // const [downloadRecordings] = useDownloadRecordingsMutation()
   const formatDuration = (totalSeconds: number) => {
     const hours = Math.floor(totalSeconds / 3600)
     const minutes = Math.floor((totalSeconds % 3600) / 60)
@@ -45,60 +46,65 @@ const RecordingCard = ({
 
   const onRecordDownload = async () => {
     try {
-      const { dirs } = RNFetchBlob.fs
+      const { dirs } = RNFetchBlob.fs;
       const dirToSave =
-        Platform.OS === "ios" ? dirs.DocumentDir : dirs.DownloadDir
+        isIOS() ? dirs.DocumentDir : dirs.DownloadDir;
+
       const configfb = {
         fileCache: true,
         addAndroidDownloads: {
           useDownloadManager: true,
           notification: true,
           mediaScannable: true,
-          title: `recording.mp4`,
+          title: `${title}.mp4`,
           path: `${dirs.DownloadDir}/recording.mp4`,
+          mime: 'video/mp4',
         },
         useDownloadManager: true,
         notification: true,
         mediaScannable: true,
-        title: "recording.mp4",
-        path: `${dirToSave}/recording.mp4`,
-      }
-      const configOptions = Platform.select({
-        ios: configfb,
-        android: configfb,
-      })
+        title: `${title}.mp4`,
+        path: `${dirToSave}/${title}.mp4`,
+      };
+
       const accessToken = await Keychain.getGenericPassword({
         service: "accessToken",
-      })
-      if (!accessToken) return
-      RNFetchBlob.config(configOptions || {})
-        .fetch("GET", `recordings/download/${id}`, { Authorization: `Bearer ${accessToken?.password}` })
+      });
+      if (!accessToken) return;
+
+      RNFetchBlob.config(configfb)
+        .fetch("GET", `${baseURL}recordings/download/${id}`, {
+          Authorization: `Bearer ${accessToken?.password}`,
+        })
         .then((res) => {
-          if (Platform.OS === "ios") {
-            RNFetchBlob.fs.writeFile(configfb.path, res.data, "base64")
-            RNFetchBlob.ios.previewDocument(configfb.path)
+          console.log("Download successful", res);
+
+          if (isIOS()) {
+            RNFetchBlob.fs.writeFile(configfb.path, res.data, "base64");
+            RNFetchBlob.ios.previewDocument(configfb.path);
           }
+
           if (isAndroid()) {
-            console.log("file downloaded")
+            console.log("File downloaded to", res.path());
           }
+
           Share.open({
-            url: `file://${res}`,
+            url: `file://${res.path()}`,
             title: "Save or Share",
-          }).catch((error: any) => console.error("Error sharing file:", error))
+          }).catch((error: any) => {
+            console.error("Error sharing file:", error);
+          });
         })
         .catch((e) => {
-          console.log("invoice Download==>", e)
-        })
-
-      
+          console.error("Download error:", e);
+        });
     } catch (error: any) {
-      console.error("Error saving file:", error?.message || error)
+      console.error("Error saving file:", error?.message || error);
     }
-  }
+  };
 
   const handleDownloadRecord = async () => {
     try {
-      // const record = await downloadRecordings({ id }).unwrap();
       onRecordDownload()
     } catch (error) {
       console.log(error, 'error handleDownloadRecord');
