@@ -112,7 +112,10 @@ const CalendarScreen = () => {
     })) || []
 
   const findParticipantStatusByEmail = (email: string, event: any) => {
-    const participant = event.participants.find((p: any) => p.email === email)
+    const normalizedEmail = email.toLowerCase()
+    const participant = event.participants.find(
+      (p: any) => p.email.toLowerCase() === normalizedEmail
+    )
     return participant ? participant.status : null
   }
 
@@ -124,6 +127,7 @@ const CalendarScreen = () => {
       String(authMeData?.email),
       event
     )
+
     return (
       <TouchableOpacity
         {...touchableOpacityProps}

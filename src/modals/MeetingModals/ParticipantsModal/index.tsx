@@ -38,8 +38,8 @@ const ParticipantsModal = ({
       <View style={styles.container}>
         <ModalHeader
           title={t("Participants")}
-          sheetRef={sheetRef}
           participants={participants}
+          onClose={sheetRef.current?.close}
         />
         <ScrollView
           showsHorizontalScrollIndicator={false}
