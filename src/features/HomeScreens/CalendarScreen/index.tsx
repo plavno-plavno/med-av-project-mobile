@@ -124,6 +124,7 @@ const CalendarScreen = () => {
       String(authMeData?.email),
       event
     )
+
     return (
       <TouchableOpacity
         {...touchableOpacityProps}

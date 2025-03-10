@@ -88,6 +88,15 @@ const DetailsEventModal = ({
       setIsDeclineEventLoading(false)
     }
   }
+
+  const handleAcceptEvent = () => {
+    if (isCreatorMode) {
+      handleOpenScheduleModal(eventId)
+    } else {
+      handleTogglerEvent({ status: "accept" })
+    }
+  }
+
   return (
     <>
       <BottomSheet
@@ -229,13 +238,7 @@ const DetailsEventModal = ({
                 <CustomButton
                   isLoading={isAcceptEventLoading}
                   text={isCreatorMode ? t("EditDetails") : t("Accept")}
-                  onPress={() => {
-                    if (isCreatorMode) {
-                      handleOpenScheduleModal(eventId)
-                    } else {
-                      handleTogglerEvent({ status: "accept" })
-                    }
-                  }}
+                  onPress={handleAcceptEvent}
                 />
               </View>
             </>

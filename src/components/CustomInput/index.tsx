@@ -133,24 +133,27 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
         }
         case "chip": {
           const [chipsInputValue, setChipsInputValue] = useState("")
-
+          console.log("\x1b[31m%s\x1b[0m", "chipsInputValue", chipsInputValue)
+          console.log("\x1b[31m%s\x1b[0m", "handleError", handleError)
           const handleChange = (val: string) => {
             if (handleError) {
               setHandleError("")
             }
             setChipsInputValue(val)
           }
+
           const handleAddChip = () => {
-            if (!emailRegex.test(chipsInputValue as string)) {
+            const trimmedValue = chipsInputValue.trim().toLowerCase()
+
+            if (!trimmedValue) return
+
+            if (!emailRegex.test(trimmedValue)) {
               return setHandleError("Please enter a valid email address")
             }
-            if (
-              chipsInputValue.trim() &&
-              !value.includes(chipsInputValue.trim())
-            ) {
-              const newChips = [...value, chipsInputValue.trim()]
+
+            if (!value.includes(trimmedValue)) {
               setChipsInputValue("")
-              onChangeText(newChips)
+              onChangeText([...value, trimmedValue])
             }
           }
 
