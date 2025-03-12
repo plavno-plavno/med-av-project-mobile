@@ -7,10 +7,8 @@ import { Icon } from "../Icon"
 const toastConfig: any = {
   success: ({ text1 }: { text1: string }) => (
     <View style={styles.toastContainer}>
-      <View style={styles.toastContent}>
-        <Icon name="toastSuccess" />
-        <Text style={styles.toastText}>{text1}</Text>
-      </View>
+      <Icon name="toastSuccess" />
+      <Text style={styles.toastText}>{text1}</Text>
       <Icon name="closeButton" onPress={() => Toast.hide()} />
     </View>
   ),

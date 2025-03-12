@@ -73,7 +73,7 @@ const MeetingScreen = () => {
   useKeepAwake()
   useStatusBar("light-content", colors.dark)
   const [isCaptionOn, setIsCaptionOn] = React.useState(false)
- 
+
   const startTimeRef = useRef<number | null>(null)
   const recordingNameRef = useRef<string | null>(null)
 
@@ -113,18 +113,18 @@ const MeetingScreen = () => {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         recordingNameRef.current = `recording-mobile-${Date.now()}`
         startTimeRef.current = Date.now()
-        await ScreenRecorder.startRecording();
+        await ScreenRecorder.startRecording()
         console.log("Recording started")
         setIsStarted(true)
 
-        if(socketRef.current){
-        socketRef?.current?.emit("action", {
-          roomId,
-          action: 'start-recording',
-          socketId: socketRef.current.id,
-        })
+        if (socketRef.current) {
+          socketRef?.current?.emit("action", {
+            roomId,
+            action: "start-recording",
+            socketId: socketRef.current.id,
+          })
+        }
       }
-    }
     } catch (error) {
       console.error(
         "Failed to start recording:",
@@ -152,10 +152,10 @@ const MeetingScreen = () => {
               duration,
             })
           )
-          if(socketRef.current){
+          if (socketRef.current) {
             socketRef?.current?.emit("action", {
               roomId,
-              action: 'stop-recording',
+              action: "stop-recording",
               socketId: socketRef.current.id,
             })
           }
@@ -216,9 +216,9 @@ const MeetingScreen = () => {
             fileExtension: "webm",
             chunks: base64Chunk,
             action: "stream",
-          })          
+          })
         )
-        console.log('chunk sent');
+        console.log("chunk sent")
       }
     } catch (error) {
       console.error("Failed to send chunk:", error)
@@ -239,14 +239,27 @@ const MeetingScreen = () => {
     {
       name: "screenRecordStart",
       onPress: () => {
-        instanceMeetingOwner
-          ? isStarted
-            ? stopRecording()
-            : startRecording()
-          : Toast.show({
-              type: "error",
-              text1: t("OnlyCreatorCanStartScreenRecording"),
-            })
+        if (!instanceMeetingOwner) {
+          Toast.show({
+            type: "error",
+            text1: t("OnlyCreatorCanStartScreenRecording"),
+          })
+          return
+        }
+
+        if (isStarted) {
+          stopRecording()
+          Toast.show({
+            type: "success",
+            text1: t("RecordingStopped"),
+          })
+        } else {
+          startRecording()
+          Toast.show({
+            type: "success",
+            text1: t("RecordingStarted"),
+          })
+        }
       },
       style: { opacity: isStarted ? 1 : 0.5 },
     },
@@ -258,6 +271,10 @@ const MeetingScreen = () => {
       onPress: () => {
         stopRecording()
         endCall()
+        Toast.show({
+          type: "success",
+          text1: t("YouLeftTheMeeting"),
+        })
       },
     },
     {

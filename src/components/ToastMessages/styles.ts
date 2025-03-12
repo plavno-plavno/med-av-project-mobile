@@ -20,6 +20,7 @@ export const styles = StyleSheet.create({
     boxShadow: "0px 4px 32px 0px #17393B29",
   },
   toastText: {
+    width: "100%",
     maxWidth: "75%",
     ...fontFamilies.interManropeSemiBold14,
     ...fontWeights.fontWeight500,
@@ -27,10 +28,5 @@ export const styles = StyleSheet.create({
   },
   errorToast: {
     borderColor: colors.alertRed,
-  },
-  toastContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: moderateScale(8),
   },
 })

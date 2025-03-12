@@ -121,6 +121,8 @@
   "EmailChanged": "E-mail changed! Please Log In with a new e-mail.",
   "WeSentAnEmailToYou": "We sent an email to you, please confirm the changing",
   "MyRecordings": "My Recordings",
+  "RecordingStarted": "Recording started!",
+  "RecordingStopped": "Recording stopped!",
   "HelpCenter": "Help Center",
   "ContactSupport": "Contact Support",
   "ContactSupportDescription": "Please use the form below to contact support team. We’ll back to you with answer shortly.",
@@ -136,5 +138,6 @@
   "OK": "OK",
   "incorrectOldPassword": "Incorrect old password",
   "DeleteAccountDescription": "Deleting your account will remove \nall of your information from our database. \nThis cannot be undone.",
-  "GettingReady": "Getting ready..."
+  "GettingReady": "Getting ready...",
+  "YouLeftTheMeeting": "You left the meeting. Use meeting link to join again."
 }

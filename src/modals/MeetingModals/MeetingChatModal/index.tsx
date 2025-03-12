@@ -94,7 +94,7 @@ const MeetingChatModal = ({
       >
         <View style={styles.container}>
           <View style={[helpers.ph20, helpers.flex1]}>
-            <ModalHeader title={t("Chat")} sheetRef={sheetRef} />
+            <ModalHeader title={t("Chat")} onClose={sheetRef.current?.close} />
             <FlatList
               removeClippedSubviews={false}
               keyExtractor={(_item, index) => String(index)}
