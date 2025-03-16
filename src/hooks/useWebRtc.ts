@@ -10,16 +10,15 @@ import {
 } from "react-native-webrtc"
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { ROUTES } from "src/navigation/RoutesTypes"
-import {
-  useAuthMeQuery,
-  useGetUsersByIdMutation,
-} from "src/api/userApi/userApi"
+import { useAuthMeQuery } from "src/api/userApi/userApi"
 import inCallManager from "react-native-incall-manager"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 import AudioRecord from "react-native-audio-record"
 import Config from "react-native-config"
 import { base64ToFloat32Array, float32ArrayToBase64, Float32ConcatAll, resampleTo16kHZ } from "@utils/audioData"
 import { useGetCalendarEventByHashQuery } from "src/api/calendarApi/calendarApi"
+import RTCDataChannel from "react-native-webrtc/lib/typescript/RTCDataChannel"
+import { screenHeight, screenWidth } from "@utils/screenResponsive"
 
 export type Photo = {
   id: string
@@ -138,6 +137,16 @@ export interface IUsersVideoTrackToIdMap {
   [midId: number]: string
 }
 
+export enum DataChannelNames {
+  Messages = 'messages',
+  Draw = 'draw',
+}
+
+export interface Point {
+  x: number;
+  y: number;
+}
+
 type ParamList = {
   Detail: {
     hash: string
@@ -199,10 +208,8 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   const [isSpeakerOn, setIsSpeakerOn] = useState(true)
   const [isCameraSwitched, setIsCameraSwitched] = useState(false)
 
-  const [getUsersById] = useGetUsersByIdMutation()
   const roomId = route?.params?.hash
   const meetId = route.params?.meetId
-
 
   const { data: getCalendarEventByHashData } = useGetCalendarEventByHashQuery({
     hash: String(route?.params?.hash),
@@ -235,6 +242,11 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
   const wsRef = useRef<WebSocket | null>(null)
 
+  const messagesChannelRef = useRef<RTCDataChannel | null>(null);
+  const drawChannelRef = useRef<RTCDataChannel | null>(null);
+  const [points, setPoints] = useState<Point[]>([]); 
+  const [clearCanvas, setClearCanvas] = useState(false); 
+
   useEffect(() => {
     const setupSocket = async () => {
       if (!socketRef.current) {
@@ -260,13 +272,13 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
           "sharing-participant-joined",
           handleScreenShareJoined
         )
-
+        socketRef.current.on('room-languages', handleRoomLanguages);
         socketRef.current.on("mute-audio", userToggledMedia)
         socketRef.current.on("unmute-audio", userToggledMedia)
         socketRef.current.on("mute-video", userToggledMedia)
         socketRef.current.on("unmute-video", userToggledMedia)
 
-        socketRef.current.off('participant-room-info', handleParticipantRoomInfo)
+        socketRef.current.on('participant-room-info', handleParticipantRoomInfo)
 
         socketRef.current.on(UserActions.StartShareScreen, handleStartSharing)
         socketRef.current.on(UserActions.StopShareScreen, handleStopSharing)
@@ -285,16 +297,106 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     }
   }, [roomId, meetId])
 
+  const receivedFinish = () => {
+    setTimeout(() => {
+      setClearCanvas(true);
+      setPoints([]);
+    }, 2000);
+  };
+
+  const handleRoomLanguages = ({ languages }: { languages: string[] }) => {
+    if (languages) {
+      allLanguagesRef.current = languages
+    }
+  };
+
+  const handleDrawingData = (data: string) => {
+    try {
+      const parsedData = JSON.parse(data);
+      console.log(parsedData.type, 'parsedData.type');
+      
+      if (parsedData.type === 'draw') {
+        setPoints((prevPoints) => [
+          ...prevPoints,
+          {
+            x: parsedData.xRatio * (screenWidth * 0.9),
+            y: parsedData.yRatio * (screenHeight * 0.5),
+          },
+        ]);
+      } else if (parsedData.type === 'end') {
+        receivedFinish();
+      }
+    } catch (e) {
+      console.error('Error parsing drawing data', e);
+    }
+  };
+
+  const setupDataChannel = (channel: RTCDataChannel | null, type: 'Messages' | 'Draw') => {
+    if (!channel) {
+      return;
+    }
+  
+    channel.addEventListener("open", () => {
+      console.log(`Data channel [${type}] opened`)
+        })
+
+        channel.addEventListener("message", (event) => {
+          if (type === 'Messages') {
+          handlePeerDataChannelMessage(event?.data)
+          } else if (type === 'Draw') {
+            handleDrawingData(event?.data as any)
+          }
+        })
+
+        channel.addEventListener("close", () => {
+          console.log(`Data channel [${type}] closed`)
+        })
+
+        channel.addEventListener("error", (error) => {
+          console.error(`Data channel [${type}] error`, error)
+        })
+  };
+
+  const handleScreenShareJoined = ({ socketId }: { socketId: string }) => {
+    setIsScreenShare(true)
+    setSharingOwner(socketId)
+  }
+
   const handleStartSharing = ({ socketId }: { socketId: string }) => {
     setSharingOwner(socketId)
+    setIsScreenShare(true)
+
   }
 
   const handleStopSharing = () => {
     setSharingOwner(null)
+    setIsScreenShare(false)
   }
 
   const onSTTSocketMessage = (event: WebSocketMessageEvent) => {
-    console.log("onSocketMessage: ", JSON.parse(event.data))
+    console.log("onSTTSocketMessage: ", JSON.parse(event.data))
+    // const data = JSON.parse(event.data);
+    // if(data) {
+    //   const { segments } = JSON.parse(event.data.toString());
+
+    //   if (segments) {
+    //     const currentTime = new Date().toLocaleTimeString('en-US', {
+    //       hour: '2-digit',
+    //       minute: '2-digit',
+    //       hour12: false,
+    //     });
+
+    //     const subtitles = segments.slice(-5).map((segment: { text: string }) => ({
+    //       userName: userRefName.current ?? 'Guest',
+    //       message: segment.text,
+    //       time: currentTime,
+    //     }));
+    //     // eslint-disable-next-line no-console
+    //     setSubtitlesQueue(handleSubtitles(data))
+    //     console.log('STT messages', subtitles);
+    //     setSubtitles(subtitles);
+    //   }
+    // }
   }
 
   const disconnectSocketEvents = () => {
@@ -315,6 +417,9 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         "screen-share-updated",
         "sharing-participant-joined",
         'participant-room-info',
+        'room-languages',
+        'start-share-screen',
+        'stop-share-screen'
       ]
 
       events.forEach((event) => socketRef.current?.off(event))
@@ -346,30 +451,28 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
       })
 
       pc.addEventListener("datachannel", (event) => {
-        const dataChannel = event.channel
+        const { channel } = event;
 
-        dataChannel.addEventListener("open", () => {
-          console.log("Data channel opened")
-        })
-
-        dataChannel.addEventListener("message", handlePeerDataChannelMessage)
-
-        dataChannel.addEventListener("close", () => {
-          console.log("Data channel closed")
-        })
-
-        dataChannel.addEventListener("error", (error) => {
-          console.error("Data channel error:", error)
-        })
+        if (channel.label.startsWith(DataChannelNames.Messages)) {
+          messagesChannelRef.current = channel;
+          setupDataChannel(messagesChannelRef.current, 'Messages');
+        } else if (channel.label.startsWith(DataChannelNames.Draw)) {
+          drawChannelRef.current = channel;
+          setupDataChannel(drawChannelRef.current, 'Draw');
+        }
       })
 
       pc.addEventListener("track", (event) => {
         console.log("Receive track in ontrack", event)
         const midId = event.transceiver.mid || ""
-
         if (event?.track?.kind === "video") {
+          console.log(event?.track?.kind === "video", 'asdfasfasfas');
+          console.log(midId === screenTrackMidIdRef.current,'midId === screenTrackMidIdRef.current');
+          console.log(midId, 'midIdmidIdmidIdmidIdmidIdmidIdmidIdmidId');
+          console.log(screenTrackMidIdRef.current, 'screenTrackMidIdRef.current');
+          
           if (midId === screenTrackMidIdRef.current) {
-            setSharedScreen(event.track)
+              setSharedScreen(event.track)
             return
           }
 
@@ -436,7 +539,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     try {
       socketRef.current?.emit("join", {
         roomId,
-        language: "en",
+        language: authMeData?.language?.code?.toLowerCase() || 'en',
         meetId: meetId,
         status: {
           isAudioOn: !isMuted,
@@ -446,9 +549,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         },
         isOwner: instanceMeetingOwner,
       })
-
       inCallManager.setSpeakerphoneOn(true)
-
       if (!timerRef.current) {
         startTimeRef.current = Date.now()
         timerRef.current = setInterval(() => {
@@ -472,6 +573,8 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     if (socketRef.current) {
       socketRef.current?.close()
     }
+    drawChannelRef.current?.removeEventListener('message');
+    messagesChannelRef?.current?.removeEventListener('message');
     setRemoteVideoStreams([])
     if (STTSocket.current) {
       STTSocket.current.close()
@@ -508,36 +611,34 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     }
   }
   // sharing screen
-  //   const [localMediaStream, setLocalMediaStream] = useState(null);
-  // console.log(localMediaStream, 'localMediaStream');
+    // const [localMediaStream, setLocalMediaStream] = useState<any>(null);
+    // const startScreenShare = async () => {
+    //   try {
+    //     const mediaStream = await mediaDevices.getDisplayMedia();
+    //     console.log(mediaStream, 'mediaStreammediaStream');
+    //     setLocalMediaStream(mediaStream);
 
-  //   const startScreenShare = async () => {
-  //     try {
-  //       const mediaStream = await mediaDevices.getDisplayMedia();
-  //       console.log(mediaStream, 'mediaStreammediaStream');
-  //       setLocalMediaStream(mediaStream);
+    //     // Add tracks to peer connection
+    //     mediaStream.getTracks().forEach(track => {
+    //       console.log(track, 'tracktracktracktrack');
 
-  //       // Add tracks to peer connection
-  //       mediaStream.getTracks().forEach(track => {
-  //         console.log(track, 'tracktracktracktrack');
+    //       peerConnection.current?.addTrack(track, mediaStream);
+    //     });
 
-  //         // peerConnection.addTrack(track, mediaStream);
-  //       });
+    //   } catch (err) {
+    //     console.error('Error starting screen share:', err);
+    //   }
+    // };
 
-  //     } catch (err) {
-  //       console.error('Error starting screen share:', err);
-  //     }
-  //   };
+    // const stopScreenShare = () => {
+    //   if (localMediaStream) {
+    //     // Stop all tracks
+    //     localMediaStream?.getTracks().forEach(track => track.stop());
+    //     console.log(localMediaStream, 'localMediaStreamlocalMediaStream');
 
-  //   const stopScreenShare = () => {
-  //     if (localMediaStream) {
-  //       // Stop all tracks
-  //       localMediaStream?.getTracks().forEach(track => track.stop());
-  //       console.log(localMediaStream, 'localMediaStreamlocalMediaStream');
-
-  //       setLocalMediaStream(null);
-  //     }
-  //   };
+    //     setLocalMediaStream(null);
+    //   }
+    // };
 
   const handleOfferCheck = async () => {
     try {
@@ -705,11 +806,6 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     pendingCandidates.length = 0
   }
 
-  const handleScreenShareJoined = ({ socketId }: { socketId: string }) => {
-    setIsScreenShare(true)
-    setSharingOwner(socketId)
-  }
-
   const handleCandidate = async ({
     candidate,
   }: {
@@ -745,7 +841,6 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     });
   }
 
-
   const handleTransceiver = async ({
     mid,
     kind,
@@ -759,6 +854,9 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   }) => {
     if (mid) {
       const midId = Number(mid)
+      console.log(type, 'typetypetypetypetypetypetypetypetypetypetypetype');
+      console.log(midId, 'midIdmidIdmidIdmidIdmidIdmidIdmidIdmidId');
+      
       if (type === "screen") {
         screenTrackMidIdRef.current = mid
         return
@@ -869,7 +967,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   const handleSubtitles = (newEl: any) => (prev: any[]) => {
     let newAr = [...prev, newEl]
     if (newAr.length > SUBTITLES_QUEUE_LIMIT) {
-      newAr.shift() // Remove the oldest item if at limit
+      newAr.shift()
     }
     return newAr
   }
@@ -991,8 +1089,20 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
       return
     }
     const isAudio = type === "audio"
+
+    const track = isAudio ? localStream.audioTrack : localStream.videoTrack
+    if (!track) {
+      return
+    }
+    
+    track.enabled = isAudio ? Boolean(isMuted) : Boolean(isVideoOff)
+
+    setLocalStream((prev) => ({
+      ...prev!,
+      [isAudio ? "audioTrack" : "videoTrack"]: track,
+    }))
+
     if (isAudio) {
-      setIsMuted((prev) => !prev)
       if (!isMuted) {
         console.log("Microphone muted. Stopping recording...")
         AudioRecord.stop()
@@ -1000,19 +1110,12 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         console.log("Microphone unmuted. Restarting recording...")
         captureAndSendAudio()
       }
+      setIsMuted((prev) => !prev)
+
     } else {
       setIsVideoOff((prev) => !prev)
     }
-    const track = isAudio ? localStream.audioTrack : localStream.videoTrack
-    if (!track) {
-      return
-    }
-    track.enabled = !track.enabled
-
-    setLocalStream((prev) => ({
-      ...prev!,
-      [isAudio ? "audioTrack" : "videoTrack"]: track,
-    }))
+console.log(track, 'tracktracktracktracktracktrack');
 
     const action = track.enabled
       ? isAudio
@@ -1117,7 +1220,6 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     sttUrl: sttUrlRef,
     localUserId: userRefId.current,
     localUserSocketId: socketRef.current?.id,
-    allLanguagesRef: allLanguagesRef,
     wsRef,
 
     handleChangedRoomLanguage,
@@ -1129,6 +1231,10 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     switchCamera,
     setLocalStream,
     sharingOwner,
+
+    points,
+    clearCanvas,
+    setClearCanvas,
   }
 }
 

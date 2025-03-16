@@ -117,11 +117,12 @@ const Navigation: React.FC = () => {
     screens: {
       [ScreensEnum.CREATE_PASSWORD]: "auth/setPassword",
       [ScreensEnum.RESET_PASSWORD]: "password-change",
+      [ScreensEnum.MEETING_DETAILS]: 'meetings'
     },
   }
 
   const linking = {
-    prefixes: ["https://av-hims.netlify.app", "https://med-app-av.plavno.io"],
+    prefixes: ["https://svensacall.com"],
     config,
   }
 

@@ -27,7 +27,6 @@ interface IParticipantsModal {
   sheetRef: React.RefObject<BottomSheetMethods>
   setIsCaptionOn: (val: boolean) => void
   isCaptionOn: boolean
-  allLanguagesRef: MutableRefObject<string[]>
   handleChangedRoomLanguage: (arg0: string) => void
 }
 
@@ -35,7 +34,6 @@ const SubtitlesModal = ({
   sheetRef,
   setIsCaptionOn,
   isCaptionOn,
-  allLanguagesRef,
   handleChangedRoomLanguage,
 }: IParticipantsModal) => {
   const { t } = useTranslation()
@@ -50,14 +48,6 @@ const SubtitlesModal = ({
       setSelectedLanguage(authMeData?.language?.code?.toLowerCase?.())
     }
   }, [authMeData?.language?.code])
-
-  useEffect(() => {
-    if (languageOptions?.length) {
-      allLanguagesRef.current = languageOptions.map((lang) =>
-        lang.code.toLowerCase()
-      )
-    }
-  }, [languageOptions])
 
   const handleToggleSubtitles = () => {
     setIsCaptionOn(!isCaptionOn)

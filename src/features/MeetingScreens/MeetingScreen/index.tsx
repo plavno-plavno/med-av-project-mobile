@@ -20,6 +20,8 @@ import Subtitles from "src/components/Subtitles"
 import Loading from "src/components/Loading"
 import Config from "react-native-config"
 import { NativeEventEmitter, NativeModules } from "react-native"
+import { useMeetingRecording } from "src/hooks/useMeetingRecording"
+
 const { ScreenRecorder } = NativeModules
 
 const recordingUrl = Config.SOCKET_RECORDING_URL
@@ -58,7 +60,6 @@ const MeetingScreen = () => {
     peerConnection,
     localUserId,
     localUserSocketId,
-    allLanguagesRef,
     subtitlesQueue,
     sharedScreen,
     wsRef,
@@ -69,7 +70,12 @@ const MeetingScreen = () => {
     sharingOwner,
     sendMessage,
     handleChangedRoomLanguage,
+  
+    points,
+    clearCanvas,
+    setClearCanvas,
   } = useWebRtc(instanceMeetingOwner!)
+  const { startRecording, stopRecording, isRecording, updatePeerConnections } = useMeetingRecording(roomId, meetId);
   useKeepAwake()
   useStatusBar("light-content", colors.dark)
   const [isCaptionOn, setIsCaptionOn] = React.useState(false)
@@ -81,8 +87,6 @@ const MeetingScreen = () => {
   const sheetCatiptionsRef = useRef<BottomSheetMethods>(null)
   const sheetParticipantsRef = useRef<BottomSheetMethods>(null)
 
-  const [isStarted, setIsStarted] = useState(false)
-
   const handleChatOpen = () => {
     sheetChatRef.current?.open()
   }
@@ -92,6 +96,12 @@ const MeetingScreen = () => {
   const handleParticipantsOpen = () => {
     sheetParticipantsRef.current?.open()
   }
+
+  useEffect(() => {
+    if (peerConnection) {
+      updatePeerConnections(peerConnection);
+    }
+  }, [peerConnection]);
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(ScreenRecorder)
@@ -108,65 +118,65 @@ const MeetingScreen = () => {
     }
   }, [])
 
-  const startRecording = async () => {
-    try {
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        recordingNameRef.current = `recording-mobile-${Date.now()}`
-        startTimeRef.current = Date.now()
-        await ScreenRecorder.startRecording()
-        console.log("Recording started")
-        setIsStarted(true)
+  // const startRecording = async () => {
+  //   try {
+  //     if (wsRef.current?.readyState === WebSocket.OPEN) {
+  //       recordingNameRef.current = `recording-mobile-${Date.now()}`
+  //       startTimeRef.current = Date.now()
+  //       await ScreenRecorder.startRecording();
+  //       console.log("Recording started")
+  //       setIsStarted(true)
 
-        if (socketRef.current) {
-          socketRef?.current?.emit("action", {
-            roomId,
-            action: "start-recording",
-            socketId: socketRef.current.id,
-          })
-        }
-      }
-    } catch (error) {
-      console.error(
-        "Failed to start recording:",
-        { ScreenRecorder, froMNATIVE: NativeModules.ScreenRecorder },
-        error
-      )
-    }
-  }
-  const stopRecording = async () => {
-    try {
-      if (ScreenRecorder && isStarted) {
-        await ScreenRecorder.stopRecording()
-        if (wsRef.current?.readyState === WebSocket.OPEN) {
-          const duration = startTimeRef.current
-            ? Math.floor((Date.now() - startTimeRef.current) / 1000)
-            : 0
+  //       if(socketRef.current){
+  //       socketRef?.current?.emit("action", {
+  //         roomId,
+  //         action: 'start-recording',
+  //         socketId: socketRef.current.id,
+  //       })
+  //     }
+  //   }
+  //   } catch (error) {
+  //     console.error(
+  //       "Failed to start recording:",
+  //       { ScreenRecorder, froMNATIVE: NativeModules.ScreenRecorder },
+  //       error
+  //     )
+  //   }
+  // }
+  // const stopRecording = async () => {
+  //   try {
+  //     if (ScreenRecorder && isStarted) {
+  //       await ScreenRecorder.stopRecording()
+  //       if (wsRef.current?.readyState === WebSocket.OPEN) {
+  //         const duration = startTimeRef.current
+  //           ? Math.floor((Date.now() - startTimeRef.current) / 1000)
+  //           : 0
 
-          wsRef.current.send(
-            JSON.stringify({
-              fileName: recordingNameRef.current,
-              fileExtension: "webm",
-              action: "end",
-              meetId,
-              userId: localUserId,
-              duration,
-            })
-          )
-          if (socketRef.current) {
-            socketRef?.current?.emit("action", {
-              roomId,
-              action: "stop-recording",
-              socketId: socketRef.current.id,
-            })
-          }
-        }
-        startTimeRef.current = null
-      }
-      setIsStarted(false)
-    } catch (error) {
-      console.error("Failed to stop recording:", error)
-    }
-  }
+  //         wsRef.current.send(
+  //           JSON.stringify({
+  //             fileName: recordingNameRef.current,
+  //             fileExtension: "webm",
+  //             action: "end",
+  //             meetId,
+  //             userId: localUserId,
+  //             duration,
+  //           })
+  //         )
+  //         if(socketRef.current){
+  //           socketRef?.current?.emit("action", {
+  //             roomId,
+  //             action: 'stop-recording',
+  //             socketId: socketRef.current.id,
+  //           })
+  //         }
+  //       }
+  //       startTimeRef.current = null
+  //     }
+  //     setIsStarted(false)
+  //   } catch (error) {
+  //     console.error("Failed to stop recording:", error)
+  //   }
+  // }
 
   useEffect(() => {
     let reconnectTimeout: NodeJS.Timeout | null = null
@@ -247,7 +257,7 @@ const MeetingScreen = () => {
           return
         }
 
-        if (isStarted) {
+        if (isRecording) {
           stopRecording()
           Toast.show({
             type: "success",
@@ -261,7 +271,7 @@ const MeetingScreen = () => {
           })
         }
       },
-      style: { opacity: isStarted ? 1 : 0.5 },
+      style: { opacity: isRecording ? 1 : 0.5 },
     },
   ]
 
@@ -339,6 +349,9 @@ const MeetingScreen = () => {
             localUserSocketId={localUserSocketId}
             sharedScreen={sharedScreen}
             sharingOwner={sharingOwner}
+            points={points}
+            clearCanvas={clearCanvas}
+            setClearCanvas={setClearCanvas}
           />
           <Subtitles isActive={isCaptionOn} subtitlesQueue={subtitlesQueue} />
         </View>
@@ -370,7 +383,6 @@ const MeetingScreen = () => {
           setIsCaptionOn={setIsCaptionOn}
           isCaptionOn={isCaptionOn}
           handleChangedRoomLanguage={handleChangedRoomLanguage}
-          allLanguagesRef={allLanguagesRef}
         />
         <ParticipantsModal
           isCreatorMode={isCreatorMode}

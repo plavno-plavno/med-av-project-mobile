@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useRef } from "react"
 import { View, StyleSheet } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import { MediaStream, RTCView } from "react-native-webrtc"
@@ -9,6 +9,8 @@ import { helpers } from "@utils/theme"
 import RNSoundLevel from "react-native-sound-level"
 import { isIOS } from "@utils/platformChecker"
 import ParticipantItem from "../ParticipantItem"
+import Canvas from 'react-native-canvas';
+import { screenHeight, screenWidth } from "@utils/screenResponsive"
 
 export interface UserInMeeting extends User {
   isAudioOn: boolean | null
@@ -28,9 +30,14 @@ const VideoGrid = ({
   localUserSocketId,
   isMuted,
   sharedScreen,
-  sharingOwner,
+  isScreenShare,
+  points,
+  clearCanvas,
+  setClearCanvas,
 }: any) => {
   const [activeHostSpeaker, setActiveHostSpeaker] = React.useState(false)
+  const canvasRef = useRef<Canvas | null>(null);
+
   const adaptParticipantsToShow = (): RemoteStream[] => {
     const remoteStreams: Record<string | number, RemoteStream> = {}
 
@@ -75,7 +82,7 @@ const VideoGrid = ({
     }
 
     // Sort the participants to ensure the active speaker comes first
-    if (sharingOwner && totalParticipants >= 3) {
+    if (isScreenShare && totalParticipants >= 3) {
       const activeSpeakerStream = participantsSteams.find(
         (stream) => stream.socketId === activeSpeaker
       )
@@ -138,13 +145,14 @@ const VideoGrid = ({
 
     return (
       <ParticipantItem
+        key={user?.id || index}
         isActiveHighlighter={isActiveHighlighter}
         user={user}
         isMicMuted={isMicMuted}
         isCameraOff={isCameraOff}
         totalParticipants={totalParticipants}
         idx={index}
-        sharingOwner={sharingOwner}
+        sharingOwner={isScreenShare}
         mediaStream={mediaStream}
         participant={item}
       />
@@ -171,22 +179,58 @@ const VideoGrid = ({
   }, [isMuted])
 
   useEffect(() => {
-    if (sharingOwner) {
+    if (isScreenShare) {
       totalParticipants >= 3 && adaptParticipantsToShow()
     } else if (totalParticipants >= 7) {
       adaptParticipantsToShow()
     }
   }, [activeSpeaker])
+  
+  const drawOnCanvas = (canvas: Canvas, color: string) => {
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.strokeStyle = color;
+  
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      points.forEach((point: { x: number; y: number }, index: number) => {
+        if (index === 0) {
+          ctx.moveTo(point.x, point.y);
+        } else {
+          ctx.lineTo(point.x, point.y);
+        }
+      });
+      ctx.stroke();
+    }
+  };
+  
+  // useEffect(() => {
+  //   const canvas = canvasRef.current;
+  //   if (canvas) {
+  //     canvas.width = screenWidth * 0.9;
+  //     canvas.height = screenHeight * 0.5;
+  //     if (clearCanvas) {
+  //       const ctx = canvas.getContext('2d');
+  //       if (ctx) {
+  //         ctx.clearRect(0, 0, canvas.width, canvas.height);
+  //       }
+  //       setClearCanvas(false);
+  //     } else {
+  //       drawOnCanvas(canvas, colors.alertRed);
+  //     }
+  //   }
+  // }, [clearCanvas, points]); 
 
   return (
     <View style={styles.container}>
-      {sharingOwner && (
+      {isScreenShare && (
         <View style={styles.sharingContainer}>
           <RTCView
             streamURL={sharedScreenStream.toURL()}
             style={[helpers.width100Percent, helpers.height100Percent]}
             objectFit="cover"
           />
+         <Canvas ref={canvasRef} style={styles.canvas} />
         </View>
       )}
       {adaptParticipantsToShow().map((item, index) =>
@@ -219,5 +263,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.charcoal,
     width: "100%",
     height: "100%",
+  },
+  canvas: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
   },
 })
