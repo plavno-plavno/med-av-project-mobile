@@ -69,6 +69,7 @@
 
                 <data android:scheme="https" />
                 <data android:host="svensacall.com" />
+                <data android:scheme="https" android:host="svensacall.com" android:pathPrefix="/meetings" />
             </intent-filter>
         </activity>
     </application>

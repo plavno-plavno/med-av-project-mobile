@@ -11,6 +11,7 @@ export const requestNotificationPermission = async () => {
 
 export const getNotificationToken = async () => {
   try{
+  await messaging().registerDeviceForRemoteMessages();
   if (isIOS()) {
     const settings = await messaging().requestPermission();
     if (settings) {

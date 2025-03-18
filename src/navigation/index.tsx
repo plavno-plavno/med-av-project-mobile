@@ -122,7 +122,7 @@ const Navigation: React.FC = () => {
   }
 
   const linking = {
-    prefixes: ["https://svensacall.com"],
+    prefixes: ["https://svensacall.com/"],
     config,
   }
 

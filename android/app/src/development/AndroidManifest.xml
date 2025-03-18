@@ -64,7 +64,8 @@
                 <data android:host="med-app-av.plavno.io" />
                  <data
                     android:scheme="com.MedAVDevelopment"
-                    android:host="password-change" />
+                    android:host="svensacall.com" android:pathPrefix="/password-change" />
+                <data android:scheme="https" android:host="svensacall.com" android:pathPrefix="/meetings" />
             </intent-filter>
         </activity>
     </application>

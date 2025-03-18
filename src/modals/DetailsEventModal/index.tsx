@@ -154,7 +154,7 @@ const DetailsEventModal = ({
                     ]}
                     onPress={() =>
                       copyToClipboard(
-                        `https://av-hims.netlify.app/meetings/${eventDetailsData?.hash}`
+                        `https://svensacall.com/meetings/${eventDetailsData?.hash}`
                       )
                     }
                   />

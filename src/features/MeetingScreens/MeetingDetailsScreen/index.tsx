@@ -144,7 +144,7 @@ const MeetingDetailsScreen = () => {
             leftIcon="copy"
             style={styles.copyMeetingLink}
             onPress={() =>
-              copyToClipboard(`https://av-hims.netlify.app/meetings/${hash}`)
+              copyToClipboard(`https://svensacall.com/meetings/${hash}`)
             }
           />
         </View>
