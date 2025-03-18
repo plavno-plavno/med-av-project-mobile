@@ -43,8 +43,9 @@ const MeetingDetailsScreen = () => {
   const { data: getCalendarEventByHashData } = useGetCalendarEventByHashQuery({
     hash: String(hash),
   })
-  
-  const isMeetingOwner = authMe?.id === getCalendarEventByHashData?.createdBy?.id
+
+  const isMeetingOwner =
+    authMe?.id === getCalendarEventByHashData?.createdBy?.id
 
   const toggleAudio = () => {
     if (preview) {
@@ -86,7 +87,11 @@ const MeetingDetailsScreen = () => {
   )
 
   return (
-    <ScreenWrapper title={getCalendarEventByHashData?.title || hash} isBackButton isCenterTitle>
+    <ScreenWrapper
+      title={getCalendarEventByHashData?.title || hash}
+      isBackButton
+      isCenterTitle
+    >
       <View style={styles.container}>
         <View style={styles.videoContainer}>
           {preview && !isVideoOff ? (

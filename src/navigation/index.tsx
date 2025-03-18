@@ -76,56 +76,52 @@ const Navigation: React.FC = () => {
 
   useEffect(() => {
     const handleDeepLink = (event: { url: string }) => {
-      const { url } = event
-      if (url) {
-        console.log("Received URL:", url)
-        const parsed = queryString.parseUrl(url)
-        const { query } = parsed
+      if (event?.url) {
+        console.log("Received URL:", event.url)
+        const { query, url } = queryString.parseUrl(event.url)
 
         const pathMatch = url.match(/^.*:\/\/([^?]*)/)
         const pathname = pathMatch ? `/${pathMatch[1]}` : undefined
 
-        const hash = query.hash
-
-        if (hash) {
+        if (query.hash) {
           if (pathname === "/password-change") {
-            console.log("Navigating to ResetPasswordScreen")
             navigationRef?.current?.navigate(ScreensEnum.RESET_PASSWORD, {
-              hash,
+              hash: query.hash,
             })
           } else if (pathname === "/auth/setPassword") {
-            console.log("Navigating to CreatePasswordScreen")
             navigationRef?.current?.navigate(ScreensEnum.CREATE_PASSWORD, {
-              hash,
+              hash: query.hash,
             })
-          } else {
-            console.log("Unknown Path:", pathname)
+          } else if (pathname === "/meetings") {
+            navigationRef?.current?.navigate(ScreensEnum.MEETING_DETAILS, {
+              hash: query.hash,
+            })
           }
-        } else {
-          console.log("Hash is missing in the URL.")
         }
       }
     }
 
-    Linking.addEventListener("url", handleDeepLink)
     Linking.getInitialURL().then((url) => {
       if (url) handleDeepLink({ url })
     })
-  }, [])
 
-  const config = {
-    screens: {
-      [ScreensEnum.CREATE_PASSWORD]: "auth/setPassword",
-      [ScreensEnum.RESET_PASSWORD]: "password-change",
-      [ScreensEnum.MEETING_DETAILS]: 'meetings'
-    },
-  }
+    const subscription = Linking.addEventListener("url", handleDeepLink)
+
+    return () => {
+      subscription.remove()
+    }
+  }, [])
 
   const linking = {
     prefixes: ["https://svensacall.com/"],
-    config,
+    config: {
+      screens: {
+        [ScreensEnum.CREATE_PASSWORD]: "auth/setPassword",
+        [ScreensEnum.RESET_PASSWORD]: "password-change",
+        [ScreensEnum.MEETING_DETAILS]: "meetings/:hash",
+      },
+    },
   }
-
   return (
     <NavigationContainer ref={navigationRef} linking={linking}>
       <Stack.Navigator

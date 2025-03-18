@@ -44,6 +44,7 @@ const CreatePasswordScreen = () => {
         type: "success",
         text1: t("Success"),
       })
+      navigation.navigate(ScreensEnum.LOGIN)
     } catch (error) {
       console.log(error, "error onSignUpPress")
       const typedError: any = error as Error
