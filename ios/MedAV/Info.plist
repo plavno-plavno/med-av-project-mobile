@@ -20,6 +20,15 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.MedAVDevelopment</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -33,23 +42,14 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>We need access to your camera for video calls.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Allow photo access to add photos for your profile.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string></string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We need microphone access to record the screen</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>We need access to add recorded video to the photo library</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.MedAVDevelopment</string>
-			</array>
-		</dict>
-	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Allow photo access to add photos for your profile.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Manrope-Bold.ttf</string>
@@ -59,6 +59,11 @@
 		<string>Manrope-Medium.ttf</string>
 		<string>Manrope-Regular.ttf</string>
 		<string>Manrope-SemiBold.ttf</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
