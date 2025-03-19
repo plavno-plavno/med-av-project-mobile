@@ -37,7 +37,7 @@ const NavigationItem = ({
       style={[styles.itemContainer, customStyle]}
     >
       <View style={styles.menuItem}>
-        <View style={[helpers.flexRow, helpers.gap8]}>
+        <View style={[helpers.flexRow, helpers.gap8, helpers.flex1]}>
           <Icon name={leftIcon} />
           <Text style={styles.menuTitle}>{title}</Text>
         </View>
@@ -63,7 +63,7 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
   },
   menuTitle: {
-    maxWidth: "90%",
+    flexShrink: 1,
     ...fontFamilies.interManropeSemiBold16,
     ...fontWeights.fontWeight500,
     color: colors.charcoal,
