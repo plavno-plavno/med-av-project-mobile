@@ -45,7 +45,7 @@ const SetupProfileScreen = () => {
   const [isPhotoChanged, setIsPhotoChanged] = useState(false)
 
   const { data: authMeData, refetch: authMeRefetch } = useAuthMeQuery()
-  console.log("\x1b[31m%s\x1b[0m", "authMeData", authMeData)
+
   const { data: timezone, isLoading: isTimezoneLoading } = useTimezoneQuery()
   const { data: timezones } = useGetCalendarTimezonesQuery({
     page: "1",
@@ -124,6 +124,12 @@ const SetupProfileScreen = () => {
     label: item.text,
     value: item.id.toString(),
   }))
+  const missingInfoLength = [
+    authMeData?.firstName,
+    authMeData?.lastName,
+    authMeData?.language,
+    timezone?.id,
+  ].filter(Boolean).length
 
   useEffect(() => {
     if (authMeData?.photo?.link) {
@@ -200,21 +206,6 @@ const SetupProfileScreen = () => {
                     />
                   ) : (
                     <>
-                      {!timezone?.id && (
-                        <CustomInput
-                          inputType="dropdown"
-                          searchField
-                          dropdownData={timezoneOptions}
-                          label={t("Timezone")}
-                          placeholder={t("EnterYourTimezone")}
-                          value={values.gmtDelta.toString()}
-                          onChangeText={(val) =>
-                            handleChange("gmtDelta")(val as string)
-                          }
-                          onBlur={handleBlur("gmtDelta")}
-                          error={touched.gmtDelta && errors.gmtDelta}
-                        />
-                      )}
                       {!authMeData?.firstName && (
                         <CustomInput
                           label={t("FirstName")}
@@ -251,6 +242,24 @@ const SetupProfileScreen = () => {
                           }
                           onBlur={handleBlur("language")}
                           error={touched.language && errors.language}
+                        />
+                      )}
+                      {!timezone?.id && (
+                        <CustomInput
+                          inputType="dropdown"
+                          searchField
+                          dropdownPosition={
+                            missingInfoLength <= 3 ? "top" : "bottom"
+                          }
+                          dropdownData={timezoneOptions}
+                          label={t("Timezone")}
+                          placeholder={t("EnterYourTimezone")}
+                          value={values.gmtDelta.toString()}
+                          onChangeText={(val) =>
+                            handleChange("gmtDelta")(val as string)
+                          }
+                          onBlur={handleBlur("gmtDelta")}
+                          error={touched.gmtDelta && errors.gmtDelta}
                         />
                       )}
                     </>

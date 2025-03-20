@@ -21,6 +21,8 @@ import Loading from "src/components/Loading"
 import Config from "react-native-config"
 import { NativeEventEmitter, NativeModules } from "react-native"
 import { useMeetingRecording } from "src/hooks/useMeetingRecording"
+import NewJoinRequestModal from "src/modals/MeetingModals/NewJoinRequestModal"
+import { useMeetingAccess } from "src/hooks/useMeetingAccess"
 
 const { ScreenRecorder } = NativeModules
 
@@ -70,12 +72,13 @@ const MeetingScreen = () => {
     sharingOwner,
     sendMessage,
     handleChangedRoomLanguage,
-  
     points,
     clearCanvas,
     setClearCanvas,
   } = useWebRtc(instanceMeetingOwner!)
-  const { startRecording, stopRecording, isRecording, updatePeerConnections } = useMeetingRecording(roomId, meetId);
+  const { startRecording, stopRecording, isRecording, updatePeerConnections } =
+    useMeetingRecording(roomId, meetId)
+
   useKeepAwake()
   useStatusBar("light-content", colors.dark)
   const [isCaptionOn, setIsCaptionOn] = React.useState(false)
@@ -99,9 +102,9 @@ const MeetingScreen = () => {
 
   useEffect(() => {
     if (peerConnection) {
-      updatePeerConnections(peerConnection);
+      updatePeerConnections(peerConnection)
     }
-  }, [peerConnection]);
+  }, [peerConnection])
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(ScreenRecorder)
@@ -319,6 +322,15 @@ const MeetingScreen = () => {
     <>
       <SafeAreaView edges={["top"]} style={styles.container}>
         <View style={styles.mainWrapper}>
+          <NewJoinRequestModal
+            name={"Valery J"}
+            onAccept={function (): void {
+              throw new Error("Function not implemented.")
+            }}
+            onDecline={function (): void {
+              throw new Error("Function not implemented.")
+            }}
+          />
           <View style={styles.upperControlContainer}>
             <Text style={styles.title}>{title || hash}</Text>
             <View>
