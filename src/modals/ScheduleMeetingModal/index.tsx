@@ -143,9 +143,9 @@ const ScheduleMeetingModal = ({
     getCalendarRecent &&
     getCalendarRecent.filter((email) => email !== authMe?.email)
 
-  const eventParticipants = eventDetailsData?.participants
-    .map((participant) => participant.email)
-    .filter((email) => email !== authMe?.email)
+  const eventParticipants = eventDetailsData?.participants.map(
+    (participant) => participant.email
+  )
 
   const initialValues: IFormValues = {
     title: (eventId && eventDetailsData?.title) || "",
@@ -444,7 +444,9 @@ const ScheduleMeetingModal = ({
                         label="Invite Participants"
                         required
                         placeholder="Invite participants"
-                        value={values.participants}
+                        value={values.participants.filter(
+                          (email) => email !== authMe?.email
+                        )}
                         onChangeText={(val) => {
                           setFieldValue("participants", val)
                         }}
