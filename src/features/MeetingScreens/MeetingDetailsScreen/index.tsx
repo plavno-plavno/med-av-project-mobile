@@ -136,6 +136,9 @@ const MeetingDetailsScreen = () => {
             text={t("JoinMeeting")}
             style={{ backgroundColor: colors.lightAqua }}
             onPress={() => {
+              if(isMuted){
+                preview?.getTracks().forEach((t) => t.stop())
+              }
               navigate(ScreensEnum.MEETING, {
                 hash: hash,
                 isMuted: isMuted,

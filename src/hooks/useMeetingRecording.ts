@@ -1,6 +1,7 @@
 import {
   useEffect,
-  useRef, useState,
+  useRef, 
+  useState,
 } from 'react';
 import { Socket } from 'socket.io-client';
 import { useAuthMeQuery } from 'src/api/userApi/userApi';
@@ -11,10 +12,12 @@ import {
   RTCIceCandidate,
   RTCPeerConnection,
   RTCSessionDescription,
-} from "react-native-webrtc"
+} from "react-native-webrtc";
+import Toast from 'react-native-toast-message';
+import { useTranslation } from 'react-i18next';
 
 enum PeerConnectionType {
-  RECORDING = 'recording'
+  RECORDING = 'recording',
 }
 
 const iceServersConfig: any = {
@@ -39,27 +42,26 @@ interface RTCIceCandidateInit {
   usernameFragment?: string | null;
 }
 
-export const useMeetingRecording = (roomId: string | null, meetId: string | undefined) => {
+export const useMeetingRecording = (roomId: string | null, peerConnection: any) => {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const mainPeerConnectionRef = useRef<RTCPeerConnection | null>();
   const recordingPeerConnectionRef = useRef<RTCPeerConnection | null>();
   const recordingStreamRef = useRef<MediaStream | null>(null);
+  const {t} = useTranslation();
 
-    const { data: authMeData } = useAuthMeQuery()
-    const userRefId = useRef<number>();
-    userRefId.current = authMeData?.id
+  const { data: authMeData } = useAuthMeQuery();
+  const userRefId = useRef<number>();
+  userRefId.current = authMeData?.id;
 
   const isRecordingStartedRef = useRef(false);
-
   const roomIdRef = useRef<string | null>(roomId);
-
   const socketRef = useRef<Socket | null>(null);
   socketRef.current = getSocket();
 
-  const updatePeerConnections = (peerConnection: RTCPeerConnection) => {
-    mainPeerConnectionRef.current = peerConnection;
-  };
+  // const updatePeerConnections = (peerConnection: RTCPeerConnection) => {
+  //   mainPeerConnectionRef.current = peerConnection;
+  // };
 
   const createPeerConnection = () => {
     if (recordingPeerConnectionRef.current) {
@@ -69,6 +71,7 @@ export const useMeetingRecording = (roomId: string | null, meetId: string | unde
       const pc = new RTCPeerConnection(iceServersConfig);
 
       pc.addEventListener("icecandidate", ({ candidate }) => {
+        console.log("ICE Candidate: ", candidate);  // Added log for ICE candidate
         if (candidate) {
           socketRef.current?.emit('candidate', {
             candidate,
@@ -79,14 +82,15 @@ export const useMeetingRecording = (roomId: string | null, meetId: string | unde
       });
 
       pc.addEventListener("connectionstatechange", () => {
+        console.log("Connection state change: ", pc.connectionState);  // Added log for connection state
         if (pc.connectionState === 'failed') {
           console.error('Connection failed. Consider renegotiating or restarting the connection.');
         }
       });
 
-      pc.addEventListener("datachannel", (event) => { 
-        console.log(event, 'event datachannel');
-      })
+      pc.addEventListener("datachannel", (event) => {
+        console.log("Data channel event: ", event);  // Added log for data channel
+      });
 
       return pc;
     } catch (error) {
@@ -96,10 +100,14 @@ export const useMeetingRecording = (roomId: string | null, meetId: string | unde
   };
 
   useEffect(() => {
-    if(roomId){
+    if (roomId && peerConnection) {
       roomIdRef.current = roomId;
+      mainPeerConnectionRef.current = peerConnection;
+      // peerConnection.current = createPeerConnection()
+      recordingPeerConnectionRef.current = createPeerConnection();
+
     }
-  }, [roomId]);
+  }, [roomId, peerConnection]);
 
   useEffect(() => {
     if (!socketRef.current) {
@@ -121,54 +129,53 @@ export const useMeetingRecording = (roomId: string | null, meetId: string | unde
   const startRecording = async () => {
     try {
       if (isRecordingStartedRef.current) {
+        console.log("Recording already started.");  // Log when recording is already started
         return;
       }
-  
+
       if (!mainPeerConnectionRef.current) {
         console.error('PeerConnections do not exist!');
         return;
       }
-  
+
       if (!recordingPeerConnectionRef.current) {
         recordingPeerConnectionRef.current = createPeerConnection();
       }
       const combinedStream = new MediaStream();
 
-      // const screenStream = await mediaDevices.getDisplayMedia();
-      // screenStream.getTracks().forEach(track => {
-      //     recordingPeerConnectionRef?.current?.addTrack(track, screenStream);
-      //     combinedStream.addTrack(track);
-      //   });
-  
       const screenStream = await mediaDevices.getDisplayMedia();
       const screenTrack = screenStream.getVideoTracks()[0];
-  
+      combinedStream.addTrack(screenTrack);
+
       if (!screenTrack) {
         console.error('No video track available for screen recording');
         return;
       }
-  
-      // combinedStream.addTrack(screenTrack);
-  
+
+      console.log("Screen stream started", screenTrack);  // Log when screen stream is started
+
       // Add audio tracks if available from main peer connection
-      mainPeerConnectionRef.current.getReceivers().forEach((receiver) => {
-        if (receiver.track && receiver.track.kind === 'audio') {
-          combinedStream.addTrack(receiver.track);
-        }
-      });
-  
-      mainPeerConnectionRef.current.getSenders().forEach((sender) => {
-        if (sender.track && sender.track.kind === 'audio') {
-          combinedStream.addTrack(sender.track);
-        }
-      });
-  
+      // mainPeerConnectionRef.current?.getReceivers()?.forEach((receiver) => {
+      //   if (receiver.track && receiver.track.kind === 'audio') {
+      //     combinedStream.addTrack(receiver.track);
+      //   }
+      // });
+
+      // mainPeerConnectionRef.current.getSenders().forEach((sender) => {
+      //   if (sender.track) {
+      //     combinedStream.addTrack(sender.track);
+      //   }
+      // });
+
       mediaStreamRef.current = combinedStream;
-  
+
+      combinedStream.getTracks().forEach(track => {
+        recordingPeerConnectionRef.current?.addTrack(track, combinedStream);
+      });
+
       if (recordingPeerConnectionRef.current) {
         combinedStream.getTracks().forEach(track => {
           console.log(`Adding transceiver for track: ${track.kind}`);
-  
           if (track.kind === 'audio' || track.kind === 'video') {
             try {
               const transceiver = recordingPeerConnectionRef.current?.addTransceiver(track, { direction: 'sendrecv' });
@@ -182,30 +189,34 @@ export const useMeetingRecording = (roomId: string | null, meetId: string | unde
             }
           }
         });
-  
+
         const offer = await recordingPeerConnectionRef.current.createOffer({});
         await recordingPeerConnectionRef.current.setLocalDescription(offer);
-  
+
         socketRef.current?.emit('recording-peer', {
           roomId: roomIdRef.current,
         });
-  
+
         socketRef.current?.emit('offer', {
           sdp: recordingPeerConnectionRef.current.localDescription,
           roomId: roomIdRef.current,
           type: PeerConnectionType.RECORDING,
         });
-  
+
         socketRef?.current?.emit('action', {
           roomId: roomIdRef.current,
           action: UserActions.StartRecording,
           socketId: socketRef.current.id,
         });
-  
+
         recordingStreamRef.current = screenStream;
-  
+
         isRecordingStartedRef.current = true;
         setIsRecording(true);
+        Toast.show({
+          type: "success",
+          text1: t("RecordingStarted"),
+        })
       }
     } catch (error) {
       console.error('Error starting screen recording:', error);
@@ -223,6 +234,7 @@ export const useMeetingRecording = (roomId: string | null, meetId: string | unde
       if (recordingStreamRef.current) {
         recordingStreamRef.current.getTracks().forEach((track) => {
           track.stop();
+          track.release();
           recordingPeerConnectionRef.current?.getSenders().forEach((sender) => {
             if (sender.track === track) {
               recordingPeerConnectionRef.current?.removeTrack(sender);
@@ -238,34 +250,39 @@ export const useMeetingRecording = (roomId: string | null, meetId: string | unde
       }
 
       isRecordingStartedRef.current = false;
+      Toast.show({
+        type: "success",
+        text1: t("RecordingStopped"),
+      })
     } catch (error) {
       console.error('Error while stopping recording and switching to camera:', error);
     }
   };
 
   const handleOffer = async ({ sdp }: { sdp: any }) => {
+    console.log("Received offer: ", sdp);  // Added log for received offer
     if (!recordingPeerConnectionRef.current) {
       return;
     }
-  
+
     try {
       const polite = true;
       const offerCollision = (recordingPeerConnectionRef.current.signalingState === 'have-local-offer' || recordingPeerConnectionRef.current.signalingState === 'have-remote-offer');
       const ignoreOffer = !polite && offerCollision;
-  
+
       if (ignoreOffer) {
         return;
       }
       const offer = new RTCSessionDescription(sdp);
       await recordingPeerConnectionRef.current.setRemoteDescription(offer);
-  
+
       const senders = recordingPeerConnectionRef.current.getSenders();
       const receivers = recordingPeerConnectionRef.current.getReceivers();
-  
+
       await flushCandidates();
       const answer = await recordingPeerConnectionRef.current.createAnswer();
       await recordingPeerConnectionRef.current.setLocalDescription(answer);
-  
+
       if (recordingPeerConnectionRef.current.localDescription) {
         const localDescription = recordingPeerConnectionRef.current.localDescription as RTCSessionDescription;
         socketRef.current?.emit('answer', {
@@ -315,6 +332,7 @@ export const useMeetingRecording = (roomId: string | null, meetId: string | unde
     }
     pendingCandidates.length = 0;
   };
+
   const handleCandidate = async ({ candidate }: { candidate: RTCIceCandidateInit }) => {
     if (!recordingPeerConnectionRef.current) {
       return;
@@ -336,6 +354,6 @@ export const useMeetingRecording = (roomId: string | null, meetId: string | unde
     startRecording,
     stopRecording,
     isRecording,
-    updatePeerConnections,
+    // updatePeerConnections,
   };
 };

@@ -19,12 +19,10 @@ import { useKeepAwake } from "@sayem314/react-native-keep-awake"
 import Subtitles from "src/components/Subtitles"
 import Loading from "src/components/Loading"
 import Config from "react-native-config"
-import { NativeEventEmitter, NativeModules } from "react-native"
 import { useMeetingRecording } from "src/hooks/useMeetingRecording"
 import NewJoinRequestModal from "src/modals/MeetingModals/NewJoinRequestModal"
 import { useMeetingAccess } from "src/hooks/useMeetingAccess"
 
-const { ScreenRecorder } = NativeModules
 
 const recordingUrl = Config.SOCKET_RECORDING_URL
 
@@ -49,7 +47,6 @@ const MeetingScreen = () => {
     isMuted,
     isVideoOff,
     roomId,
-    meetId,
     participants,
     isSpeakerOn,
     isCameraSwitched,
@@ -76,8 +73,8 @@ const MeetingScreen = () => {
     clearCanvas,
     setClearCanvas,
   } = useWebRtc(instanceMeetingOwner!)
-  const { startRecording, stopRecording, isRecording, updatePeerConnections } =
-    useMeetingRecording(roomId, meetId)
+  const { startRecording, stopRecording, isRecording } =
+    useMeetingRecording(roomId, peerConnection)
 
   useKeepAwake()
   useStatusBar("light-content", colors.dark)
@@ -100,86 +97,11 @@ const MeetingScreen = () => {
     sheetParticipantsRef.current?.open()
   }
 
-  useEffect(() => {
-    if (peerConnection) {
-      updatePeerConnections(peerConnection)
-    }
-  }, [peerConnection])
-
-  useEffect(() => {
-    const eventEmitter = new NativeEventEmitter(ScreenRecorder)
-    const chunkListener = eventEmitter.addListener(
-      "onVideoChunk",
-      ({ chunk }) => {
-        console.log("Received chunk:", chunk)
-        sendChunkToServer(chunk)
-      }
-    )
-
-    return () => {
-      chunkListener.remove()
-    }
-  }, [])
-
-  // const startRecording = async () => {
-  //   try {
-  //     if (wsRef.current?.readyState === WebSocket.OPEN) {
-  //       recordingNameRef.current = `recording-mobile-${Date.now()}`
-  //       startTimeRef.current = Date.now()
-  //       await ScreenRecorder.startRecording();
-  //       console.log("Recording started")
-  //       setIsStarted(true)
-
-  //       if(socketRef.current){
-  //       socketRef?.current?.emit("action", {
-  //         roomId,
-  //         action: 'start-recording',
-  //         socketId: socketRef.current.id,
-  //       })
-  //     }
+  // useEffect(() => {
+  //   if (peerConnection) {
+  //     updatePeerConnections(peerConnection)
   //   }
-  //   } catch (error) {
-  //     console.error(
-  //       "Failed to start recording:",
-  //       { ScreenRecorder, froMNATIVE: NativeModules.ScreenRecorder },
-  //       error
-  //     )
-  //   }
-  // }
-  // const stopRecording = async () => {
-  //   try {
-  //     if (ScreenRecorder && isStarted) {
-  //       await ScreenRecorder.stopRecording()
-  //       if (wsRef.current?.readyState === WebSocket.OPEN) {
-  //         const duration = startTimeRef.current
-  //           ? Math.floor((Date.now() - startTimeRef.current) / 1000)
-  //           : 0
-
-  //         wsRef.current.send(
-  //           JSON.stringify({
-  //             fileName: recordingNameRef.current,
-  //             fileExtension: "webm",
-  //             action: "end",
-  //             meetId,
-  //             userId: localUserId,
-  //             duration,
-  //           })
-  //         )
-  //         if(socketRef.current){
-  //           socketRef?.current?.emit("action", {
-  //             roomId,
-  //             action: 'stop-recording',
-  //             socketId: socketRef.current.id,
-  //           })
-  //         }
-  //       }
-  //       startTimeRef.current = null
-  //     }
-  //     setIsStarted(false)
-  //   } catch (error) {
-  //     console.error("Failed to stop recording:", error)
-  //   }
-  // }
+  // }, [peerConnection])
 
   useEffect(() => {
     let reconnectTimeout: NodeJS.Timeout | null = null
@@ -220,24 +142,6 @@ const MeetingScreen = () => {
     }
   }, [])
 
-  const sendChunkToServer = async (base64Chunk: any) => {
-    try {
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        wsRef.current.send(
-          JSON.stringify({
-            fileName: recordingNameRef.current,
-            fileExtension: "webm",
-            chunks: base64Chunk,
-            action: "stream",
-          })
-        )
-        console.log("chunk sent")
-      }
-    } catch (error) {
-      console.error("Failed to send chunk:", error)
-    }
-  }
-
   const callTopActions = [
     {
       name: "swapCamera",
@@ -262,16 +166,8 @@ const MeetingScreen = () => {
 
         if (isRecording) {
           stopRecording()
-          Toast.show({
-            type: "success",
-            text1: t("RecordingStopped"),
-          })
         } else {
           startRecording()
-          Toast.show({
-            type: "success",
-            text1: t("RecordingStarted"),
-          })
         }
       },
       style: { opacity: isRecording ? 1 : 0.5 },
@@ -282,12 +178,16 @@ const MeetingScreen = () => {
     {
       name: "callEnd",
       onPress: () => {
-        stopRecording()
-        endCall()
-        Toast.show({
-          type: "success",
-          text1: t("YouLeftTheMeeting"),
-        })
+        if (isRecording) {
+          stopRecording()
+        }
+        setTimeout(() => {
+          endCall()
+          Toast.show({
+            type: "success",
+            text1: t("YouLeftTheMeeting"),
+          })
+        }, 500)
       },
     },
     {

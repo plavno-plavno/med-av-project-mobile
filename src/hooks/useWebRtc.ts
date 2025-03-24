@@ -19,6 +19,7 @@ import { base64ToFloat32Array, float32ArrayToBase64, Float32ConcatAll, resampleT
 import { useGetCalendarEventByHashQuery } from "src/api/calendarApi/calendarApi"
 import RTCDataChannel from "react-native-webrtc/lib/typescript/RTCDataChannel"
 import { screenHeight, screenWidth } from "@utils/screenResponsive"
+import { isIOS } from "@utils/platformChecker"
 
 export type Photo = {
   id: string
@@ -244,8 +245,28 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
   const messagesChannelRef = useRef<RTCDataChannel | null>(null);
   const drawChannelRef = useRef<RTCDataChannel | null>(null);
-  const [points, setPoints] = useState<Point[]>([]); 
-  const [clearCanvas, setClearCanvas] = useState(false); 
+  const [points, setPoints] = useState<Point[]>([]);
+  const [clearCanvas, setClearCanvas] = useState(false);
+
+  useEffect(() => {
+    if (localStream) {
+      const { audioTrack, videoTrack } = localStream;
+
+      if (audioTrack) {
+        audioTrack.enabled = !isMuted;
+      } else {
+        console.warn('No audio track available in localStream');
+      }
+
+      if (videoTrack) {
+        videoTrack.enabled = !isVideoOff;
+      } else {
+        console.warn('No video track available in localStream');
+      }
+    } else {
+      console.warn('localStream is not defined');
+    }
+  }, [localStream, isMuted, isVideoOff])
 
   useEffect(() => {
     const setupSocket = async () => {
@@ -314,7 +335,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     try {
       const parsedData = JSON.parse(data);
       console.log(parsedData.type, 'parsedData.type');
-      
+
       if (parsedData.type === 'draw') {
         setPoints((prevPoints) => [
           ...prevPoints,
@@ -335,26 +356,26 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     if (!channel) {
       return;
     }
-  
+
     channel.addEventListener("open", () => {
       console.log(`Data channel [${type}] opened`)
-        })
+    })
 
-        channel.addEventListener("message", (event) => {
-          if (type === 'Messages') {
-          handlePeerDataChannelMessage(event?.data)
-          } else if (type === 'Draw') {
-            handleDrawingData(event?.data as any)
-          }
-        })
+    channel.addEventListener("message", (event) => {
+      if (type === 'Messages') {
+        handlePeerDataChannelMessage(event?.data)
+      } else if (type === 'Draw') {
+        handleDrawingData(event?.data as any)
+      }
+    })
 
-        channel.addEventListener("close", () => {
-          console.log(`Data channel [${type}] closed`)
-        })
+    channel.addEventListener("close", () => {
+      console.log(`Data channel [${type}] closed`)
+    })
 
-        channel.addEventListener("error", (error) => {
-          console.error(`Data channel [${type}] error`, error)
-        })
+    channel.addEventListener("error", (error) => {
+      console.error(`Data channel [${type}] error`, error)
+    })
   };
 
   const handleScreenShareJoined = ({ socketId }: { socketId: string }) => {
@@ -467,12 +488,12 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         const midId = event.transceiver.mid || ""
         if (event?.track?.kind === "video") {
           console.log(event?.track?.kind === "video", 'asdfasfasfas');
-          console.log(midId === screenTrackMidIdRef.current,'midId === screenTrackMidIdRef.current');
+          console.log(midId === screenTrackMidIdRef.current, 'midId === screenTrackMidIdRef.current');
           console.log(midId, 'midIdmidIdmidIdmidIdmidIdmidIdmidIdmidId');
           console.log(screenTrackMidIdRef.current, 'screenTrackMidIdRef.current');
-          
+
           if (midId === screenTrackMidIdRef.current) {
-              setSharedScreen(event.track)
+            setSharedScreen(event.track)
             return
           }
 
@@ -549,7 +570,16 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         },
         isOwner: instanceMeetingOwner,
       })
-      inCallManager.setSpeakerphoneOn(true)
+      if (isSpeakerOn) {
+        if (isIOS()) {
+          setTimeout(() => {
+            inCallManager.setSpeakerphoneOn(true)
+          }, 1000)
+        } else {
+          inCallManager.setSpeakerphoneOn(true)
+        }
+
+      }
       if (!timerRef.current) {
         startTimeRef.current = Date.now()
         timerRef.current = setInterval(() => {
@@ -611,34 +641,34 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     }
   }
   // sharing screen
-    // const [localMediaStream, setLocalMediaStream] = useState<any>(null);
-    // const startScreenShare = async () => {
-    //   try {
-    //     const mediaStream = await mediaDevices.getDisplayMedia();
-    //     console.log(mediaStream, 'mediaStreammediaStream');
-    //     setLocalMediaStream(mediaStream);
+  // const [localMediaStream, setLocalMediaStream] = useState<any>(null);
+  // const startScreenShare = async () => {
+  //   try {
+  //     const mediaStream = await mediaDevices.getDisplayMedia();
+  //     console.log(mediaStream, 'mediaStreammediaStream');
+  //     setLocalMediaStream(mediaStream);
 
-    //     // Add tracks to peer connection
-    //     mediaStream.getTracks().forEach(track => {
-    //       console.log(track, 'tracktracktracktrack');
+  //     // Add tracks to peer connection
+  //     mediaStream.getTracks().forEach(track => {
+  //       console.log(track, 'tracktracktracktrack');
 
-    //       peerConnection.current?.addTrack(track, mediaStream);
-    //     });
+  //       peerConnection.current?.addTrack(track, mediaStream);
+  //     });
 
-    //   } catch (err) {
-    //     console.error('Error starting screen share:', err);
-    //   }
-    // };
+  //   } catch (err) {
+  //     console.error('Error starting screen share:', err);
+  //   }
+  // };
 
-    // const stopScreenShare = () => {
-    //   if (localMediaStream) {
-    //     // Stop all tracks
-    //     localMediaStream?.getTracks().forEach(track => track.stop());
-    //     console.log(localMediaStream, 'localMediaStreamlocalMediaStream');
+  // const stopScreenShare = () => {
+  //   if (localMediaStream) {
+  //     // Stop all tracks
+  //     localMediaStream?.getTracks().forEach(track => track.stop());
+  //     console.log(localMediaStream, 'localMediaStreamlocalMediaStream');
 
-    //     setLocalMediaStream(null);
-    //   }
-    // };
+  //     setLocalMediaStream(null);
+  //   }
+  // };
 
   const handleOfferCheck = async () => {
     try {
@@ -856,7 +886,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
       const midId = Number(mid)
       console.log(type, 'typetypetypetypetypetypetypetypetypetypetypetype');
       console.log(midId, 'midIdmidIdmidIdmidIdmidIdmidIdmidIdmidId');
-      
+
       if (type === "screen") {
         screenTrackMidIdRef.current = mid
         return
@@ -979,7 +1009,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   }
 
   useEffect(() => {
-    if(authMeData && !sttLanguageRef.current){
+    if (authMeData && !sttLanguageRef.current) {
       sttLanguageRef.current = authMeData?.language?.code?.toLowerCase?.() || 'en'
     }
   }, [authMeData, sttLanguageRef.current])
@@ -1094,7 +1124,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     if (!track) {
       return
     }
-    
+
     track.enabled = isAudio ? Boolean(isMuted) : Boolean(isVideoOff)
 
     setLocalStream((prev) => ({
@@ -1115,15 +1145,14 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     } else {
       setIsVideoOff((prev) => !prev)
     }
-console.log(track, 'tracktracktracktracktracktrack');
 
     const action = track.enabled
       ? isAudio
         ? UserActions.UnmuteAudio
         : UserActions.UnmuteVideo
       : isAudio
-      ? UserActions.MuteAudio
-      : UserActions.MuteVideo
+        ? UserActions.MuteAudio
+        : UserActions.MuteVideo
 
     socketRef?.current?.emit("action", {
       roomId,
@@ -1142,14 +1171,14 @@ console.log(track, 'tracktracktracktracktracktrack');
     status: ActionStatus
   }) => {
     setParticipants((prev) => prev.map((participant) => participant.socketId === socketId
-    ? {
-      ...participant,
-      isAudioOn: status.isAudioOn,
-      isVideoOn: status.isVideoOn,
-    }
-    : participant,
-  ),
-  );
+      ? {
+        ...participant,
+        isAudioOn: status.isAudioOn,
+        isVideoOn: status.isVideoOn,
+      }
+      : participant,
+    ),
+    );
   }
 
   const handleParticipantRoomInfo = async ({ participantsInfo }: { participantsInfo: ParticipantsInfo[] }) => {

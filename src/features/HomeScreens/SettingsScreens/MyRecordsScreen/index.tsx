@@ -1,6 +1,6 @@
 import { FlatList, StyleSheet } from "react-native"
 import { isIOS } from "@utils/platformChecker"
-import React, { useEffect } from "react"
+import React, { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { moderateScale } from "react-native-size-matters"
 import ScreenWrapper from "src/components/ScreenWrapper"
@@ -9,13 +9,14 @@ import NoData from "src/components/NoData"
 import { useGetRecordingsQuery } from "src/api/helpCenterApi/helpCenterApi"
 import Loading from "src/components/Loading"
 import { IRecordingsEntity } from "src/api/helpCenterApi/types"
+import { useFocusEffect } from "@react-navigation/native"
 
 const MyRecordsScreen = () => {
   const { t } = useTranslation()
 
   const [page, setPage] = React.useState(1)
 
-  const { data: recordingsData, isLoading: recordingsLoading } =
+  const { data: recordingsData, isLoading: recordingsLoading, refetch: recordingsDataRefetch } =
     useGetRecordingsQuery({
       limit: 10,
       page,
@@ -30,6 +31,10 @@ const MyRecordsScreen = () => {
       setPage((prev) => prev + 1)
     }
   }
+
+  useFocusEffect(useCallback(() => {
+    recordingsDataRefetch()
+  }, []))
 
   useEffect(() => {
     if (isRecordingsLoadingMore) {
@@ -65,6 +70,7 @@ const MyRecordsScreen = () => {
                 title={item?.title}
                 duration={item?.duration}
                 date={item?.createdAt}
+                recordingsDataRefetch={recordingsDataRefetch}
               />
             )}
             keyExtractor={(item) => String(item?.id)}

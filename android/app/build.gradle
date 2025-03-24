@@ -103,13 +103,13 @@ android {
             applicationId "com.MedAVDevelopment"
             targetSdkVersion rootProject.ext.targetSdkVersion
         }
-    }
+    } 
     namespace "com.MedAV"
     defaultConfig {
         applicationId "com.MedAV"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 14
+        versionCode 1
         versionName "1.0"
         resValue "string", "build_config_package", "com.MedAV"
     }

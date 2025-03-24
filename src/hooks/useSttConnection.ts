@@ -34,7 +34,7 @@ const useSttConnection = ({ sttUrl, isAudioOn }: IUseSttConnectionProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const isConnectingRef = useRef<boolean>(false);
-  const [localSttStream, setLocalSttStream] = useState<Pick<RemoteStream, 'userId' | 'audioTrack'> | null>(null);
+  const [localSttStream, setLocalSttStream] = useState<any | null>(null);
 
   const [, setSttLanguage] = useState<string | undefined>(user?.language?.code || '');
   const sttLanguageRef = useRef<string | undefined>(user?.language?.code?.toLowerCase?.());
@@ -72,7 +72,7 @@ const useSttConnection = ({ sttUrl, isAudioOn }: IUseSttConnectionProps) => {
     socketRef.current.onerror = (event: Event) => {
       const error = event
         setError(error as any);
-      console.error('WebSocket error', error);
+      console.error('WebSocket stt error', error);
     };
 
     socketRef.current.onclose = (event) => {
@@ -95,7 +95,6 @@ const useSttConnection = ({ sttUrl, isAudioOn }: IUseSttConnectionProps) => {
     allLanguagesRef.current = allLanguagesCodes;
     setAllLanguages(allLanguagesCodes);
   };
-console.log(socketRef.current, 'socketRef.currentsocketRef.current');
 
   const onSocketOpen = () => {
     setIsSttConnected(true);

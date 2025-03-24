@@ -20,11 +20,13 @@ const RecordingCard = ({
   title,
   duration,
   date,
+  recordingsDataRefetch,
 }: {
   id: number
   title: string
   duration: string
   date?: string
+  recordingsDataRefetch: () => void;
 }) => {
   const [removeRecordings] = useRemoveRecordingsMutation()
   const formatDuration = (totalSeconds: number) => {
@@ -42,6 +44,18 @@ const RecordingCard = ({
   }
   const formatDate = (isoString: string): string => {
     return moment(isoString).format("DD.MM.YYYY")
+  }
+
+  const onDeleteRecordingPress = async () => {
+    try {
+      const res = await removeRecordings({ id }).unwrap();
+      console.log(res, 'onDeleteRecordingPressonDeleteRecordingPress');
+      
+      recordingsDataRefetch();
+    } catch (error) {
+      console.log(error, 'error onDeleteRecordingPress');
+      
+    }
   }
 
   const onRecordDownload = async () => {
@@ -122,7 +136,7 @@ const RecordingCard = ({
         <Text style={styles.timeText}>{formatDate(date || "")}</Text>
       </View>
       <View style={[helpers.flexRow, helpers.gap12]}>
-        <Icon name="deleteAccount" onPress={() => removeRecordings({ id })} />
+        <Icon name="deleteAccount" onPress={onDeleteRecordingPress} />
         <Icon name="download" onPress={handleDownloadRecord} />
       </View>
     </View>
