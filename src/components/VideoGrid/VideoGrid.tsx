@@ -9,7 +9,7 @@ import { helpers } from "@utils/theme"
 import RNSoundLevel from "react-native-sound-level"
 import { isIOS } from "@utils/platformChecker"
 import ParticipantItem from "../ParticipantItem"
-import Canvas from 'react-native-canvas';
+import Canvas from "react-native-canvas"
 import { screenHeight, screenWidth } from "@utils/screenResponsive"
 
 export interface UserInMeeting extends User {
@@ -36,14 +36,14 @@ const VideoGrid = ({
   setClearCanvas,
 }: any) => {
   const [activeHostSpeaker, setActiveHostSpeaker] = React.useState(false)
-  const canvasRef = useRef<Canvas | null>(null);
+  const canvasRef = useRef<Canvas | null>(null)
 
   const adaptParticipantsToShow = (): RemoteStream[] => {
     const remoteStreams: Record<string | number, RemoteStream> = {}
 
     remoteAudioStreams.forEach((audioStream: any) => {
       const midId = Number(audioStream.midId)
-      const socketId = usersAudioTrackToIdMap[midId];
+      const socketId = usersAudioTrackToIdMap[midId]
       if (socketId) {
         if (!remoteStreams[socketId]) {
           remoteStreams[socketId] = {
@@ -60,7 +60,7 @@ const VideoGrid = ({
 
     remoteVideoStreams.forEach((videoStream: any) => {
       const midId = Number(videoStream.midId)
-      const socketId = usersVideoTrackToIdMap[midId];
+      const socketId = usersVideoTrackToIdMap[midId]
 
       if (socketId) {
         if (!remoteStreams[socketId]) {
@@ -132,14 +132,14 @@ const VideoGrid = ({
     const isActiveHighlighter =
       item?.socketId === localUserSocketId
         ? activeHostSpeaker && !isMuted
-        : activeSpeaker !== null &&
-          activeSpeaker === item?.socketId
+        : activeSpeaker !== null && activeSpeaker === item?.socketId
 
     const user = participants?.find(
       (user: User) => user.socketId === item.socketId
     ) as UserInMeeting
 
-    const isMicMuted = item?.socketId === localUserSocketId ? isMuted : !user?.isAudioOn
+    const isMicMuted =
+      item?.socketId === localUserSocketId ? isMuted : !user?.isAudioOn
     const isCameraOff =
       item?.socketId === localUserSocketId ? isVideoOff : !user?.isVideoOn
 
@@ -185,41 +185,41 @@ const VideoGrid = ({
       adaptParticipantsToShow()
     }
   }, [activeSpeaker])
-  
+
   const drawOnCanvas = (canvas: Canvas, color: string) => {
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d")
     if (ctx) {
-      ctx.strokeStyle = color;
-  
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.beginPath();
+      ctx.strokeStyle = color
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.beginPath()
       points.forEach((point: { x: number; y: number }, index: number) => {
         if (index === 0) {
-          ctx.moveTo(point.x, point.y);
+          ctx.moveTo(point.x, point.y)
         } else {
-          ctx.lineTo(point.x, point.y);
+          ctx.lineTo(point.x, point.y)
         }
-      });
-      ctx.stroke();
+      })
+      ctx.stroke()
     }
-  };
-  
-  // useEffect(() => {
-  //   const canvas = canvasRef.current;
-  //   if (canvas) {
-  //     canvas.width = screenWidth * 0.9;
-  //     canvas.height = screenHeight * 0.5;
-  //     if (clearCanvas) {
-  //       const ctx = canvas.getContext('2d');
-  //       if (ctx) {
-  //         ctx.clearRect(0, 0, canvas.width, canvas.height);
-  //       }
-  //       setClearCanvas(false);
-  //     } else {
-  //       drawOnCanvas(canvas, colors.alertRed);
-  //     }
-  //   }
-  // }, [clearCanvas, points]); 
+  }
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (canvas) {
+      canvas.width = screenWidth * 0.9
+      canvas.height = screenHeight * 0.5
+      if (clearCanvas) {
+        const ctx = canvas.getContext("2d")
+        if (ctx) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height)
+        }
+        setClearCanvas(false)
+      } else {
+        drawOnCanvas(canvas, colors.alertRed)
+      }
+    }
+  }, [clearCanvas, points])
 
   return (
     <View style={styles.container}>
@@ -230,7 +230,7 @@ const VideoGrid = ({
             style={[helpers.width100Percent, helpers.height100Percent]}
             objectFit="cover"
           />
-         <Canvas ref={canvasRef} style={styles.canvas} />
+          <Canvas ref={canvasRef} style={styles.canvas} />
         </View>
       )}
       {adaptParticipantsToShow().map((item, index) =>
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: moderateScale(4),
     justifyContent: "center",
-    // overflow: "hidden",
+    overflow: "hidden",
   },
   sharingContainer: {
     width: "100%",
@@ -265,10 +265,10 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   canvas: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
 })
