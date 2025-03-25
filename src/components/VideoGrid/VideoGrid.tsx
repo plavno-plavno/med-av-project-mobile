@@ -250,6 +250,7 @@ const styles = StyleSheet.create({
     gap: moderateScale(4),
     justifyContent: "center",
     overflow: "hidden",
+    paddingBottom: moderateScale(3),
   },
   sharingContainer: {
     width: "100%",
