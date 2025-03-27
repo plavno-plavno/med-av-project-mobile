@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { Icon, CustomButton } from "@components"
 import { useFocusEffect, useNavigation } from "@react-navigation/native"
 import { isIOS } from "@utils/platformChecker"
@@ -29,7 +30,10 @@ interface IFormValues {
   firstName: string
   lastName: string
   gmtDelta: string | number
-  language: {
+  speechLanguage: {
+    id: string
+  }
+  subtitlesLanguage: {
     id: string
   }
 }
@@ -98,7 +102,6 @@ const ProfileSettingsScreen = () => {
         })
         setFieldValue(
           "photo",
-          //@ts-ignore
           uploadResponse?.data?.id || uploadResponse?.data?.[0]?.id
         )
         setIsPhotoChanged(true)
@@ -116,7 +119,8 @@ const ProfileSettingsScreen = () => {
         firstName: values.firstName,
         lastName: values.lastName,
         timezone: +values.gmtDelta,
-        language: +values.language,
+        inputLanguage: +values.speechLanguage,
+        outputLanguage: +values.subtitlesLanguage,
         photo: isPhotoChanged ? values.photo : authMeData?.photo?.id,
       }).unwrap()
       authMeRefetch()
@@ -159,8 +163,8 @@ const ProfileSettingsScreen = () => {
                 photo: authMeData?.photo?.link || "",
                 firstName: authMeData?.firstName || "",
                 lastName: authMeData?.lastName || "",
-                //@ts-ignore
-                language: authMeData?.language?.id || "",
+                subtitlesLanguage: authMeData?.outputLanguage?.id || "",
+                speechLanguage: authMeData?.inputLanguage?.id || "",
                 gmtDelta: timezoneData?.id || "",
               }}
               validationSchema={validationProfileSettingsSchema}
@@ -231,12 +235,22 @@ const ProfileSettingsScreen = () => {
                   <CustomInput
                     inputType="dropdown"
                     dropdownData={languagesDropdown || []}
-                    label={t("DestinationLanguage")}
-                    value={String(values.language)}
+                    label={t("SpeechLanguage")}
+                    value={String(values.speechLanguage)}
                     onChangeText={(val) =>
-                      handleChange("language")(val as string)
+                      handleChange("speechLanguage")(val as string)
                     }
-                    onBlur={handleBlur("language")}
+                    onBlur={handleBlur("speechLanguage")}
+                  />
+                  <CustomInput
+                    inputType="dropdown"
+                    dropdownData={languagesDropdown || []}
+                    label={t("SubtitlesLanguage")}
+                    value={String(values.subtitlesLanguage)}
+                    onChangeText={(val) =>
+                      handleChange("subtitlesLanguage")(val as string)
+                    }
+                    onBlur={handleBlur("subtitlesLanguage")}
                   />
                   <CustomInput
                     dropdownPosition="top"

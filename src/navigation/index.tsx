@@ -38,7 +38,6 @@ const Stack = createNativeStackNavigator()
 const Navigation: React.FC = () => {
   const { refetch: authMeRefetch } = useAuthMeQuery()
   const { refetch: timezoneRefetch } = useTimezoneQuery()
-
   const getRoute = async () => {
     try {
       const accessToken = await Keychain.getGenericPassword({

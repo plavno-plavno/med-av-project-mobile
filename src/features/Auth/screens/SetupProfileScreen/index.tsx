@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { useTranslation } from "react-i18next"
 import { View, Text, Image, ActivityIndicator } from "react-native"
 import ScreenWrapper from "src/components/ScreenWrapper"
@@ -32,7 +33,8 @@ interface IFormValues {
   firstName: string
   lastName: string
   gmtDelta: string | number
-  language: string
+  speechLanguage: string
+  subtitlesLanguage: string
 }
 
 const SetupProfileScreen = () => {
@@ -82,7 +84,6 @@ const SetupProfileScreen = () => {
         })
         setFieldValue(
           "photo",
-          //@ts-ignore
           uploadResponse?.data?.id || uploadResponse?.data?.[0]?.id
         )
         setIsPhotoChanged(true)
@@ -100,7 +101,8 @@ const SetupProfileScreen = () => {
         firstName: values.firstName,
         lastName: values.lastName,
         timezone: +values.gmtDelta,
-        language: +values.language,
+        outputLanguage: +values.subtitlesLanguage,
+        inputLanguage: +values.speechLanguage,
         photo: isPhotoChanged ? values.photo : authMeData?.photo?.id,
       }).unwrap()
       authMeRefetch()
@@ -127,7 +129,8 @@ const SetupProfileScreen = () => {
   const missingInfoLength = [
     authMeData?.firstName,
     authMeData?.lastName,
-    authMeData?.language,
+    authMeData?.outputLanguage,
+    authMeData?.inputLanguage,
     timezone?.id,
   ].filter(Boolean).length
 
@@ -160,9 +163,9 @@ const SetupProfileScreen = () => {
                 photo: authMeData?.photo?.link || "",
                 firstName: authMeData?.firstName || "",
                 lastName: authMeData?.lastName || "",
-                //@ts-ignore
-                language: authMeData?.language?.id || "",
-                gmtDelta: "",
+                subtitlesLanguage: authMeData?.outputLanguage?.id || "",
+                speechLanguage: authMeData?.inputLanguage?.id || "",
+                gmtDelta: timezone?.gmtDelta || "",
               }}
               validationSchema={validationSetupProfileSchema}
               onSubmit={handleUpdateProfile}
@@ -231,17 +234,35 @@ const SetupProfileScreen = () => {
                         />
                       )}
 
-                      {!authMeData?.language && (
+                      {!authMeData?.inputLanguage && (
                         <CustomInput
                           inputType="dropdown"
                           dropdownData={languagesDropdown || []}
-                          label={t("DestinationLanguage")}
-                          value={values.language.toString()}
+                          label={t("SpeechLanguage")}
+                          value={values.speechLanguage.toString()}
                           onChangeText={(val) =>
-                            handleChange("language")(val as string)
+                            handleChange("speechLanguage")(val as string)
                           }
-                          onBlur={handleBlur("language")}
-                          error={touched.language && errors.language}
+                          onBlur={handleBlur("speechLanguage")}
+                          error={
+                            touched.speechLanguage && errors.speechLanguage
+                          }
+                        />
+                      )}
+                      {!authMeData?.outputLanguage && (
+                        <CustomInput
+                          inputType="dropdown"
+                          dropdownData={languagesDropdown || []}
+                          label={t("SubtitlesLanguage")}
+                          value={values.subtitlesLanguage.toString()}
+                          onChangeText={(val) =>
+                            handleChange("subtitlesLanguage")(val as string)
+                          }
+                          onBlur={handleBlur("subtitlesLanguage")}
+                          error={
+                            touched.subtitlesLanguage &&
+                            errors.subtitlesLanguage
+                          }
                         />
                       )}
                       {!timezone?.id && (

@@ -39,7 +39,8 @@ export interface IUser {
   gmtDelta: number
   id: number
   isTwoFAEnabled: boolean
-  language: string
+  inputLanguage: any
+  outputLanguage: any
   lastName: string
   newEmail: boolean
   organization: string

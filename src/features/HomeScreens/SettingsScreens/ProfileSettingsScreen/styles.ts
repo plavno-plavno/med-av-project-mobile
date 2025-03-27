@@ -8,6 +8,7 @@ export const styles = StyleSheet.create({
     flexGrow: 1,
     gap: moderateScale(16),
     justifyContent: "space-between",
+    paddingBottom: moderateScale(30),
   },
   title: {
     ...fontFamilies.interManropeSemiBold24,

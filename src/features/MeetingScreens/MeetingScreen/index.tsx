@@ -20,9 +20,6 @@ import Subtitles from "src/components/Subtitles"
 import Loading from "src/components/Loading"
 import Config from "react-native-config"
 import { useMeetingRecording } from "src/hooks/useMeetingRecording"
-import NewJoinRequestModal from "src/modals/MeetingModals/NewJoinRequestModal"
-import { useMeetingAccess } from "src/hooks/useMeetingAccess"
-
 
 const recordingUrl = Config.SOCKET_RECORDING_URL
 
@@ -72,14 +69,17 @@ const MeetingScreen = () => {
     points,
     clearCanvas,
     setClearCanvas,
+    speechLanguage,
   } = useWebRtc(instanceMeetingOwner!)
-  const { startRecording, stopRecording, isRecording } =
-    useMeetingRecording(roomId, peerConnection)
+  const { startRecording, stopRecording, isRecording } = useMeetingRecording(
+    roomId,
+    peerConnection
+  )
 
   useKeepAwake()
   useStatusBar("light-content", colors.dark)
   const [isCaptionOn, setIsCaptionOn] = React.useState(false)
-
+  const meetingTitle = instanceMeetingOwner ? hash : title
   const startTimeRef = useRef<number | null>(null)
   const recordingNameRef = useRef<string | null>(null)
 
@@ -232,7 +232,7 @@ const MeetingScreen = () => {
             }}
           /> */}
           <View style={styles.upperControlContainer}>
-            <Text style={styles.title}>{title || hash}</Text>
+            <Text style={styles.title}>{meetingTitle}</Text>
             <View>
               <FlatList
                 data={callTopActions}
@@ -295,6 +295,7 @@ const MeetingScreen = () => {
           setIsCaptionOn={setIsCaptionOn}
           isCaptionOn={isCaptionOn}
           handleChangedRoomLanguage={handleChangedRoomLanguage}
+          speechLanguage={speechLanguage}
         />
         <ParticipantsModal
           isCreatorMode={isCreatorMode}

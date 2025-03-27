@@ -58,7 +58,8 @@ export interface ICreatedBy {
   gmtDelta: number
   id: number
   isTwoFAEnabled: boolean
-  language: string | null
+  inputLanguage: any
+  outputLanguage: any
   lastName: string | null
   newEmail: string | null
   organization: string | null
@@ -82,7 +83,8 @@ export interface IUser {
   gmtDelta: number
   id: number
   isTwoFAEnabled: boolean
-  language: string | null
+  inputLanguage: any
+  outputLanguage: any
   lastName: string | null
   newEmail: string | null
   organization: string | null

@@ -15,7 +15,12 @@ import inCallManager from "react-native-incall-manager"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 import AudioRecord from "react-native-audio-record"
 import Config from "react-native-config"
-import { base64ToFloat32Array, float32ArrayToBase64, Float32ConcatAll, resampleTo16kHZ } from "@utils/audioData"
+import {
+  base64ToFloat32Array,
+  float32ArrayToBase64,
+  Float32ConcatAll,
+  resampleTo16kHZ,
+} from "@utils/audioData"
 import { useGetCalendarEventByHashQuery } from "src/api/calendarApi/calendarApi"
 import RTCDataChannel from "react-native-webrtc/lib/typescript/RTCDataChannel"
 import { screenHeight, screenWidth } from "@utils/screenResponsive"
@@ -118,7 +123,7 @@ export type VideoStream = {
 }
 
 export interface RemoteStream {
-  socketId: string;
+  socketId: string
   audioTrack: MediaStreamTrack | null
   videoTrack: MediaStreamTrack | null
   mid: string
@@ -139,13 +144,13 @@ export interface IUsersVideoTrackToIdMap {
 }
 
 export enum DataChannelNames {
-  Messages = 'messages',
-  Draw = 'draw',
+  Messages = "messages",
+  Draw = "draw",
 }
 
 export interface Point {
-  x: number;
-  y: number;
+  x: number
+  y: number
 }
 
 type ParamList = {
@@ -216,7 +221,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     hash: String(route?.params?.hash),
   })
 
-  const invitedParticipantsRef = useRef<User[]>([]);
+  const invitedParticipantsRef = useRef<User[]>([])
 
   const socketRef = useRef<Socket | null>(null)
 
@@ -226,7 +231,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
   const STTSocket = useRef<WebSocket | null>(null)
   const sttLanguageRef = useRef<string>(
-    authMeData?.language?.code?.toLowerCase?.() || 'en'
+    authMeData?.outputLanguage?.code?.toLowerCase?.() || "en"
   )
   const allLanguagesRef = useRef<string[]>(["en", "hi"]) // Default to 'en' and 'hi'
   const pendingCandidates: RTCIceCandidate[] = []
@@ -241,30 +246,32 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     null
   )
 
+  const speechLanguage = useRef("")
+
   const wsRef = useRef<WebSocket | null>(null)
 
-  const messagesChannelRef = useRef<RTCDataChannel | null>(null);
-  const drawChannelRef = useRef<RTCDataChannel | null>(null);
-  const [points, setPoints] = useState<Point[]>([]);
-  const [clearCanvas, setClearCanvas] = useState(false);
+  const messagesChannelRef = useRef<RTCDataChannel | null>(null)
+  const drawChannelRef = useRef<RTCDataChannel | null>(null)
+  const [points, setPoints] = useState<Point[]>([])
+  const [clearCanvas, setClearCanvas] = useState(false)
 
   useEffect(() => {
     if (localStream) {
-      const { audioTrack, videoTrack } = localStream;
+      const { audioTrack, videoTrack } = localStream
 
       if (audioTrack) {
-        audioTrack.enabled = !isMuted;
+        audioTrack.enabled = !isMuted
       } else {
-        console.warn('No audio track available in localStream');
+        console.warn("No audio track available in localStream")
       }
 
       if (videoTrack) {
-        videoTrack.enabled = !isVideoOff;
+        videoTrack.enabled = !isVideoOff
       } else {
-        console.warn('No video track available in localStream');
+        console.warn("No video track available in localStream")
       }
     } else {
-      console.warn('localStream is not defined');
+      console.warn("localStream is not defined")
     }
   }, [localStream, isMuted, isVideoOff])
 
@@ -293,13 +300,13 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
           "sharing-participant-joined",
           handleScreenShareJoined
         )
-        socketRef.current.on('room-languages', handleRoomLanguages);
+        socketRef.current.on("room-languages", handleRoomLanguages)
         socketRef.current.on("mute-audio", userToggledMedia)
         socketRef.current.on("unmute-audio", userToggledMedia)
         socketRef.current.on("mute-video", userToggledMedia)
         socketRef.current.on("unmute-video", userToggledMedia)
 
-        socketRef.current.on('participant-room-info', handleParticipantRoomInfo)
+        socketRef.current.on("participant-room-info", handleParticipantRoomInfo)
 
         socketRef.current.on(UserActions.StartShareScreen, handleStartSharing)
         socketRef.current.on(UserActions.StopShareScreen, handleStopSharing)
@@ -320,41 +327,44 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
   const receivedFinish = () => {
     setTimeout(() => {
-      setClearCanvas(true);
-      setPoints([]);
-    }, 2000);
-  };
+      setClearCanvas(true)
+      setPoints([])
+    }, 2000)
+  }
 
   const handleRoomLanguages = ({ languages }: { languages: string[] }) => {
     if (languages) {
       allLanguagesRef.current = languages
     }
-  };
+  }
 
   const handleDrawingData = (data: string) => {
     try {
-      const parsedData = JSON.parse(data);
-      console.log(parsedData.type, 'parsedData.type');
+      const parsedData = JSON.parse(data)
+      console.log(parsedData.type, "parsedData.type")
 
-      if (parsedData.type === 'draw') {
+      if (parsedData.type === "draw") {
         setPoints((prevPoints) => [
           ...prevPoints,
           {
             x: parsedData.xRatio * (screenWidth * 0.9),
             y: parsedData.yRatio * (screenHeight * 0.5),
           },
-        ]);
-      } else if (parsedData.type === 'end') {
-        receivedFinish();
+        ])
+      } else if (parsedData.type === "end") {
+        receivedFinish()
       }
     } catch (e) {
-      console.error('Error parsing drawing data', e);
+      console.error("Error parsing drawing data", e)
     }
-  };
+  }
 
-  const setupDataChannel = (channel: RTCDataChannel | null, type: 'Messages' | 'Draw') => {
+  const setupDataChannel = (
+    channel: RTCDataChannel | null,
+    type: "Messages" | "Draw"
+  ) => {
     if (!channel) {
-      return;
+      return
     }
 
     channel.addEventListener("open", () => {
@@ -362,9 +372,9 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     })
 
     channel.addEventListener("message", (event) => {
-      if (type === 'Messages') {
+      if (type === "Messages") {
         handlePeerDataChannelMessage(event?.data)
-      } else if (type === 'Draw') {
+      } else if (type === "Draw") {
         handleDrawingData(event?.data as any)
       }
     })
@@ -376,7 +386,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     channel.addEventListener("error", (error) => {
       console.error(`Data channel [${type}] error`, error)
     })
-  };
+  }
 
   const handleScreenShareJoined = ({ socketId }: { socketId: string }) => {
     setIsScreenShare(true)
@@ -386,7 +396,6 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   const handleStartSharing = ({ socketId }: { socketId: string }) => {
     setSharingOwner(socketId)
     setIsScreenShare(true)
-
   }
 
   const handleStopSharing = () => {
@@ -437,10 +446,10 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         "unmute-video",
         "screen-share-updated",
         "sharing-participant-joined",
-        'participant-room-info',
-        'room-languages',
-        'start-share-screen',
-        'stop-share-screen'
+        "participant-room-info",
+        "room-languages",
+        "start-share-screen",
+        "stop-share-screen",
       ]
 
       events.forEach((event) => socketRef.current?.off(event))
@@ -472,14 +481,14 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
       })
 
       pc.addEventListener("datachannel", (event) => {
-        const { channel } = event;
+        const { channel } = event
 
         if (channel.label.startsWith(DataChannelNames.Messages)) {
-          messagesChannelRef.current = channel;
-          setupDataChannel(messagesChannelRef.current, 'Messages');
+          messagesChannelRef.current = channel
+          setupDataChannel(messagesChannelRef.current, "Messages")
         } else if (channel.label.startsWith(DataChannelNames.Draw)) {
-          drawChannelRef.current = channel;
-          setupDataChannel(drawChannelRef.current, 'Draw');
+          drawChannelRef.current = channel
+          setupDataChannel(drawChannelRef.current, "Draw")
         }
       })
 
@@ -487,10 +496,16 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         console.log("Receive track in ontrack", event)
         const midId = event.transceiver.mid || ""
         if (event?.track?.kind === "video") {
-          console.log(event?.track?.kind === "video", 'asdfasfasfas');
-          console.log(midId === screenTrackMidIdRef.current, 'midId === screenTrackMidIdRef.current');
-          console.log(midId, 'midIdmidIdmidIdmidIdmidIdmidIdmidIdmidId');
-          console.log(screenTrackMidIdRef.current, 'screenTrackMidIdRef.current');
+          console.log(event?.track?.kind === "video", "asdfasfasfas")
+          console.log(
+            midId === screenTrackMidIdRef.current,
+            "midId === screenTrackMidIdRef.current"
+          )
+          console.log(midId, "midIdmidIdmidIdmidIdmidIdmidIdmidIdmidId")
+          console.log(
+            screenTrackMidIdRef.current,
+            "screenTrackMidIdRef.current"
+          )
 
           if (midId === screenTrackMidIdRef.current) {
             setSharedScreen(event.track)
@@ -560,7 +575,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     try {
       socketRef.current?.emit("join", {
         roomId,
-        language: authMeData?.language?.code?.toLowerCase() || 'en',
+        language: authMeData?.outputLanguage?.code?.toLowerCase() || "en",
         meetId: meetId,
         status: {
           isAudioOn: !isMuted,
@@ -578,7 +593,6 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         } else {
           inCallManager.setSpeakerphoneOn(true)
         }
-
       }
       if (!timerRef.current) {
         startTimeRef.current = Date.now()
@@ -603,8 +617,8 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     if (socketRef.current) {
       socketRef.current?.close()
     }
-    drawChannelRef.current?.removeEventListener('message');
-    messagesChannelRef?.current?.removeEventListener('message');
+    drawChannelRef.current?.removeEventListener("message")
+    messagesChannelRef?.current?.removeEventListener("message")
     setRemoteVideoStreams([])
     if (STTSocket.current) {
       STTSocket.current.close()
@@ -747,19 +761,26 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   }) => {
     try {
       sttUrlRef.current = sttUrl as string
-      const usersAudioVideoMap: Record<string, { isAudioOn: boolean; isVideoOn: boolean, socketId: string }> = {};
+      const usersAudioVideoMap: Record<
+        string,
+        { isAudioOn: boolean; isVideoOn: boolean; socketId: string }
+      > = {}
       participantsInfo.forEach((participant) => {
         usersAudioVideoMap[participant.socketId] = {
           isAudioOn: participant.status.isAudioOn,
           isVideoOn: participant.status.isVideoOn,
           socketId: participant.socketId,
-        };
-      });
+        }
+      })
 
       setParticipants((_prev: any): any => {
         const newUsers = participantsInfo.map(({ userId, socketId }) => {
-          const { firstName = 'Guest', lastName = '', photo = null } =
-            invitedParticipantsRef.current.find(({ id }) => userId === id) || {};
+          const {
+            firstName = "Guest",
+            lastName = "",
+            photo = null,
+          } = invitedParticipantsRef.current.find(({ id }) => userId === id) ||
+          {}
           return {
             userId,
             socketId,
@@ -768,13 +789,13 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
             photo,
             isAudioOn: usersAudioVideoMap[socketId].isAudioOn,
             isVideoOn: usersAudioVideoMap[socketId].isVideoOn,
-          };
-        });
+          }
+        })
         return [
           // ...prev,
           ...newUsers,
-        ];
-      });
+        ]
+      })
 
       const anySharingOn = participantsInfo.some((p) => p.status.isSharingOn)
 
@@ -786,7 +807,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
       })
       if (userRefId.current) {
         setLocalStream({
-          socketId: socketRef.current?.id ?? '',
+          socketId: socketRef.current?.id ?? "",
           audioTrack: stream.getAudioTracks()[0] || null,
           videoTrack: stream.getVideoTracks()[0] || null,
         })
@@ -857,18 +878,18 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   }
 
   useEffect(() => {
-    if (authMeData?.language?.code) {
-      sttLanguageRef.current = authMeData?.language?.code
+    if (authMeData?.outputLanguage?.code) {
+      sttLanguageRef.current = authMeData?.outputLanguage?.code
     }
-  }, [authMeData?.language?.code])
+  }, [authMeData?.outputLanguage?.code])
 
   const handleChangedRoomLanguage = (language: string) => {
     console.log("handleChangedRoomLanguage: ", language)
     sttLanguageRef.current = language?.toLowerCase()
-    socketRef.current?.emit('change-language', {
+    socketRef.current?.emit("change-language", {
       roomId,
       language: language?.toLowerCase(),
-    });
+    })
   }
 
   const handleTransceiver = async ({
@@ -884,8 +905,8 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   }) => {
     if (mid) {
       const midId = Number(mid)
-      console.log(type, 'typetypetypetypetypetypetypetypetypetypetypetype');
-      console.log(midId, 'midIdmidIdmidIdmidIdmidIdmidIdmidIdmidId');
+      console.log(type, "typetypetypetypetypetypetypetypetypetypetypetype")
+      console.log(midId, "midIdmidIdmidIdmidIdmidIdmidIdmidIdmidId")
 
       if (type === "screen") {
         screenTrackMidIdRef.current = mid
@@ -935,7 +956,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         const midId = Number(stream.midId)
         const userIdMap = usersVideoTrackToIdMap[midId]
 
-        return userIdMap !== socketId;
+        return userIdMap !== socketId
       })
     )
 
@@ -943,7 +964,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
       prev.filter((stream) => {
         const midId = Number(stream.midId)
         const userIdMap = usersAudioTrackToIdMap[midId]
-        return userIdMap !== socketId;
+        return userIdMap !== socketId
       })
     )
 
@@ -1010,7 +1031,8 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
   useEffect(() => {
     if (authMeData && !sttLanguageRef.current) {
-      sttLanguageRef.current = authMeData?.language?.code?.toLowerCase?.() || 'en'
+      sttLanguageRef.current =
+        authMeData?.outputLanguage?.code?.toLowerCase?.() || "en"
     }
   }, [authMeData, sttLanguageRef.current])
 
@@ -1062,8 +1084,8 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     AudioRecord.on("data", (data: any) => {
       addToBufferAndSend(
         data,
-        sttLanguageRef.current?.toLowerCase?.() || 'en',
-        allLanguagesRef.current,
+        sttLanguageRef.current?.toLowerCase?.() || "en",
+        allLanguagesRef.current
       )
     })
   }
@@ -1141,7 +1163,6 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         captureAndSendAudio()
       }
       setIsMuted((prev) => !prev)
-
     } else {
       setIsVideoOff((prev) => !prev)
     }
@@ -1151,8 +1172,8 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         ? UserActions.UnmuteAudio
         : UserActions.UnmuteVideo
       : isAudio
-        ? UserActions.MuteAudio
-        : UserActions.MuteVideo
+      ? UserActions.MuteAudio
+      : UserActions.MuteVideo
 
     socketRef?.current?.emit("action", {
       roomId,
@@ -1170,32 +1191,44 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     socketId: string
     status: ActionStatus
   }) => {
-    setParticipants((prev) => prev.map((participant) => participant.socketId === socketId
-      ? {
-        ...participant,
-        isAudioOn: status.isAudioOn,
-        isVideoOn: status.isVideoOn,
-      }
-      : participant,
-    ),
-    );
+    setParticipants((prev) =>
+      prev.map((participant) =>
+        participant.socketId === socketId
+          ? {
+              ...participant,
+              isAudioOn: status.isAudioOn,
+              isVideoOn: status.isVideoOn,
+            }
+          : participant
+      )
+    )
   }
 
-  const handleParticipantRoomInfo = async ({ participantsInfo }: { participantsInfo: ParticipantsInfo[] }) => {
-    const usersAudioVideoMap: Record<string, { isAudioOn: boolean; isVideoOn: boolean, socketId: string }> = {};
+  const handleParticipantRoomInfo = async ({
+    participantsInfo,
+  }: {
+    participantsInfo: ParticipantsInfo[]
+  }) => {
+    const usersAudioVideoMap: Record<
+      string,
+      { isAudioOn: boolean; isVideoOn: boolean; socketId: string }
+    > = {}
 
     participantsInfo.forEach((participant) => {
       usersAudioVideoMap[participant.socketId] = {
         isAudioOn: participant.status.isAudioOn,
         isVideoOn: participant.status.isVideoOn,
         socketId: participant.socketId,
-      };
-    });
+      }
+    })
 
     setParticipants((_prev: any): any => {
       const newUsers = participantsInfo.map(({ userId, socketId }) => {
-        const { firstName = 'Guest', lastName = '', photo = null } =
-          invitedParticipantsRef.current.find(({ id }) => userId === id) || {};
+        const {
+          firstName = "Guest",
+          lastName = "",
+          photo = null,
+        } = invitedParticipantsRef.current.find(({ id }) => userId === id) || {}
 
         return {
           userId,
@@ -1205,21 +1238,21 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
           photo,
           isAudioOn: usersAudioVideoMap[socketId].isAudioOn,
           isVideoOn: usersAudioVideoMap[socketId].isVideoOn,
-        };
-      });
+        }
+      })
 
-      return [
-        ...newUsers,
-      ];
-    });
-  };
-
+      return [...newUsers]
+    })
+  }
 
   useEffect(() => {
     if (getCalendarEventByHashData) {
-      invitedParticipantsRef.current = getCalendarEventByHashData?.participants.map(({ user }: { user: any }) => user);
+      invitedParticipantsRef.current =
+        getCalendarEventByHashData?.participants.map(
+          ({ user }: { user: any }) => user
+        )
     }
-  }, [getCalendarEventByHashData]);
+  }, [getCalendarEventByHashData])
 
   return {
     socketRef,
@@ -1251,6 +1284,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     localUserSocketId: socketRef.current?.id,
     wsRef,
 
+    speechLanguage,
     handleChangedRoomLanguage,
     toggleMedia,
     startCall,

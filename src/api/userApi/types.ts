@@ -1,10 +1,10 @@
 import { IPostMediaResponse } from "../mediaApi/types"
 
 export interface ILanguage {
-  __entity: string;
-  code: string;
-  id: number;
-  name: string;
+  __entity: string
+  code: string
+  id: number
+  name: string
 }
 
 export interface IAuthMeResponse {
@@ -19,7 +19,8 @@ export interface IAuthMeResponse {
   gmtDelta: number
   id: number
   isTwoFAEnabled: boolean
-  language: ILanguage | null
+  inputLanguage: ILanguage | null
+  outputLanguage: ILanguage | null
   lastName: string | null
   newEmail: string | null
   organization: string | null
@@ -50,66 +51,65 @@ export interface IUpdateAuthMeRequest {
   photo?: string
   firstName?: string
   lastName?: string
-  language?: number
+  outputLanguage?: number
+  inputLanguage?: number
   timezone?: number
   email?: string
   password?: string
   oldPassword?: string
 }
 export type Photo = {
-  id: string;
-  path: string;
-  link: string;
-};
-
-export type Departments = {
-  name: string;
-};
-
-export interface Organization {
-  id: number | string;
-  location: string;
-  staffCount: string
-  phoneNumber: string;
-
-  name: string;
-  domain: string;
-  updatedAt: string;
-  createdAt: string;
-  photo: Photo | null;
-  departments: any[];
+  id: string
+  path: string
+  link: string
 }
 
+export type Departments = {
+  name: string
+}
+
+export interface Organization {
+  id: number | string
+  location: string
+  staffCount: string
+  phoneNumber: string
+
+  name: string
+  domain: string
+  updatedAt: string
+  createdAt: string
+  photo: Photo | null
+  departments: any[]
+}
 
 export interface User {
-  id: number | string;
-  photo: Photo | null;
-  firstName: string;
-  lastName: string;
-  email: string;
-  createdAt: string;
-  deletedAt: null | string;
-  department: Departments;
-  provider: string;
-  title: string;
-  phone: string;
-  age: string;
-  gender: string;
-  gmtDelta: number;
+  id: number | string
+  photo: Photo | null
+  firstName: string
+  lastName: string
+  email: string
+  createdAt: string
+  deletedAt: null | string
+  department: Departments
+  provider: string
+  title: string
+  phone: string
+  age: string
+  gender: string
+  gmtDelta: number
   role: {
-    id: number;
-    name: string;
-  };
-  socialId: null | string | number;
-  status: {
-    id: number;
-    name: string;
-  };
-  language: {
+    id: number
     name: string
   }
-  updatedAt: string;
-  organization: Organization;
+  socialId: null | string | number
+  status: {
+    id: number
+    name: string
+  }
+  inputLanguage: Language
+  outputLanguage: Language
+  updatedAt: string
+  organization: Organization
 }
 
 export interface Language {
