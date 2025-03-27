@@ -106,8 +106,7 @@ export interface User {
     id: number
     name: string
   }
-  inputLanguage: Language
-  outputLanguage: Language
+  language: any
   updatedAt: string
   organization: Organization
 }

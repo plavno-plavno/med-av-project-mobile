@@ -79,7 +79,7 @@ const MeetingScreen = () => {
   useKeepAwake()
   useStatusBar("light-content", colors.dark)
   const [isCaptionOn, setIsCaptionOn] = React.useState(false)
-  const meetingTitle = instanceMeetingOwner ? hash : title
+  const meetingTitle = title === "Instant meeting" ? title : hash
   const startTimeRef = useRef<number | null>(null)
   const recordingNameRef = useRef<string | null>(null)
 

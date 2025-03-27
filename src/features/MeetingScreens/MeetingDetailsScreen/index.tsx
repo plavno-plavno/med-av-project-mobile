@@ -43,11 +43,7 @@ const MeetingDetailsScreen = () => {
   const { data: getCalendarEventByHashData } = useGetCalendarEventByHashQuery({
     hash: String(hash),
   })
-  console.log(
-    "\x1b[31m%s\x1b[0m",
-    "getCalendarEventByHashData",
-    getCalendarEventByHashData
-  )
+
   const isMeetingOwner =
     authMe?.id === getCalendarEventByHashData?.createdBy?.id
 
@@ -136,7 +132,7 @@ const MeetingDetailsScreen = () => {
             text={t("JoinMeeting")}
             style={{ backgroundColor: colors.lightAqua }}
             onPress={() => {
-              if(isMuted){
+              if (isMuted) {
                 preview?.getTracks().forEach((t) => t.stop())
               }
               navigate(ScreensEnum.MEETING, {
