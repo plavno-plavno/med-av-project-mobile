@@ -72,7 +72,7 @@ const MeetingScreen = () => {
     speechLanguage,
   } = useWebRtc(instanceMeetingOwner!)
   const { startRecording, stopRecording, isRecording } = useMeetingRecording(
-    roomId,
+    String(roomId),
     peerConnection
   )
 
@@ -134,7 +134,7 @@ const MeetingScreen = () => {
       }
     }
 
-    connectWebSocket()
+    // connectWebSocket()
 
     return () => {
       if (reconnectTimeout) clearTimeout(reconnectTimeout)

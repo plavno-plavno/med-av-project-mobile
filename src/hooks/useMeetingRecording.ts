@@ -155,17 +155,17 @@ export const useMeetingRecording = (roomId: string | null, peerConnection: any) 
       console.log("Screen stream started", screenTrack);  // Log when screen stream is started
 
       // Add audio tracks if available from main peer connection
-      // mainPeerConnectionRef.current?.getReceivers()?.forEach((receiver) => {
+      // mainPeerConnectionRef.current.getReceivers().forEach((receiver) => {
       //   if (receiver.track && receiver.track.kind === 'audio') {
       //     combinedStream.addTrack(receiver.track);
       //   }
       // });
 
-      // mainPeerConnectionRef.current.getSenders().forEach((sender) => {
-      //   if (sender.track) {
-      //     combinedStream.addTrack(sender.track);
-      //   }
-      // });
+      mainPeerConnectionRef.current.getSenders().forEach((sender) => {
+        if (sender.track && sender.track.kind === 'audio') {
+          combinedStream.addTrack(sender.track);
+        }
+      });
 
       mediaStreamRef.current = combinedStream;
 

@@ -4,11 +4,13 @@ import * as Keychain from "react-native-keychain";
 import Config from "react-native-config";
 
 const socketURL = Config.SOCKET_WEB_RTC_URL;
+const isProduction = Config.ENV === 'production'
 
 let socket: Socket | null = null;
 let setErrorState: ((error: string | null) => void) | null = null;
 let retryCount = 0;
 const MAX_RETRIES = 3;
+let scalerSocketURL = ''
 
 const getToken = async () => {
   const credentials = await Keychain.getGenericPassword({
@@ -18,11 +20,11 @@ const getToken = async () => {
   return credentials ? credentials.password : "";
 };
 
-export const initializeSocket = async () => {
+export const initializeSocket = async (url: string) => {
   if (socket) return socket;
-
+  scalerSocketURL = isProduction ? url : String(socketURL)
   const token = await getToken();
-  socket = io(socketURL, {
+  socket = io(scalerSocketURL, {
     transports: ['websocket'],
     auth: { token },
   });
@@ -38,7 +40,7 @@ export const initializeSocket = async () => {
     if (retryCount < MAX_RETRIES) {
       retryCount++;
       console.log(`Reconnecting attempt ${retryCount}/${MAX_RETRIES}...`);
-      setTimeout(() => initializeSocket(), 2000 * retryCount);
+      setTimeout(() => initializeSocket(scalerSocketURL), 2000 * retryCount);
     } else {
       console.error("Max reconnect attempts reached. Not retrying.");
       setErrorState?.("Connection lost. Unable to reconnect.");
@@ -63,7 +65,7 @@ const handleReconnect = () => {
   if (retryCount < MAX_RETRIES) {
     retryCount++;
     console.log(`Reconnecting attempt ${retryCount}/${MAX_RETRIES}...`);
-    setTimeout(() => initializeSocket(), 2000 * retryCount);
+    setTimeout(() => initializeSocket(scalerSocketURL), 2000 * retryCount);
   } else {
     console.error("Max reconnect attempts reached. Not retrying.");
     setErrorState?.("Connection lost. Unable to reconnect.");

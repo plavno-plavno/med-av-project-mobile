@@ -7,6 +7,7 @@ import { calendarApi } from "src/api/calendarApi/calendarApi"
 import { mediaApi } from "src/api/mediaApi/mediaApi"
 import { helpCenterApi } from "src/api/helpCenterApi/helpCenterApi"
 import subtitlesSlice from "./slices/calendarSlice/subtitlesSlice"
+import { scalerApi } from "src/api/scalerApi/scalerApi"
 
 const store = configureStore({
   reducer: {
@@ -15,6 +16,7 @@ const store = configureStore({
     [calendarApi.reducerPath]: calendarApi.reducer,
     [helpCenterApi.reducerPath]: helpCenterApi.reducer,
     [mediaApi.reducerPath]: mediaApi.reducer,
+    [scalerApi.reducerPath]: scalerApi.reducer,
     calendar: calendarSlice,
     subtitles: subtitlesSlice,
   },
@@ -26,7 +28,8 @@ const store = configureStore({
       userApi.middleware,
       calendarApi.middleware,
       helpCenterApi.middleware,
-      mediaApi.middleware
+      mediaApi.middleware,
+      scalerApi.middleware,
     ),
 })
 

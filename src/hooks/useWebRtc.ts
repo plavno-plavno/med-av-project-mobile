@@ -25,6 +25,7 @@ import { useGetCalendarEventByHashQuery } from "src/api/calendarApi/calendarApi"
 import RTCDataChannel from "react-native-webrtc/lib/typescript/RTCDataChannel"
 import { screenHeight, screenWidth } from "@utils/screenResponsive"
 import { isIOS } from "@utils/platformChecker"
+import { useScalerFindFreeMachinePairSTTMutation, useScalerFindFreeMachineQuery } from "src/api/scalerApi/scalerApi"
 
 export type Photo = {
   id: string
@@ -173,6 +174,7 @@ const config = {
 }
 
 const sttUrl = Config.STT_URL
+const isProduction = Config.ENV === 'production'
 
 const SUBTITLES_QUEUE_LIMIT = 3
 const TRIES_LIMIT = 7
@@ -206,7 +208,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
   const [messages, setMessages] = useState<any[]>([])
 
-  const { reset } = useNavigation<ROUTES>()
+  const { reset, goBack } = useNavigation<ROUTES>()
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const [isMuted, setIsMuted] = useState(route.params?.isMuted)
   const [isVideoOff, setIsVideoOff] = useState(route.params?.isVideoOff)
@@ -214,8 +216,14 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   const [isSpeakerOn, setIsSpeakerOn] = useState(true)
   const [isCameraSwitched, setIsCameraSwitched] = useState(false)
 
-  const roomId = route?.params?.hash
+  const roomId = route?.params?.meetId
   const meetId = route.params?.meetId
+
+  const { data: scalerFindFreeMachineData } = useScalerFindFreeMachineQuery({
+    id: String(meetId),
+  })
+
+  const [scalerFindFreeMachinePairSTT] = useScalerFindFreeMachinePairSTTMutation()
 
   const { data: getCalendarEventByHashData } = useGetCalendarEventByHashQuery({
     hash: String(route?.params?.hash),
@@ -231,7 +239,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
   const STTSocket = useRef<WebSocket | null>(null)
   const sttLanguageRef = useRef<string>(
-    authMeData?.outputLanguage?.code?.toLowerCase?.() || "en"
+    authMeData?.inputLanguage?.code?.toLowerCase?.() || "en"
   )
   const allLanguagesRef = useRef<string[]>(["en", "hi"]) // Default to 'en' and 'hi'
   const pendingCandidates: RTCIceCandidate[] = []
@@ -277,8 +285,10 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
   useEffect(() => {
     const setupSocket = async () => {
-      if (!socketRef.current) {
-        await initializeSocket()
+      if (!socketRef.current && scalerFindFreeMachineData) {
+        const rtcUrl = `https://${scalerFindFreeMachineData?.dns || scalerFindFreeMachineData?.ip || scalerFindFreeMachineData.rtc}${scalerFindFreeMachineData?.port ? ':' + scalerFindFreeMachineData?.port : ':5000'}`
+        await initializeSocket(rtcUrl)
+        // await scalerFindFreeMachinePairSTT({id: roomId!});
         socketRef.current = getSocket()
         peerConnection.current = createPeerConnection()
         setTimeout(() => {
@@ -323,7 +333,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     if (socketRef.current) {
       disconnectSocketEvents()
     }
-  }, [roomId, meetId])
+  }, [meetId, scalerFindFreeMachineData])
 
   const receivedFinish = () => {
     setTimeout(() => {
@@ -474,6 +484,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
       })
       pc.addEventListener("connectionstatechange", () => {
         if (pc.connectionState === "failed") {
+          // goBack();
           console.error(
             "Connection failed. Consider renegotiating or restarting the connection."
           )
@@ -496,17 +507,6 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         console.log("Receive track in ontrack", event)
         const midId = event.transceiver.mid || ""
         if (event?.track?.kind === "video") {
-          console.log(event?.track?.kind === "video", "asdfasfasfas")
-          console.log(
-            midId === screenTrackMidIdRef.current,
-            "midId === screenTrackMidIdRef.current"
-          )
-          console.log(midId, "midIdmidIdmidIdmidIdmidIdmidIdmidIdmidId")
-          console.log(
-            screenTrackMidIdRef.current,
-            "screenTrackMidIdRef.current"
-          )
-
           if (midId === screenTrackMidIdRef.current) {
             setSharedScreen(event.track)
             return
@@ -760,7 +760,8 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     participantsInfo: ParticipantsInfo[]
   }) => {
     try {
-      sttUrlRef.current = sttUrl as string
+      const sttRes =  await scalerFindFreeMachinePairSTT({id: String(meetId)}).unwrap();
+      sttUrlRef.current = `wss://${sttRes.stt}`;
       const usersAudioVideoMap: Record<
         string,
         { isAudioOn: boolean; isVideoOn: boolean; socketId: string }
@@ -779,7 +780,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
             firstName = "Guest",
             lastName = "",
             photo = null,
-          } = invitedParticipantsRef.current.find(({ id }) => userId === id) ||
+          } = invitedParticipantsRef?.current?.find(({ id }) => userId === id) ||
           {}
           return {
             userId,
@@ -878,10 +879,10 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   }
 
   useEffect(() => {
-    if (authMeData?.outputLanguage?.code) {
-      sttLanguageRef.current = authMeData?.outputLanguage?.code
+    if (authMeData?.inputLanguage?.code) {
+      sttLanguageRef.current = authMeData?.inputLanguage?.code
     }
-  }, [authMeData?.outputLanguage?.code])
+  }, [authMeData?.inputLanguage?.code])
 
   const handleChangedRoomLanguage = (language: string) => {
     console.log("handleChangedRoomLanguage: ", language)
@@ -905,9 +906,6 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   }) => {
     if (mid) {
       const midId = Number(mid)
-      console.log(type, "typetypetypetypetypetypetypetypetypetypetypetype")
-      console.log(midId, "midIdmidIdmidIdmidIdmidIdmidIdmidIdmidId")
-
       if (type === "screen") {
         screenTrackMidIdRef.current = mid
         return
@@ -1025,14 +1023,14 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
   const handlePeerDataChannelMessage = (event: any) => {
     console.log("handlePeerDataChannelMessage: ", event)
-    const data = JSON.parse(event.data)
+    const data = JSON.parse(event)
     setSubtitlesQueue(handleSubtitles(data))
   }
 
   useEffect(() => {
     if (authMeData && !sttLanguageRef.current) {
       sttLanguageRef.current =
-        authMeData?.outputLanguage?.code?.toLowerCase?.() || "en"
+        authMeData?.inputLanguage?.code?.toLowerCase?.() || "en"
     }
   }, [authMeData, sttLanguageRef.current])
 
