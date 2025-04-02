@@ -142,6 +142,9 @@ export interface IPostCalendarEventsRequest {
 export interface IPostCalendarEventsResponse {}
 export interface ICreateInstantEventResponse {
   hash: string
+  createdBy: {
+    email: string;
+  }
 }
 export interface IPutCalendarEventsRequest extends IPostCalendarEventsRequest {
   id: number

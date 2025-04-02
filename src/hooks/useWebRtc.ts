@@ -25,7 +25,7 @@ import { useGetCalendarEventByHashQuery } from "src/api/calendarApi/calendarApi"
 import RTCDataChannel from "react-native-webrtc/lib/typescript/RTCDataChannel"
 import { screenHeight, screenWidth } from "@utils/screenResponsive"
 import { isIOS } from "@utils/platformChecker"
-import { useScalerFindFreeMachinePairSTTMutation, useScalerFindFreeMachineQuery } from "src/api/scalerApi/scalerApi"
+import { useScalerFindFreeMachineMutation, useScalerFindFreeMachinePairSTTMutation } from "src/api/scalerApi/scalerApi"
 
 export type Photo = {
   id: string
@@ -219,10 +219,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   const roomId = route?.params?.meetId
   const meetId = route.params?.meetId
 
-  const { data: scalerFindFreeMachineData } = useScalerFindFreeMachineQuery({
-    id: String(meetId),
-  })
-
+  const [scalerFindFreeMachine] = useScalerFindFreeMachineMutation();
   const [scalerFindFreeMachinePairSTT] = useScalerFindFreeMachinePairSTTMutation()
 
   const { data: getCalendarEventByHashData } = useGetCalendarEventByHashQuery({
@@ -285,10 +282,13 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
   useEffect(() => {
     const setupSocket = async () => {
-      if (!socketRef.current && scalerFindFreeMachineData) {
+      if (!socketRef.current && roomId) {
+        const scalerFindFreeMachineData = await scalerFindFreeMachine({id: roomId}).unwrap();
+        console.log(scalerFindFreeMachineData, 'scalerFindFreeMachineDatascalerFindFreeMachineData');
+        await scalerFindFreeMachinePairSTT({id: roomId!});
+        await new Promise((resolve) => setTimeout(resolve, 2000));
         const rtcUrl = `https://${scalerFindFreeMachineData?.dns || scalerFindFreeMachineData?.ip || scalerFindFreeMachineData.rtc}${scalerFindFreeMachineData?.port ? ':' + scalerFindFreeMachineData?.port : ':5000'}`
         await initializeSocket(rtcUrl)
-        // await scalerFindFreeMachinePairSTT({id: roomId!});
         socketRef.current = getSocket()
         peerConnection.current = createPeerConnection()
         setTimeout(() => {
@@ -330,10 +330,12 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
     setupSocket()
 
-    if (socketRef.current) {
-      disconnectSocketEvents()
+    return () => {
+      if (socketRef.current) {
+        disconnectSocketEvents()
+      }
     }
-  }, [meetId, scalerFindFreeMachineData])
+  }, [roomId, roomId])
 
   const receivedFinish = () => {
     setTimeout(() => {
@@ -780,7 +782,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
             firstName = "Guest",
             lastName = "",
             photo = null,
-          } = invitedParticipantsRef?.current?.find(({ id }) => userId === id) ||
+          } = invitedParticipantsRef?.current?.find?.(({ id }) => userId === id) ||
           {}
           return {
             userId,

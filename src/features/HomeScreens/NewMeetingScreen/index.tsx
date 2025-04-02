@@ -45,6 +45,7 @@ const NewMeetingScreen = () => {
       const res = await createInstantEvent().unwrap()
       naviqation.navigate(ScreensEnum.MEETING_DETAILS, {
         hash: res?.hash,
+        ownerEmail: res?.createdBy?.email,
       })
     } catch (error) {
       console.log(error)

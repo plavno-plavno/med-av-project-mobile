@@ -71,10 +71,10 @@ const MeetingScreen = () => {
     setClearCanvas,
     speechLanguage,
   } = useWebRtc(instanceMeetingOwner!)
-  const { startRecording, stopRecording, isRecording } = useMeetingRecording(
-    String(roomId),
-    peerConnection
-  )
+  // const { startRecording, stopRecording, isRecording } = useMeetingRecording(
+  //   String(roomId),
+  //   peerConnection
+  // )
 
   useKeepAwake()
   useStatusBar("light-content", colors.dark)
@@ -164,13 +164,14 @@ const MeetingScreen = () => {
           return
         }
 
-        if (isRecording) {
-          stopRecording()
-        } else {
-          startRecording()
-        }
+        // if (isRecording) {
+        //   stopRecording()
+        // } else {
+        //   startRecording()
+        // }
       },
-      style: { opacity: isRecording ? 1 : 0.5 },
+      // style: { opacity: isRecording ? 1 : 0.5 },
+      style: { opacity: false ? 1 : 0.5 },
     },
   ]
 
@@ -178,9 +179,9 @@ const MeetingScreen = () => {
     {
       name: "callEnd",
       onPress: () => {
-        if (isRecording) {
-          stopRecording()
-        }
+        // if (isRecording) {
+        //   stopRecording()
+        // }
         setTimeout(() => {
           endCall()
           Toast.show({

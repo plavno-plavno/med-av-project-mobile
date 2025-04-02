@@ -1,7 +1,7 @@
 import React from "react"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import colors from "../assets/colors"
-import { StyleSheet, View } from "react-native"
+import { View } from "react-native"
 import { Icon } from "@components"
 import { fontFamilies, fontWeights } from "@utils/theme"
 import { ScreensEnum } from "./ScreensEnum"
@@ -103,5 +103,3 @@ const BottomTabNavigator: React.FC = () => {
 }
 
 export default BottomTabNavigator
-
-const styles = StyleSheet.create({})

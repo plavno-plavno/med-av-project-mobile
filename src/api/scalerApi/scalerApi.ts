@@ -14,7 +14,7 @@ export const scalerApi = createApi({
   }),
   reducerPath: "scalerApi",
   endpoints: (builder) => ({
-    scalerFindFreeMachine: builder.query<IScalerFindFreeMachineResponse, {id: string}>({
+    scalerFindFreeMachine: builder.mutation<IScalerFindFreeMachineResponse, {id: string}>({
         query: ({id}) => ({
           url: `scaler/find-free-media-machine/${id}`,
           method: "GET",
@@ -29,4 +29,4 @@ export const scalerApi = createApi({
   }),
 })
 
-export const { useScalerFindFreeMachineQuery, useScalerFindFreeMachinePairSTTMutation } = scalerApi
+export const { useScalerFindFreeMachineMutation, useScalerFindFreeMachinePairSTTMutation } = scalerApi
