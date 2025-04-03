@@ -41,9 +41,8 @@ const SubtitlesModal = ({
   const { t } = useTranslation()
   const { data: languageOptions } = useLanguageOptionsQuery()
   const [isSpeechLanguage, setIsSpeachLanguage] = React.useState(false)
-  const [selectedLanguage, setSelectedLanguage] = React.useState<string>(
-    speechLanguage.current
-  )
+  const [selectedLanguage, setSelectedLanguage] = React.useState<string>("")
+
   const [selectedSpeechLanguage, setSelectedSpeechLanguage] =
     React.useState<string>("")
   const [isChangeLanguageMode, setIsChangeLanguageMode] = React.useState(false)
@@ -53,7 +52,12 @@ const SubtitlesModal = ({
     if (authMeData?.outputLanguage?.code) {
       setSelectedLanguage(authMeData?.outputLanguage?.code?.toLowerCase?.())
     }
-  }, [authMeData?.outputLanguage?.code])
+    if (authMeData?.inputLanguage?.code) {
+      setSelectedSpeechLanguage(
+        authMeData?.inputLanguage?.code?.toLowerCase?.()
+      )
+    }
+  }, [authMeData?.outputLanguage?.code, authMeData?.inputLanguage?.code])
 
   const handleToggleSubtitles = () => {
     setIsCaptionOn(!isCaptionOn)
@@ -118,6 +122,7 @@ const SubtitlesModal = ({
       const isSelected = isSpeechLanguage
         ? selectedSpeechLanguage === item.code?.toLowerCase?.()
         : selectedLanguage === item.code?.toLowerCase?.()
+
       return (
         <TouchableOpacity style={styles.languageItem} onPress={handlePress}>
           <Text style={styles.title}>{item.name}</Text>

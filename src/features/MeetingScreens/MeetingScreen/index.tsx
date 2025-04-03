@@ -20,6 +20,9 @@ import Subtitles from "src/components/Subtitles"
 import Loading from "src/components/Loading"
 import Config from "react-native-config"
 import { useMeetingRecording } from "src/hooks/useMeetingRecording"
+import NewJoinRequestModal from "src/modals/MeetingModals/NewJoinRequestModal"
+import { connectAccessMeetingSocket } from "src/hooks/meetingAccessSocketInstance"
+import { useMeetingAccess } from "src/hooks/useMeetingAccess"
 
 const recordingUrl = Config.SOCKET_RECORDING_URL
 
@@ -31,13 +34,15 @@ type ParamList = {
     instanceMeetingOwner?: boolean
     isVideoOff?: boolean
     isMuted?: boolean
+    eventId?: string
   }
 }
 
 const MeetingScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<RouteProp<ParamList, "Detail">>()
-  const { isCreatorMode, title, hash, instanceMeetingOwner } = route.params
+  const { isCreatorMode, title, hash, instanceMeetingOwner, eventId } =
+    route.params
   const {
     socketRef,
     localStream,
@@ -75,7 +80,7 @@ const MeetingScreen = () => {
   //   String(roomId),
   //   peerConnection
   // )
-
+  const { joinEvent, requestJoinEvent, respondJoinRequest } = useMeetingAccess()
   useKeepAwake()
   useStatusBar("light-content", colors.dark)
   const [isCaptionOn, setIsCaptionOn] = React.useState(false)
@@ -96,7 +101,7 @@ const MeetingScreen = () => {
   const handleParticipantsOpen = () => {
     sheetParticipantsRef.current?.open()
   }
-
+  const isInitialized = useRef(false)
   // useEffect(() => {
   //   if (peerConnection) {
   //     updatePeerConnections(peerConnection)
@@ -133,14 +138,24 @@ const MeetingScreen = () => {
         console.warn("WebSocket connection closed")
       }
     }
+    const initSockets = async () => {
+      if (!isInitialized.current) {
+        connectAccessMeetingSocket()
+        isInitialized.current = true
+      }
+    }
 
+    initSockets()
+    setTimeout(() => {
+      joinEvent({ eventId })
+    }, 300)
     // connectWebSocket()
 
     return () => {
       if (reconnectTimeout) clearTimeout(reconnectTimeout)
       wsRef.current?.close()
     }
-  }, [])
+  }, [eventId])
 
   const callTopActions = [
     {
@@ -223,7 +238,7 @@ const MeetingScreen = () => {
     <>
       <SafeAreaView edges={["top"]} style={styles.container}>
         <View style={styles.mainWrapper}>
-          {/* <NewJoinRequestModal
+          <NewJoinRequestModal
             name={"Valery J"}
             onAccept={function (): void {
               throw new Error("Function not implemented.")
@@ -231,7 +246,7 @@ const MeetingScreen = () => {
             onDecline={function (): void {
               throw new Error("Function not implemented.")
             }}
-          /> */}
+          />
           <View style={styles.upperControlContainer}>
             <Text style={styles.title}>{meetingTitle}</Text>
             <View>

@@ -25,7 +25,12 @@ import { useGetCalendarEventByHashQuery } from "src/api/calendarApi/calendarApi"
 import RTCDataChannel from "react-native-webrtc/lib/typescript/RTCDataChannel"
 import { screenHeight, screenWidth } from "@utils/screenResponsive"
 import { isIOS } from "@utils/platformChecker"
-import { useScalerFindFreeMachineMutation, useScalerFindFreeMachinePairSTTMutation } from "src/api/scalerApi/scalerApi"
+import {
+  useScalerFindFreeMachineMutation,
+  useScalerFindFreeMachinePairSTTMutation,
+} from "src/api/scalerApi/scalerApi"
+import { getMeetingAccessSocket } from "./meetingAccessSocketInstance"
+import { useMeetingAccess } from "./useMeetingAccess"
 
 export type Photo = {
   id: string
@@ -174,7 +179,7 @@ const config = {
 }
 
 const sttUrl = Config.STT_URL
-const isProduction = Config.ENV === 'production'
+const isProduction = Config.ENV === "production"
 
 const SUBTITLES_QUEUE_LIMIT = 3
 const TRIES_LIMIT = 7
@@ -219,8 +224,9 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   const roomId = route?.params?.meetId
   const meetId = route.params?.meetId
 
-  const [scalerFindFreeMachine] = useScalerFindFreeMachineMutation();
-  const [scalerFindFreeMachinePairSTT] = useScalerFindFreeMachinePairSTTMutation()
+  const [scalerFindFreeMachine] = useScalerFindFreeMachineMutation()
+  const [scalerFindFreeMachinePairSTT] =
+    useScalerFindFreeMachinePairSTTMutation()
 
   const { data: getCalendarEventByHashData } = useGetCalendarEventByHashQuery({
     hash: String(route?.params?.hash),
@@ -235,6 +241,9 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   const offerStatusCheckRef = useRef<ReturnType<typeof setInterval>>()
 
   const STTSocket = useRef<WebSocket | null>(null)
+
+  const accessMeetingSocketRef = useRef<Socket | null>()
+
   const sttLanguageRef = useRef<string>(
     authMeData?.inputLanguage?.code?.toLowerCase?.() || "en"
   )
@@ -283,11 +292,25 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   useEffect(() => {
     const setupSocket = async () => {
       if (!socketRef.current && roomId) {
-        const scalerFindFreeMachineData = await scalerFindFreeMachine({id: roomId}).unwrap();
-        console.log(scalerFindFreeMachineData, 'scalerFindFreeMachineDatascalerFindFreeMachineData');
-        await scalerFindFreeMachinePairSTT({id: roomId!});
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        const rtcUrl = `https://${scalerFindFreeMachineData?.dns || scalerFindFreeMachineData?.ip || scalerFindFreeMachineData.rtc}${scalerFindFreeMachineData?.port ? ':' + scalerFindFreeMachineData?.port : ':5000'}`
+        const scalerFindFreeMachineData = await scalerFindFreeMachine({
+          id: roomId,
+        }).unwrap()
+        console.log(
+          scalerFindFreeMachineData,
+          "scalerFindFreeMachineDatascalerFindFreeMachineData"
+        )
+        await scalerFindFreeMachinePairSTT({ id: roomId! })
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+        const rtcUrl = `https://${
+          scalerFindFreeMachineData?.dns ||
+          scalerFindFreeMachineData?.ip ||
+          scalerFindFreeMachineData.rtc
+        }${
+          scalerFindFreeMachineData?.port
+            ? ":" + scalerFindFreeMachineData?.port
+            : ":5000"
+        }`
+
         await initializeSocket(rtcUrl)
         socketRef.current = getSocket()
         peerConnection.current = createPeerConnection()
@@ -335,7 +358,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         disconnectSocketEvents()
       }
     }
-  }, [roomId, roomId])
+  }, [roomId])
 
   const receivedFinish = () => {
     setTimeout(() => {
@@ -762,8 +785,10 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     participantsInfo: ParticipantsInfo[]
   }) => {
     try {
-      const sttRes =  await scalerFindFreeMachinePairSTT({id: String(meetId)}).unwrap();
-      sttUrlRef.current = `wss://${sttRes.stt}`;
+      const sttRes = await scalerFindFreeMachinePairSTT({
+        id: String(meetId),
+      }).unwrap()
+      sttUrlRef.current = `wss://${sttRes.stt}`
       const usersAudioVideoMap: Record<
         string,
         { isAudioOn: boolean; isVideoOn: boolean; socketId: string }
@@ -782,8 +807,9 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
             firstName = "Guest",
             lastName = "",
             photo = null,
-          } = invitedParticipantsRef?.current?.find?.(({ id }) => userId === id) ||
-          {}
+          } = invitedParticipantsRef?.current?.find?.(
+            ({ id }) => userId === id
+          ) || {}
           return {
             userId,
             socketId,
@@ -1298,6 +1324,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     points,
     clearCanvas,
     setClearCanvas,
+    accessMeetingSocketRef,
   }
 }
 
