@@ -45,7 +45,6 @@ const DetailsEventModal = ({
     isLoading: isEventDetailsLoading,
     refetch: eventDetailsRefetch,
   } = useGetCalendarEventDetailsQuery({ id: eventId }, { skip: !eventId })
-
   const { data: authMeData } = useAuthMeQuery()
   const { refetch: calendarEventsRefetch } = useGetCalendarEventsQuery()
   const [updateEvent, { isLoading: isUpdateEventLoading }] =
@@ -54,7 +53,8 @@ const DetailsEventModal = ({
     useDeleteEventMutation()
 
   const isCreatorMode = authMeData?.email === eventDetailsData?.createdBy?.email
-
+  const isAccepted = !isCreatorMode && eventDetailsData?.status === "accept"
+  const isDeclined = !isCreatorMode && eventDetailsData?.status === "decline"
   const handleDeleteEvent = async () => {
     await deleteEvent({ id: eventId }).unwrap()
     calendarEventsRefetch()
@@ -218,28 +218,32 @@ const DetailsEventModal = ({
                   },
                 ]}
               >
-                <CustomButton
-                  isLoading={isDeleteEventLoading || isDeclineEventLoading}
-                  onPress={() => {
-                    if (isCreatorMode) {
-                      handleDeleteEvent()
-                    } else {
-                      handleTogglerEvent({ status: "decline" })
-                    }
-                  }}
-                  text={isCreatorMode ? t("DeleteMeeting") : t("Decline")}
-                  textStyle={{ color: colors.alertRed }}
-                  style={[
-                    {
-                      backgroundColor: colors.errorLight,
-                    },
-                  ]}
-                />
-                <CustomButton
-                  isLoading={isAcceptEventLoading}
-                  text={isCreatorMode ? t("EditDetails") : t("Accept")}
-                  onPress={handleAcceptEvent}
-                />
+                {!isDeclined && (
+                  <CustomButton
+                    isLoading={isDeleteEventLoading || isDeclineEventLoading}
+                    onPress={() => {
+                      if (isCreatorMode) {
+                        handleDeleteEvent()
+                      } else {
+                        handleTogglerEvent({ status: "decline" })
+                      }
+                    }}
+                    text={isCreatorMode ? t("DeleteMeeting") : t("Decline")}
+                    textStyle={{ color: colors.alertRed }}
+                    style={[
+                      {
+                        backgroundColor: colors.errorLight,
+                      },
+                    ]}
+                  />
+                )}
+                {!isAccepted && (
+                  <CustomButton
+                    isLoading={isAcceptEventLoading}
+                    text={isCreatorMode ? t("EditDetails") : t("Accept")}
+                    onPress={handleAcceptEvent}
+                  />
+                )}
               </View>
             </>
           )}

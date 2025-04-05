@@ -18,6 +18,7 @@ export interface IGetCalendarEventDetailsResponse {
   startDate: string
   endDate: string
   title: string
+  status: "accept" | "decline" | "pending"
   gmtDelta: number
   description: string
   color: string
@@ -143,7 +144,7 @@ export interface IPostCalendarEventsResponse {}
 export interface ICreateInstantEventResponse {
   hash: string
   createdBy: {
-    email: string;
+    email: string
   }
 }
 export interface IPutCalendarEventsRequest extends IPostCalendarEventsRequest {

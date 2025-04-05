@@ -6,6 +6,7 @@ import { usePrivacyFilesQuery } from "src/api/mediaApi/mediaApi"
 import { useNavigation } from "@react-navigation/native"
 import { ROUTES } from "src/navigation/RoutesTypes"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
+import { privacyPolicy } from "@utils/mockData"
 
 const TermsAndConditions = () => {
   const { t } = useTranslation()
@@ -43,7 +44,7 @@ const TermsAndConditions = () => {
                 style={styles.link}
                 onPress={() =>
                   navigation.navigate(ScreensEnum.PRIVACY_FILES, {
-                    link: privacyPolicyLink,
+                    link: privacyPolicy,
                     title: t("Privacy Policy"),
                     isLoading: isPrivacyLoading,
                   })

@@ -1,5 +1,6 @@
 import { CustomButton } from "@components"
 import { useFocusEffect, useNavigation } from "@react-navigation/native"
+import { privacyPolicy } from "@utils/mockData"
 import { isIOS } from "@utils/platformChecker"
 import { helpers } from "@utils/theme"
 import React, { useCallback } from "react"
@@ -49,7 +50,7 @@ const HelpCenterScreen = () => {
         rightIcon: "openArrow" as IconName,
         onPress: () => {
           navigation.navigate(ScreensEnum.PRIVACY_FILES, {
-            link: item.link,
+            link: privacyPolicy,
             title: title,
             isLoading: isPrivacyLoading,
           })
