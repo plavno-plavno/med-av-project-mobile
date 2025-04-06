@@ -211,6 +211,7 @@ const CalendarScreen = () => {
   return (
     <>
       <ScreenWrapper childrenStyle={styles.container} isCalendarScreen>
+        <WeekDays />
         <ScrollView
           refreshControl={
             <RefreshControl
@@ -236,7 +237,8 @@ const CalendarScreen = () => {
               date={new Date(selectedDay)}
               scrollOffsetMinutes={scrollOffsetMinutes}
               renderEvent={renderEvent}
-              renderHeader={() => <WeekDays />}
+              headerContainerStyle={{ display: "none" }}
+              // renderHeader={() => <WeekDays />}
               hourStyle={styles.hourStyle}
               eventCellTextColor={colors.ghostWhite}
               eventCellStyle={(event) => {
