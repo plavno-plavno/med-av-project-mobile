@@ -21,7 +21,7 @@ import {
   Float32ConcatAll,
   resampleTo16kHZ,
 } from "@utils/audioData"
-import { useGetCalendarEventByHashQuery } from "src/api/calendarApi/calendarApi"
+import { useGetCalendarEventByHashQuery, useSaveCalendarEventsLogMutation } from "src/api/calendarApi/calendarApi"
 import RTCDataChannel from "react-native-webrtc/lib/typescript/RTCDataChannel"
 import { screenHeight, screenWidth } from "@utils/screenResponsive"
 import { isIOS } from "@utils/platformChecker"
@@ -29,8 +29,7 @@ import {
   useScalerFindFreeMachineMutation,
   useScalerFindFreeMachinePairSTTMutation,
 } from "src/api/scalerApi/scalerApi"
-import { getMeetingAccessSocket } from "./meetingAccessSocketInstance"
-import { useMeetingAccess } from "./useMeetingAccess"
+import moment from "moment"
 
 export type Photo = {
   id: string
@@ -179,7 +178,6 @@ const config = {
 }
 
 const sttUrl = Config.STT_URL
-const isProduction = Config.ENV === "production"
 
 const SUBTITLES_QUEUE_LIMIT = 3
 const TRIES_LIMIT = 7
@@ -227,6 +225,9 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   const [scalerFindFreeMachine] = useScalerFindFreeMachineMutation()
   const [scalerFindFreeMachinePairSTT] =
     useScalerFindFreeMachinePairSTTMutation()
+
+  const [saveCalendarEventsLog] = useSaveCalendarEventsLogMutation()
+  const eventStartedTimeRef = useRef(0)
 
   const { data: getCalendarEventByHashData } = useGetCalendarEventByHashQuery({
     hash: String(route?.params?.hash),
@@ -653,6 +654,12 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     disconnectSocketEvents()
     AudioRecord.stop()
     peerConnection.current = null
+    saveCalendarEventsLog({
+      durationInSeconds: moment().unix() - eventStartedTimeRef.current,
+      event: {
+        id: getCalendarEventByHashData?.id!
+      }
+    });
     reset({
       index: 0,
       routes: [{ name: ScreensEnum.MAIN }],
@@ -722,6 +729,8 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         sdp: peerConnection.current.localDescription,
         roomId,
       })
+      eventStartedTimeRef.current = moment().unix()
+
       clearInterval(offerStatusCheckRef.current)
       if (RETRY_ATTEMPT) RETRY_ATTEMPT = 0
       return
@@ -808,7 +817,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
             lastName = "",
             photo = null,
           } = invitedParticipantsRef?.current?.find?.(
-            ({ id }) => userId === id
+            (invitedParticipants) => userId === invitedParticipants?.id
           ) || {}
           return {
             userId,

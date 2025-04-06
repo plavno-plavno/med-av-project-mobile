@@ -10,6 +10,7 @@ import {
   IPostCalendarEventsResponse,
   IPutCalendarEventsRequest,
   IPutCalendarEventsResponse,
+  ISaveCalendarEventsLogRequest,
   ITimezoneOptionsRequest,
   ITimezoneOptionsResponse,
 } from "./types"
@@ -125,6 +126,13 @@ export const calendarApi = createApi({
         method: "GET",
       }),
     }),
+    saveCalendarEventsLog: builder.mutation<void, ISaveCalendarEventsLogRequest>({
+      query: (data) => ({
+        url: 'calendar/event/log',
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 })
 
@@ -138,4 +146,5 @@ export const {
   useGetCalendarEventDetailsQuery,
   useGetCalendarRecentQuery,
   useGetCalendarEventByHashQuery,
+  useSaveCalendarEventsLogMutation,
 } = calendarApi

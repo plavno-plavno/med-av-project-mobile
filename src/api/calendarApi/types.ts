@@ -175,3 +175,10 @@ export interface ITimezoneOptionsRequest {
   limit: string
   term: string
 }
+
+export interface ISaveCalendarEventsLogRequest {
+  durationInSeconds: number;
+  event: {
+    id: number;
+  }
+}

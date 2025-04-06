@@ -233,26 +233,6 @@ const ProfileSettingsScreen = () => {
                   />
 
                   <CustomInput
-                    inputType="dropdown"
-                    dropdownData={languagesDropdown || []}
-                    label={t("SpeechLanguage")}
-                    value={String(values.speechLanguage)}
-                    onChangeText={(val) =>
-                      handleChange("speechLanguage")(val as string)
-                    }
-                    onBlur={handleBlur("speechLanguage")}
-                  />
-                  <CustomInput
-                    inputType="dropdown"
-                    dropdownData={languagesDropdown || []}
-                    label={t("SubtitlesLanguage")}
-                    value={String(values.subtitlesLanguage)}
-                    onChangeText={(val) =>
-                      handleChange("subtitlesLanguage")(val as string)
-                    }
-                    onBlur={handleBlur("subtitlesLanguage")}
-                  />
-                  <CustomInput
                     dropdownPosition="top"
                     inputType="dropdown"
                     dropdownData={timezoneOptions}
@@ -264,6 +244,29 @@ const ProfileSettingsScreen = () => {
                     }
                     onBlur={handleBlur("gmtDelta")}
                     error={touched.gmtDelta && errors.gmtDelta}
+                  />
+
+                  <CustomInput
+                    inputType="dropdown"
+                    dropdownData={languagesDropdown || []}
+                    label={t("SpeechLanguage")}
+                    value={String(values.speechLanguage)}
+                    dropdownPosition="top"
+                    onChangeText={(val) =>
+                      handleChange("speechLanguage")(val as string)
+                    }
+                    onBlur={handleBlur("speechLanguage")}
+                  />
+                  <CustomInput
+                    inputType="dropdown"
+                    dropdownPosition="top"
+                    dropdownData={languagesDropdown || []}
+                    label={t("SubtitlesLanguage")}
+                    value={String(values.subtitlesLanguage)}
+                    onChangeText={(val) =>
+                      handleChange("subtitlesLanguage")(val as string)
+                    }
+                    onBlur={handleBlur("subtitlesLanguage")}
                   />
                 </View>
               )}

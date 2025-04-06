@@ -209,80 +209,69 @@ const SetupProfileScreen = () => {
                     />
                   ) : (
                     <>
-                      {!authMeData?.firstName && (
-                        <CustomInput
-                          label={t("FirstName")}
-                          value={values.firstName}
-                          placeholder={t("EnterYourFirstName")}
-                          onChangeText={(val) =>
-                            handleChange("firstName")(val as string)
-                          }
-                          onBlur={handleBlur("firstName")}
-                          error={touched.firstName && errors.firstName}
-                        />
-                      )}
-                      {!authMeData?.lastName && (
-                        <CustomInput
-                          label={t("LastName")}
-                          placeholder={t("EnterYourLastName")}
-                          value={values.lastName}
-                          onChangeText={(val) =>
-                            handleChange("lastName")(val as string)
-                          }
-                          onBlur={handleBlur("lastName")}
-                          error={touched.lastName && errors.lastName}
-                        />
-                      )}
-
-                      {!authMeData?.inputLanguage && (
-                        <CustomInput
-                          inputType="dropdown"
-                          dropdownData={languagesDropdown || []}
-                          label={t("SpeechLanguage")}
-                          value={values.speechLanguage.toString()}
-                          onChangeText={(val) =>
-                            handleChange("speechLanguage")(val as string)
-                          }
-                          onBlur={handleBlur("speechLanguage")}
-                          error={
-                            touched.speechLanguage && errors.speechLanguage
-                          }
-                        />
-                      )}
-                      {!authMeData?.outputLanguage && (
-                        <CustomInput
-                          inputType="dropdown"
-                          dropdownData={languagesDropdown || []}
-                          label={t("SubtitlesLanguage")}
-                          value={values.subtitlesLanguage.toString()}
-                          onChangeText={(val) =>
-                            handleChange("subtitlesLanguage")(val as string)
-                          }
-                          onBlur={handleBlur("subtitlesLanguage")}
-                          error={
-                            touched.subtitlesLanguage &&
-                            errors.subtitlesLanguage
-                          }
-                        />
-                      )}
-                      {!timezone?.id && (
-                        <CustomInput
-                          inputType="dropdown"
-                          searchField
-                          dropdownPosition={
-                            missingInfoLength <= 3 ? "top" : "bottom"
-                          }
-                          dropdownData={timezoneOptions}
-                          label={t("Timezone")}
-                          placeholder={t("EnterYourTimezone")}
-                          value={values.gmtDelta.toString()}
-                          onChangeText={(val) =>
-                            handleChange("gmtDelta")(val as string)
-                          }
-                          onBlur={handleBlur("gmtDelta")}
-                          error={touched.gmtDelta && errors.gmtDelta}
-                        />
-                      )}
+                      <CustomInput
+                        label={t("FirstName")}
+                        value={values.firstName}
+                        placeholder={t("EnterYourFirstName")}
+                        onChangeText={(val) =>
+                          handleChange("firstName")(val as string)
+                        }
+                        onBlur={handleBlur("firstName")}
+                        error={touched.firstName && errors.firstName}
+                      />
+                      <CustomInput
+                        label={t("LastName")}
+                        placeholder={t("EnterYourLastName")}
+                        value={values.lastName}
+                        onChangeText={(val) =>
+                          handleChange("lastName")(val as string)
+                        }
+                        onBlur={handleBlur("lastName")}
+                        error={touched.lastName && errors.lastName}
+                      />
+                      <CustomInput
+                        inputType="dropdown"
+                        searchField
+                        dropdownPosition={'top'}
+                        dropdownData={timezoneOptions}
+                        label={t("Timezone")}
+                        placeholder={t("EnterYourTimezone")}
+                        value={values.gmtDelta.toString()}
+                        onChangeText={(val) =>
+                          handleChange("gmtDelta")(val as string)
+                        }
+                        onBlur={handleBlur("gmtDelta")}
+                        error={touched.gmtDelta && errors.gmtDelta}
+                      />
+                      <CustomInput
+                        inputType="dropdown"
+                        dropdownData={languagesDropdown || []}
+                        label={t("SpeechLanguage")}
+                        value={values.speechLanguage.toString()}
+                        dropdownPosition={'top'}
+                        onChangeText={(val) =>
+                          handleChange("speechLanguage")(val as string)
+                        }
+                        onBlur={handleBlur("speechLanguage")}
+                        error={
+                          touched.speechLanguage && errors.speechLanguage
+                        }
+                      />
+                      <CustomInput
+                        inputType="dropdown"
+                        dropdownData={languagesDropdown || []}
+                        label={t("SubtitlesLanguage")}
+                        value={values.subtitlesLanguage.toString()}
+                        dropdownPosition={'top'}
+                        onChangeText={(val) =>
+                          handleChange("subtitlesLanguage")(val as string)
+                        }
+                        onBlur={handleBlur("subtitlesLanguage")}
+                        error={
+                          touched.subtitlesLanguage &&
+                          errors.subtitlesLanguage
+                        }
+                      />
                     </>
                   )}
                 </View>

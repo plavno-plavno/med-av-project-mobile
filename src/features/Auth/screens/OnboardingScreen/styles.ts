@@ -1,7 +1,10 @@
-import { StyleSheet } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 import { moderateScale } from 'react-native-size-matters';
 import colors from '../../../../assets/colors';
 import { fontFamilies, fontWeights } from '../../../../utils/theme';
+
+const height = Dimensions.get('window').height;
+const isSmallScreen = height <= 700;
 
 export const styles = StyleSheet.create({
     container: {
@@ -12,7 +15,7 @@ export const styles = StyleSheet.create({
         gap: moderateScale(16),
     },
     content: {
-        gap: moderateScale(24),
+        gap: isSmallScreen ? moderateScale(16) : moderateScale(24),
     },
     title: {
         ...fontFamilies.interManropeSemiBold32,
