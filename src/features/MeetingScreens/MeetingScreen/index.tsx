@@ -238,7 +238,7 @@ const MeetingScreen = () => {
     <>
       <SafeAreaView edges={["top"]} style={styles.container}>
         <View style={styles.mainWrapper}>
-          <NewJoinRequestModal
+          {/* <NewJoinRequestModal
             name={"Valery J"}
             onAccept={function (): void {
               throw new Error("Function not implemented.")
@@ -246,7 +246,7 @@ const MeetingScreen = () => {
             onDecline={function (): void {
               throw new Error("Function not implemented.")
             }}
-          />
+          /> */}
           <View style={styles.upperControlContainer}>
             <Text style={styles.title}>{meetingTitle}</Text>
             <View>
