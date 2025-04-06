@@ -9,7 +9,9 @@ import WeekDays from "src/components/Calendar/WeekDays"
 import colors from "src/assets/colors"
 import {
   ActivityIndicator,
-  Animated,
+  Dimensions,
+  RefreshControl,
+  ScrollView,
   Text,
   TouchableOpacity,
 } from "react-native"
@@ -27,13 +29,9 @@ import DetailsEventModal from "src/modals/DetailsEventModal"
 import moment from "moment"
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 import { useTimezoneQuery } from "src/api/auth/authApi"
-import {
-  GestureHandlerRootView,
-  PanGestureHandler,
-  State,
-} from "react-native-gesture-handler"
 import { moderateScale } from "react-native-size-matters"
 
+const { height: screenHeight } = Dimensions.get("window")
 const today = moment().format("YYYY-MM-DD")
 
 const CalendarScreen = () => {
@@ -45,7 +43,7 @@ const CalendarScreen = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [scrollOffsetMinutes, setScrollOffsetMinutes] = useState(0)
   const scrollRef = useRef<KeyboardAwareScrollView>(null)
-  const TRIGGER_THRESHOLD = 520
+
   const {
     data: calendarEventsData,
     refetch: calendarEventsRefetch,
@@ -55,9 +53,7 @@ const CalendarScreen = () => {
   const { data: authMeData } = useAuthMeQuery()
   const { data: timezone, refetch: timezoneRefetch } = useTimezoneQuery()
 
-  const bottomTranslateY = useRef(new Animated.Value(0)).current
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [refreshTriggered, setRefreshTriggered] = useState(false)
 
   useEffect(() => {
     if (today === selectedDay) {
@@ -203,98 +199,73 @@ const CalendarScreen = () => {
     }, [])
   )
 
-  const onBottomGestureEvent = Animated.event(
-    [{ nativeEvent: { translationY: bottomTranslateY } }],
-    { useNativeDriver: true }
-  )
-  const onBottomHandlerStateChange = async ({ nativeEvent }: any) => {
-    const { state, y } = nativeEvent
-
-    if (state === State.FAILED) {
-      if (y > TRIGGER_THRESHOLD && !isRefreshing && !refreshTriggered) {
-        setIsRefreshing(true)
-        setRefreshTriggered(true)
-
-        try {
-          await calendarEventsRefetch()
-        } finally {
-          setIsRefreshing(false)
-          setRefreshTriggered(false)
-          Animated.timing(bottomTranslateY, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-          }).start()
-        }
-      } else {
-        Animated.timing(bottomTranslateY, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }).start()
-      }
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    try {
+      await calendarEventsRefetch()
+    } finally {
+      setIsRefreshing(false)
     }
   }
 
   return (
     <>
       <ScreenWrapper childrenStyle={styles.container} isCalendarScreen>
-        <GestureHandlerRootView
-          style={{ flex: 1, paddingBottom: moderateScale(60) }}
+        <ScrollView
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+            />
+          }
+          contentContainerStyle={{ flexGrow: 1 }}
         >
-          <PanGestureHandler
-            onGestureEvent={onBottomGestureEvent}
-            onHandlerStateChange={onBottomHandlerStateChange}
-          >
-            <Animated.View style={[styles.container]}>
-              {isCalendarEventsLoading || isRefreshing ? (
-                <ActivityIndicator
-                  size={"large"}
-                  style={{ top: moderateScale(250) }}
-                />
-              ) : (
-                <Calendar
-                  events={transformedEvents}
-                  height={100}
-                  mode={"day"}
-                  ampm
-                  onPressCell={(e) => handleCreateEvent(e as any)}
-                  onPressEvent={onPressEvent}
-                  swipeEnabled={false}
-                  overlapOffset={screenWidth * 0.1}
-                  date={new Date(selectedDay)}
-                  scrollOffsetMinutes={scrollOffsetMinutes}
-                  renderEvent={renderEvent}
-                  renderHeader={() => <WeekDays />}
-                  hourStyle={styles.hourStyle}
-                  eventCellTextColor={colors.ghostWhite}
-                  eventCellStyle={(event) => {
-                    const participantStatus = findParticipantStatusByEmail(
-                      String(authMeData?.email),
-                      event
-                    )
-                    return [
-                      styles.cellStyle,
-                      {
-                        backgroundColor:
-                          participantStatus === "accept"
-                            ? event.color
-                            : colors.white,
-                        borderWidth: 1,
-                        borderColor:
-                          participantStatus === "accept"
-                            ? event.color
-                            : participantStatus === "decline"
-                            ? colors.placeholder
-                            : event.color,
-                      },
-                    ]
-                  }}
-                />
-              )}
-            </Animated.View>
-          </PanGestureHandler>
-        </GestureHandlerRootView>
+          {isCalendarEventsLoading ? (
+            <ActivityIndicator
+              size="large"
+              style={{ top: moderateScale(250) }}
+            />
+          ) : (
+            <Calendar
+              events={transformedEvents}
+              height={screenHeight}
+              mode="day"
+              ampm
+              swipeEnabled={false} // Важливо!
+              overlapOffset={screenWidth * 0.1}
+              date={new Date(selectedDay)}
+              scrollOffsetMinutes={scrollOffsetMinutes}
+              renderEvent={renderEvent}
+              renderHeader={() => <WeekDays />}
+              hourStyle={styles.hourStyle}
+              eventCellTextColor={colors.ghostWhite}
+              eventCellStyle={(event) => {
+                const participantStatus = findParticipantStatusByEmail(
+                  String(authMeData?.email),
+                  event
+                )
+                return [
+                  styles.cellStyle,
+                  {
+                    backgroundColor:
+                      participantStatus === "accept"
+                        ? event.color
+                        : colors.white,
+                    borderWidth: 1,
+                    borderColor:
+                      participantStatus === "accept"
+                        ? event.color
+                        : participantStatus === "decline"
+                        ? colors.placeholder
+                        : event.color,
+                  },
+                ]
+              }}
+              onPressCell={(e) => handleCreateEvent(e as any)}
+              onPressEvent={onPressEvent}
+            />
+          )}
+        </ScrollView>
       </ScreenWrapper>
 
       <Portal>
