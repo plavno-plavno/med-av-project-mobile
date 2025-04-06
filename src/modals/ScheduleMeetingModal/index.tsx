@@ -246,6 +246,12 @@ const ScheduleMeetingModal = ({
         "YYYY-MM-DD hh:mm A"
       ).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
 
+      const ownerEmail = authMe?.email
+
+      if (ownerEmail && !values.participants.includes(ownerEmail)) {
+        values.participants.push(ownerEmail)
+      }
+
       const payload = {
         ...values,
         startDate,
