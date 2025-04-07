@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { View, Text, TouchableOpacity } from "react-native"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { styles } from "./styles"
@@ -18,6 +18,7 @@ import { ScreensEnum } from "src/navigation/ScreensEnum"
 import { mediaDevices, MediaStream, RTCView } from "react-native-webrtc"
 import { useGetCalendarEventByHashQuery } from "src/api/calendarApi/calendarApi"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
+import { useMeetingAccess } from "src/hooks/useMeetingAccess"
 
 type ParamList = {
   Detail: {
@@ -43,6 +44,28 @@ const MeetingDetailsScreen = () => {
   const { data: getCalendarEventByHashData } = useGetCalendarEventByHashQuery({
     hash: String(hash),
   })
+
+  const [invitedParticipants, setInvitedParticipants] = useState<any[]>([]);
+  const [meInvited, setMeInvited] = useState<boolean | null>(null);
+
+  const {joinEvent} = useMeetingAccess({
+    setInvitedParticipants,
+    setMeInvited,
+    invitedParticipants,
+    eventId: String(getCalendarEventByHashData?.id),
+  });
+
+  useEffect(() => {
+    if(getCalendarEventByHashData){
+      setInvitedParticipants(
+        getCalendarEventByHashData?.participants.map(({ user }: { user: any }) => user),
+      );
+      const isCurrentUserInvited = getCalendarEventByHashData.participants.some(
+        ({ user }: { user: any }) => user.id === authMe?.id,
+      );
+      setMeInvited(isCurrentUserInvited);
+    }
+  }, [getCalendarEventByHashData])
 
   const isMeetingOwner =
     authMe?.id === getCalendarEventByHashData?.createdBy?.id
@@ -143,6 +166,7 @@ const MeetingDetailsScreen = () => {
                 title: getCalendarEventByHashData?.title,
                 instanceMeetingOwner: isMeetingOwner,
                 meetId: getCalendarEventByHashData?.meetId,
+                eventId: getCalendarEventByHashData?.id,
               })
             }}
           />

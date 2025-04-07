@@ -182,3 +182,24 @@ export interface ISaveCalendarEventsLogRequest {
     id: number;
   }
 }
+
+export interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+}
+
+export interface IGetRequestsByEventIdResponse {
+  id: number;
+  isOwner: boolean;
+  color: string;
+  createdAt: string;
+  createdBy: User;
+  description: string;
+  startDate: string;
+  endDate: string;
+  title: string;
+  status: string;
+  participants: User[];
+  socketId: string;
+}

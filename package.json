@@ -30,6 +30,7 @@
     "base64-js": "^1.5.1",
     "formik": "^2.4.6",
     "i18next": "^24.0.5",
+    "mediasoup-client": "^3.9.5",
     "moment": "^2.30.1",
     "moment-timezone": "^0.5.46",
     "patch-package": "^8.0.0",

@@ -6,6 +6,7 @@ import {
   IGetCalendarEventDetailsResponse,
   IGetCalendarEventHashResponse,
   IGetCalendarEventsResponse,
+  IGetRequestsByEventIdResponse,
   IPostCalendarEventsRequest,
   IPostCalendarEventsResponse,
   IPutCalendarEventsRequest,
@@ -133,6 +134,12 @@ export const calendarApi = createApi({
         body: data,
       }),
     }),
+    getRequestsByEventId: builder.mutation<IGetRequestsByEventIdResponse[], {eventId: string}>({
+      query: ({eventId}) => ({
+        url: `calendar/requests/${eventId}`,
+        method: "GET",
+      }),
+    }),
   }),
 })
 
@@ -147,4 +154,5 @@ export const {
   useGetCalendarRecentQuery,
   useGetCalendarEventByHashQuery,
   useSaveCalendarEventsLogMutation,
+  useGetRequestsByEventIdMutation,
 } = calendarApi

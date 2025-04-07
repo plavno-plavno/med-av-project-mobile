@@ -2,6 +2,9 @@ import { useFocusEffect } from "@react-navigation/native"
 import { useEffect, useState, useRef, useCallback } from "react"
 import * as Keychain from "react-native-keychain"
 import { io, Socket } from "socket.io-client"
+import Config from "react-native-config"
+
+const socketSupportUrl = Config.SOCKET_SUPPORT_URL
 
 const useWebSocket = (refetch: () => void) => {
   const [token, setToken] = useState<string | null>(null)
@@ -23,7 +26,7 @@ const useWebSocket = (refetch: () => void) => {
       socketRef.current.disconnect()
     }
 
-    socketRef.current = io("https://med-app-av.plavno.io:8080/support", {
+    socketRef.current = io(socketSupportUrl, {
       query: { token },
     })
 

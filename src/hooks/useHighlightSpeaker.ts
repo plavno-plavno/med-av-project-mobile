@@ -57,12 +57,12 @@ const useHighlightSpeaker = (peerConnection: RTCPeerConnection | null, participa
   useFocusEffect(
     useCallback(() => {
       intervalRef.current = setInterval(checkAudioLevels, CHECK_INTERVAL_MS);
-      console.log("Started audio level checks.");
+      // console.log("Started audio level checks.");
 
       return () => {
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
-          console.log("Stopped audio level checks.");
+          // console.log("Stopped audio level checks.");
         }
       };
     }, [peerConnection, participantsToShow])

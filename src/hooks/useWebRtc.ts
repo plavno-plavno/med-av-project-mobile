@@ -440,7 +440,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   }
 
   const onSTTSocketMessage = (event: WebSocketMessageEvent) => {
-    console.log("onSTTSocketMessage: ", JSON.parse(event.data))
+    // console.log("onSTTSocketMessage: ", JSON.parse(event.data))
     // const data = JSON.parse(event.data);
     // if(data) {
     //   const { segments } = JSON.parse(event.data.toString());
@@ -1059,7 +1059,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   }
 
   const handlePeerDataChannelMessage = (event: any) => {
-    console.log("handlePeerDataChannelMessage: ", event)
+    // console.log("handlePeerDataChannelMessage: ", event)
     const data = JSON.parse(event)
     setSubtitlesQueue(handleSubtitles(data))
   }
@@ -1151,7 +1151,6 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   }
 
   const onSTTSocketOpen = () => {
-    console.log(socketRef.current?.id, "socketRef.current?.id")
     if (!userRefId.current) return
     console.log("STT SEND: ")
     STTSocket.current?.send(

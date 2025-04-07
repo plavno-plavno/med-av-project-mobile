@@ -18,13 +18,12 @@ import { useTranslation } from "react-i18next"
 import { useKeepAwake } from "@sayem314/react-native-keep-awake"
 import Subtitles from "src/components/Subtitles"
 import Loading from "src/components/Loading"
-import Config from "react-native-config"
+// import Config from "react-native-config"
 import { useMeetingRecording } from "src/hooks/useMeetingRecording"
 import NewJoinRequestModal from "src/modals/MeetingModals/NewJoinRequestModal"
-import { connectAccessMeetingSocket } from "src/hooks/meetingAccessSocketInstance"
 import { useMeetingAccess } from "src/hooks/useMeetingAccess"
 
-const recordingUrl = Config.SOCKET_RECORDING_URL
+// const recordingUrl = Config.SOCKET_RECORDING_URL
 
 type ParamList = {
   Detail: {
@@ -76,17 +75,34 @@ const MeetingScreen = () => {
     setClearCanvas,
     speechLanguage,
   } = useWebRtc(instanceMeetingOwner!)
-  // const { startRecording, stopRecording, isRecording } = useMeetingRecording(
-  //   String(roomId),
-  //   peerConnection
-  // )
-  const { joinEvent, requestJoinEvent, respondJoinRequest } = useMeetingAccess()
+  const { startRecording, stopRecording, isRecording } = useMeetingRecording(
+    String(roomId),
+    peerConnection
+  )
+
+  
+  const [invitedParticipants, setInvitedParticipants] = useState<any[]>([]);
+  const [meInvited, setMeInvited] = useState<boolean | null>(null);
+
+  const { 
+    joinEvent,
+    requestJoinEvent,
+    respondJoinRequest,
+    isRequestModalOpen,
+    setIsRequestModalOpen,
+    newUser,
+    isRequestingJoin,
+   } = useMeetingAccess({
+    setInvitedParticipants,
+    setMeInvited,
+    invitedParticipants,
+    eventId: eventId!,
+   })
+
   useKeepAwake()
   useStatusBar("light-content", colors.dark)
   const [isCaptionOn, setIsCaptionOn] = React.useState(false)
   const meetingTitle = title === "Instant meeting" ? title : hash
-  const startTimeRef = useRef<number | null>(null)
-  const recordingNameRef = useRef<string | null>(null)
 
   const sheetChatRef = useRef<BottomSheetMethods>(null)
   const sheetCatiptionsRef = useRef<BottomSheetMethods>(null)
@@ -101,61 +117,58 @@ const MeetingScreen = () => {
   const handleParticipantsOpen = () => {
     sheetParticipantsRef.current?.open()
   }
-  const isInitialized = useRef(false)
+  // const isInitialized = useRef(false)
   // useEffect(() => {
   //   if (peerConnection) {
   //     updatePeerConnections(peerConnection)
   //   }
   // }, [peerConnection])
 
-  useEffect(() => {
-    let reconnectTimeout: NodeJS.Timeout | null = null
+  // useEffect(() => {
+  //   let reconnectTimeout: NodeJS.Timeout | null = null
 
-    const connectWebSocket = () => {
-      if (wsRef.current) {
-        wsRef.current.close()
-      }
+  //   const connectWebSocket = () => {
+  //     if (wsRef.current) {
+  //       wsRef.current.close()
+  //     }
 
-      wsRef.current = new WebSocket(recordingUrl!)
+  //     wsRef.current = new WebSocket(recordingUrl!)
 
-      wsRef.current.onopen = () => {
-        console.log("WebSocket connected")
-        if (reconnectTimeout) {
-          clearTimeout(reconnectTimeout)
-          reconnectTimeout = null
-        }
-      }
+  //     wsRef.current.onopen = () => {
+  //       console.log("WebSocket connected")
+  //       if (reconnectTimeout) {
+  //         clearTimeout(reconnectTimeout)
+  //         reconnectTimeout = null
+  //       }
+  //     }
 
-      wsRef.current.onerror = (error) => {
-        console.error("WebSocket error:", error)
-        console.log("WebSocket connection error. Reconnecting...")
-        if (!reconnectTimeout) {
-          reconnectTimeout = setTimeout(connectWebSocket, 3000)
-        }
-      }
+  //     wsRef.current.onerror = (error) => {
+  //       console.error("WebSocket error:", error)
+  //       console.log("WebSocket connection error. Reconnecting...")
+  //       if (!reconnectTimeout) {
+  //         reconnectTimeout = setTimeout(connectWebSocket, 3000)
+  //       }
+  //     }
 
-      wsRef.current.onclose = () => {
-        console.warn("WebSocket connection closed")
-      }
-    }
-    const initSockets = async () => {
-      if (!isInitialized.current) {
-        connectAccessMeetingSocket()
-        isInitialized.current = true
-      }
-    }
+  //     wsRef.current.onclose = () => {
+  //       console.warn("WebSocket connection closed")
+  //     }
+  //   }
+  //   const initSockets = async () => {
+  //     if (!isInitialized.current) {
+  //       isInitialized.current = true
+  //     }
+  //   }
 
-    initSockets()
-    setTimeout(() => {
-      joinEvent({ eventId })
-    }, 300)
-    // connectWebSocket()
+  //   initSockets()
+    
+  //   // connectWebSocket()
 
-    return () => {
-      if (reconnectTimeout) clearTimeout(reconnectTimeout)
-      wsRef.current?.close()
-    }
-  }, [eventId])
+  //   return () => {
+  //     if (reconnectTimeout) clearTimeout(reconnectTimeout)
+  //     wsRef.current?.close()
+  //   }
+  // }, [eventId])
 
   const callTopActions = [
     {
@@ -179,14 +192,14 @@ const MeetingScreen = () => {
           return
         }
 
-        // if (isRecording) {
-        //   stopRecording()
-        // } else {
-        //   startRecording()
-        // }
+        if (isRecording) {
+          stopRecording()
+        } else {
+          startRecording()
+        }
       },
-      // style: { opacity: isRecording ? 1 : 0.5 },
-      style: { opacity: false ? 1 : 0.5 },
+      style: { opacity: isRecording ? 1 : 0.5 },
+      // style: { opacity: false ? 1 : 0.5 },
     },
   ]
 
@@ -194,9 +207,9 @@ const MeetingScreen = () => {
     {
       name: "callEnd",
       onPress: () => {
-        // if (isRecording) {
-        //   stopRecording()
-        // }
+        if (isRecording) {
+          stopRecording()
+        }
         setTimeout(() => {
           endCall()
           Toast.show({
@@ -230,6 +243,16 @@ const MeetingScreen = () => {
       active: false,
     },
   ]
+console.log(eventId, 'eventIdeventIdeventId');
+
+  useEffect(() => {
+    if(!!participants.length){
+      setTimeout(() => {
+
+        joinEvent({ eventId: String(eventId) });
+      }, 5000)
+    }
+  }, [participants.length])
 
   if (!participants.length) {
     return <Loading />
@@ -315,7 +338,7 @@ const MeetingScreen = () => {
         />
         <ParticipantsModal
           isCreatorMode={isCreatorMode}
-          hash={roomId}
+          hash={hash}
           participants={participants}
           sheetRef={sheetParticipantsRef}
         />

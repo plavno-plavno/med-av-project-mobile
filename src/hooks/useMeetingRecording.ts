@@ -1,359 +1,311 @@
 import {
+  useCallback,
   useEffect,
-  useRef, 
+  useRef,
   useState,
 } from 'react';
-import { Socket } from 'socket.io-client';
-import { useAuthMeQuery } from 'src/api/userApi/userApi';
+import { io, Socket } from 'socket.io-client';
 import { getSocket } from './webRtcSocketInstance';
-import {
-  mediaDevices,
-  MediaStream,
-  RTCIceCandidate,
-  RTCPeerConnection,
-  RTCSessionDescription,
-} from "react-native-webrtc";
-import Toast from 'react-native-toast-message';
+import * as mediasoupClient from 'mediasoup-client';
+import { mediaDevices, MediaStream, registerGlobals, RTCPeerConnection } from "react-native-webrtc";
 import { useTranslation } from 'react-i18next';
 
-enum PeerConnectionType {
-  RECORDING = 'recording',
-}
-
-const iceServersConfig: any = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'stun:stun2.l.google.com:19302' },
-    { urls: 'stun:stun3.l.google.com:19302' },
-    { urls: 'stun:stun4.l.google.com:19302' },
-  ],
-};
-
-enum UserActions {
-  StartRecording = 'start-recording',
-  StopRecording = 'stop-recording',
-}
-
-interface RTCIceCandidateInit {
-  candidate?: string;
-  sdpMLineIndex?: number | null;
-  sdpMid?: string | null;
-  usernameFragment?: string | null;
-}
-
 export const useMeetingRecording = (roomId: string | null, peerConnection: any) => {
-  const mediaStreamRef = useRef<MediaStream | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
-  const mainPeerConnectionRef = useRef<RTCPeerConnection | null>();
-  const recordingPeerConnectionRef = useRef<RTCPeerConnection | null>();
-  const recordingStreamRef = useRef<MediaStream | null>(null);
-  const {t} = useTranslation();
+  // const mediaStreamRef = useRef<MediaStream | null>(null);
+  // const mainPeerConnectionRef = useRef<RTCPeerConnection | null>();
+  // const recordingPeerConnectionRef = useRef<RTCPeerConnection | null>();
+  // const recordingStreamRef = useRef<MediaStream | null>(null);
+  // const {t} = useTranslation();
 
-  const { data: authMeData } = useAuthMeQuery();
-  const userRefId = useRef<number>();
-  userRefId.current = authMeData?.id;
-
-  const isRecordingStartedRef = useRef(false);
-  const roomIdRef = useRef<string | null>(roomId);
   const socketRef = useRef<Socket | null>(null);
   socketRef.current = getSocket();
 
-  // const updatePeerConnections = (peerConnection: RTCPeerConnection) => {
-  //   mainPeerConnectionRef.current = peerConnection;
-  // };
+  const localVideoRef = useRef<any | null>(null);
 
-  const createPeerConnection = () => {
-    if (recordingPeerConnectionRef.current) {
-      return recordingPeerConnectionRef.current;
-    }
+  // Состояния для socket.io, mediasoup device и транспорта для продюсера
+  const [socket, setSocket] = useState<any | null>(null);
+  const [device, setDevice] = useState<any | null>(null);
+  const [producerTransport, setProducerTransport] = useState<any | null>(null);
+  const [producer, setProducer] = useState<any | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [error, setError] = useState<any | null>(null);
+  const [transportCreated, setTransportCreated] = useState<any | null>(false);
+  const [isRecording, setIsRecording] = useState(false);
+
+
+useEffect(() => {
+  registerGlobals()
+  const sock = io('http://192.168.0.105:6600')
+  
+  sock.on("connect", () => {
+    console.log("Соединение с сервером установлено");
+    setIsConnected(true);
+    setError(null);
+  });
+  
+  sock.on("connect_error", (err) => {
+    console.error("Ошибка соединения:", err);
+    setIsConnected(false);
+    setError(`Ошибка соединения: ${err.message}`);
+  });
+  
+  sock.on("disconnect", (reason) => {
+    // console.log("Соединение разорвано:", reason);
+    setIsConnected(false);
+  });
+
+  setSocket(sock);
+
+  // После подключения сервер отправляет capabilities маршрутизатора mediasoup
+  sock.on("routerRtpCapabilities", async (routerRtpCapabilities) => {
+    // console.log("Получены routerRtpCapabilities:", routerRtpCapabilities);
     try {
-      const pc = new RTCPeerConnection(iceServersConfig);
+      const deviceTmp = new mediasoupClient.Device();
+      await deviceTmp.load({ routerRtpCapabilities });
+      setDevice(deviceTmp);
+      // console.log("Device загружен успешно");
+    } catch (error: any) {
+      console.error("Ошибка при загрузке Device:", error);
+      setError(`Ошибка при загрузке Device: ${error.message}`);
+    }
+  });
 
-      pc.addEventListener("icecandidate", ({ candidate }) => {
-        console.log("ICE Candidate: ", candidate);  // Added log for ICE candidate
-        if (candidate) {
-          socketRef.current?.emit('candidate', {
-            candidate,
-            roomId: roomIdRef.current,
-            type: PeerConnectionType.RECORDING,
-          });
-        }
+  // Очистка: отключаем сокет при размонтировании
+  return () => {
+    if (sock) {
+      sock.disconnect();
+      // console.log("Сокет отключен при размонтировании");
+    }
+  };
+}, []); // пустой массив зависимостей: выполняется один раз
+
+// После того, как device и socket установлены, подписываемся на событие создания транспорта
+useEffect(() => {
+  if (!socket || !device) return;
+
+  // console.log("Настройка обработчика createSendTransport");
+  
+  const handleCreateSendTransport = async (transportParams: any) => {
+    // console.log("Получены параметры транспорта:", transportParams);
+    try {
+      const transport = device.createSendTransport(transportParams);
+      // console.log("Транспорт создан:", transport.id);
+
+      // При событии «connect» передаём на сервер dtlsParameters для подключения транспорта
+      transport.on("connect", ({ dtlsParameters }: any, callback: () => void, errback: any) => {
+        // console.log("Событие connect транспорта, отправка dtlsParameters");
+        socket.emit("connectTransport", transport.id, dtlsParameters);
+        callback();
       });
 
-      pc.addEventListener("connectionstatechange", () => {
-        console.log("Connection state change: ", pc.connectionState);  // Added log for connection state
-        if (pc.connectionState === 'failed') {
-          console.error('Connection failed. Consider renegotiating or restarting the connection.');
-        }
+      // При событии «produce» регистрируем продюсера на сервере
+      transport.on("produce", ({ kind, rtpParameters }: any, callback: (arg0: { id: any; }) => void, errback: any) => {
+        // console.log(`Событие produce транспорта, kind: ${kind}`);
+        socket.emit(
+          "registerProducer",
+          { transportId: transport.id, kind, rtpParameters },
+          (producerId: any) => {
+            // console.log("Producer создан на сервере, id:", producerId);
+            callback({ id: producerId });
+          }
+        );
       });
 
-      pc.addEventListener("datachannel", (event) => {
-        console.log("Data channel event: ", event);  // Added log for data channel
-      });
-
-      return pc;
-    } catch (error) {
-      console.error('Failed to create PeerConnection:', error);
-      throw new Error('Could not create RTCPeerConnection');
+      setProducerTransport(transport);
+      setTransportCreated(true);
+      console.log("Транспорт сохранен в состоянии");
+    } catch (error: any) {
+      console.error("Ошибка при создании транспорта:", error);
+      setError(`Ошибка при создании транспорта: ${error?.message}`);
     }
   };
 
-  useEffect(() => {
-    if (roomId && peerConnection) {
-      roomIdRef.current = roomId;
-      mainPeerConnectionRef.current = peerConnection;
-      // peerConnection.current = createPeerConnection()
-      recordingPeerConnectionRef.current = createPeerConnection();
+  // Подписка на событие создания транспорта
+  socket.on("createSendTransport", handleCreateSendTransport);
 
+  // Очистка подписки при изменении зависимостей или размонтировании компонента
+  return () => {
+    socket.off("createSendTransport", handleCreateSendTransport);
+    // console.log("Отписка от события createSendTransport");
+  };
+}, [socket, device]);
+
+useEffect(() => {
+  if(socket && device){
+    createWebRtcTransport()
+  }
+}, [socket, device])
+
+// Функция для запроса создания WebRTC транспорта (отправляем запрос на сервер)
+const createWebRtcTransport = useCallback(() => {
+  if (!socket) {
+    console.error("Сокет не инициализирован");
+    setError("Сокет не инициализирован");
+    return;
+  }
+  
+  if (!device) {
+    console.error("Device не инициализирован");
+    setError("Device не инициализирован");
+    return;
+  }
+  
+  // console.log("Отправка запроса на создание транспорта");
+  socket.emit("createTransport");
+}, [socket, device]);
+
+// Функция запуска захвата экрана и создания Producer (отправка видеодорожки)
+const startScreenCapture = useCallback(async () => {
+  if (!producerTransport) {
+    console.error("Транспорт для продюсера не создан");
+    setError("Транспорт для продюсера не создан. Сначала нажмите 'Создать WebRTC транспорт'");
+    return;
+  }
+  
+  try {
+    // console.log("Начинаем захват экрана");
+    // Захват экрана
+    const stream = await mediaDevices.getDisplayMedia();
+    
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = stream;
+      // console.log("Видеопоток установлен в элемент video");
     }
-  }, [roomId, peerConnection]);
 
-  useEffect(() => {
-    if (!socketRef.current) {
+    const videoTrack = stream.getVideoTracks()[0];
+    if (!videoTrack) {
+      console.error("Нет видеодорожки для захвата экрана");
+      setError("Нет видеодорожки для захвата экрана");
       return;
     }
-    socketRef.current.on('offer', handleOffer);
-    socketRef.current.on('answer', handleAnswer);
-    socketRef.current.on('candidate', handleCandidate);
 
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.off('offer', handleOffer);
-        socketRef.current.off('answer', handleAnswer);
-        socketRef.current.off('candidate', handleCandidate);
-      }
-    };
-  }, [socketRef.current]);
+    stream.addTrack(videoTrack);
 
-  const startRecording = async () => {
-    try {
-      if (isRecordingStartedRef.current) {
-        console.log("Recording already started.");  // Log when recording is already started
-        return;
-      }
+    if (!stream) {
+      console.error('No video track available for screen recording');
+      return;
+    }
 
-      if (!mainPeerConnectionRef.current) {
-        console.error('PeerConnections do not exist!');
-        return;
-      }
+    console.log("Screen stream started", stream);  // Log when screen stream is started
 
-      if (!recordingPeerConnectionRef.current) {
-        recordingPeerConnectionRef.current = createPeerConnection();
-      }
-      const combinedStream = new MediaStream();
+    // Add audio tracks if available from main peer connection
+    // mainPeerConnectionRef.current.getReceivers().forEach((receiver) => {
+    //   if (receiver.track && receiver.track.kind === 'audio') {
+    //     combinedStream.addTrack(receiver.track);
+    //   }
+    // });
 
-      const screenStream = await mediaDevices.getDisplayMedia();
-      const screenTrack = screenStream.getVideoTracks()[0];
-      combinedStream.addTrack(screenTrack);
+    // mainPeerConnectionRef.current.getSenders().forEach((sender) => {
+    //   if (sender.track && sender.track.kind === 'audio') {
+    //     combinedStream.addTrack(sender.track);
+    //   }
+    // });
 
-      if (!screenTrack) {
-        console.error('No video track available for screen recording');
-        return;
-      }
+    // combinedStream.getTracks().forEach(track => {
+    //   recordingPeerConnectionRef.current?.addTrack(track, combinedStream);
+    // });
 
-      console.log("Screen stream started", screenTrack);  // Log when screen stream is started
-
-      // Add audio tracks if available from main peer connection
-      // mainPeerConnectionRef.current.getReceivers().forEach((receiver) => {
-      //   if (receiver.track && receiver.track.kind === 'audio') {
-      //     combinedStream.addTrack(receiver.track);
+      // combinedStream.getTracks().forEach(track => {
+      //   console.log(`Adding transceiver for track: ${track.kind}`);
+      //   if (track.kind === 'audio' || track.kind === 'video') {
+      //     try {
+      //       const transceiver = recordingPeerConnectionRef.current?.addTransceiver(track, { direction: 'sendrecv' });
+      //       if (!transceiver) {
+      //         console.error('Failed to create transceiver for track:', track);
+      //       } else {
+      //         console.log('Transceiver added successfully:', transceiver);
+      //       }
+      //     } catch (error) {
+      //       console.error('Error adding transceiver:', error);
+      //     }
       //   }
       // });
 
-      mainPeerConnectionRef.current.getSenders().forEach((sender) => {
-        if (sender.track && sender.track.kind === 'audio') {
-          combinedStream.addTrack(sender.track);
-        }
-      });
 
-      mediaStreamRef.current = combinedStream;
-
-      combinedStream.getTracks().forEach(track => {
-        recordingPeerConnectionRef.current?.addTrack(track, combinedStream);
-      });
-
-      if (recordingPeerConnectionRef.current) {
-        combinedStream.getTracks().forEach(track => {
-          console.log(`Adding transceiver for track: ${track.kind}`);
-          if (track.kind === 'audio' || track.kind === 'video') {
-            try {
-              const transceiver = recordingPeerConnectionRef.current?.addTransceiver(track, { direction: 'sendrecv' });
-              if (!transceiver) {
-                console.error('Failed to create transceiver for track:', track);
-              } else {
-                console.log('Transceiver added successfully:', transceiver);
-              }
-            } catch (error) {
-              console.error('Error adding transceiver:', error);
-            }
-          }
-        });
-
-        const offer = await recordingPeerConnectionRef.current.createOffer({});
-        await recordingPeerConnectionRef.current.setLocalDescription(offer);
-
-        socketRef.current?.emit('recording-peer', {
-          roomId: roomIdRef.current,
-        });
-
-        socketRef.current?.emit('offer', {
-          sdp: recordingPeerConnectionRef.current.localDescription,
-          roomId: roomIdRef.current,
-          type: PeerConnectionType.RECORDING,
-        });
-
-        socketRef?.current?.emit('action', {
-          roomId: roomIdRef.current,
-          action: UserActions.StartRecording,
-          socketId: socketRef.current.id,
-        });
-
-        recordingStreamRef.current = screenStream;
-
-        isRecordingStartedRef.current = true;
-        setIsRecording(true);
-        Toast.show({
-          type: "success",
-          text1: t("RecordingStarted"),
-        })
+    
+    // console.log("Видеодорожка получена:", videoTrack);
+    
+    // Отправляем видеодорожку через mediasoup транспорт
+    // console.log("Создаем продюсер с видеодорожкой");
+    const prod = await producerTransport.produce({ 
+      track: videoTrack,
+      encodings: [
+        { maxBitrate: 100000 },
+        { maxBitrate: 300000 },
+        { maxBitrate: 900000 }
+      ],
+      codecOptions: {
+        videoGoogleStartBitrate: 1000
       }
-    } catch (error) {
-      console.error('Error starting screen recording:', error);
-    }
-  };
-
-  const stopRecording = () => {
-    try {
-      socketRef.current?.emit('action', {
-        roomId: roomIdRef.current,
-        action: UserActions.StopRecording,
-        socketId: socketRef.current.id,
-      });
-
-      if (recordingStreamRef.current) {
-        recordingStreamRef.current.getTracks().forEach((track) => {
-          track.stop();
-          track.release();
-          recordingPeerConnectionRef.current?.getSenders().forEach((sender) => {
-            if (sender.track === track) {
-              recordingPeerConnectionRef.current?.removeTrack(sender);
-            }
-          });
-        });
-
-        setIsRecording(false);
-
-        recordingStreamRef.current = null;
-        recordingPeerConnectionRef.current?.close();
-        recordingPeerConnectionRef.current = null;
+    });
+    
+    setProducer(prod);
+    // console.log("Producer создан на клиенте, id:", prod.id);
+    
+    // Обработка закрытия видеодорожки (например, когда пользователь закрывает окно захвата)
+    videoTrack.addEventListener('ended', () => {
+      // console.log('Видеодорожка закрыта пользователем');
+      if (prod) {
+        prod.close();
+        setProducer(null);
       }
-
-      isRecordingStartedRef.current = false;
-      Toast.show({
-        type: "success",
-        text1: t("RecordingStopped"),
-      })
-    } catch (error) {
-      console.error('Error while stopping recording and switching to camera:', error);
-    }
-  };
-
-  const handleOffer = async ({ sdp }: { sdp: any }) => {
-    console.log("Received offer: ", sdp);  // Added log for received offer
-    if (!recordingPeerConnectionRef.current) {
-      return;
-    }
-
-    try {
-      const polite = true;
-      const offerCollision = (recordingPeerConnectionRef.current.signalingState === 'have-local-offer' || recordingPeerConnectionRef.current.signalingState === 'have-remote-offer');
-      const ignoreOffer = !polite && offerCollision;
-
-      if (ignoreOffer) {
-        return;
+      
+      // Если запись идет, останавливаем ее
+      if (isRecording) {
+        stopRecording();
       }
-      const offer = new RTCSessionDescription(sdp);
-      await recordingPeerConnectionRef.current.setRemoteDescription(offer);
+    });
+  } catch (error: any) {
+    console.error("Ошибка захвата экрана:", error);
+    setError(`Ошибка захвата экрана: ${error?.message}`);
+  }
+}, [producerTransport, isRecording]);
 
-      const senders = recordingPeerConnectionRef.current.getSenders();
-      const receivers = recordingPeerConnectionRef.current.getReceivers();
+useEffect(() => {
+  if(socket && producer){
+    startRecording()
+  }
+}, [socket, producer])
 
-      await flushCandidates();
-      const answer = await recordingPeerConnectionRef.current.createAnswer();
-      await recordingPeerConnectionRef.current.setLocalDescription(answer);
+// Функция для начала записи
+const startRecording = useCallback(async () => {
+  if (!socket) {
+    console.error("Сокет не инициализирован");
+    setError("Сокет не инициализирован");
+    return;
+  }
+  
+  if (!producer) {
+    console.error("Продюсер не создан");
+    setError("Сначала начните захват экрана");
+    return;
+  }
+  
+  console.log("Отправка запроса на начало записи");
+  socket.emit("startRecording");
+  setIsRecording(true);
+}, [socket, producer]);
 
-      if (recordingPeerConnectionRef.current.localDescription) {
-        const localDescription = recordingPeerConnectionRef.current.localDescription as RTCSessionDescription;
-        socketRef.current?.emit('answer', {
-          sdp: localDescription,
-          roomId: roomIdRef.current,
-          type: PeerConnectionType.RECORDING,
-        });
-      } else {
-        console.error('Local description is null');
-      }
-    } catch (error) {
-      console.error('Error processing offer:', error);
-    }
-  };
-
-  const handleAnswer = async ({ sdp }: { sdp: RTCSessionDescription }) => {
-    if (!recordingPeerConnectionRef.current) {
-      return;
-    }
-    try {
-      if (recordingPeerConnectionRef.current) {
-        if (recordingPeerConnectionRef.current.signalingState === 'stable') {
-          console.warn('Answer ignored: already stable');
-          return;
-        }
-        await recordingPeerConnectionRef.current.setRemoteDescription(
-          new RTCSessionDescription(sdp));
-      }
-    } catch (error) {
-      console.error('Error setting remote description:', error);
-    }
-  };
-
-  const pendingCandidates: RTCIceCandidateInit[] = [];
-
-  const flushCandidates = async () => {
-    for (const candidate of pendingCandidates) {
-      try {
-        if (!candidate.sdpMid && candidate.sdpMLineIndex === null) {
-          continue;
-        }
-
-        await recordingPeerConnectionRef.current?.addIceCandidate(new RTCIceCandidate(candidate));
-      } catch (error) {
-        console.error('Error adding buffered ICE candidate:', error);
-      }
-    }
-    pendingCandidates.length = 0;
-  };
-
-  const handleCandidate = async ({ candidate }: { candidate: RTCIceCandidateInit }) => {
-    if (!recordingPeerConnectionRef.current) {
-      return;
-    }
-    try {
-      if (recordingPeerConnectionRef.current) {
-        if (!recordingPeerConnectionRef.current.remoteDescription) {
-          pendingCandidates.push(candidate);
-          return;
-        }
-        await recordingPeerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
-      }
-    } catch (error) {
-      console.error('Error adding ICE candidate:', error);
-    }
-  };
+// Функция для остановки записи
+const stopRecording = useCallback(() => {
+  if (!socket) {
+    console.error("Сокет не инициализирован");
+    return;
+  }
+  
+  if (!isRecording) {
+    console.log("Запись не ведется");
+    return;
+  }
+  
+  console.log("Отправка запроса на остановку записи");
+  socket.emit("stopRecording");
+  setIsRecording(false);
+}, [socket, isRecording]);
 
   return {
-    startRecording,
+    startRecording: startScreenCapture,
     stopRecording,
     isRecording,
-    // updatePeerConnections,
   };
 };
