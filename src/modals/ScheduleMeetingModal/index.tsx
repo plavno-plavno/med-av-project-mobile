@@ -248,10 +248,6 @@ const ScheduleMeetingModal = ({
 
       const ownerEmail = authMe?.email
 
-      if (ownerEmail && !values.participants.includes(ownerEmail)) {
-        values.participants.push(ownerEmail)
-      }
-
       const payload = {
         ...values,
         startDate,
@@ -262,6 +258,9 @@ const ScheduleMeetingModal = ({
       const { date: _, ...payloadWithoutDate } = payload
       let res
       if (isEditMode) {
+        if (ownerEmail && !values.participants.includes(ownerEmail)) {
+          values.participants.push(ownerEmail)
+        }
         res = await updateEvent({ ...payloadWithoutDate, id: eventId }).unwrap()
         eventDetailsRefetch()
       } else {
