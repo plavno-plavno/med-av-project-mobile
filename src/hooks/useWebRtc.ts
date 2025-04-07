@@ -21,7 +21,10 @@ import {
   Float32ConcatAll,
   resampleTo16kHZ,
 } from "@utils/audioData"
-import { useGetCalendarEventByHashQuery, useSaveCalendarEventsLogMutation } from "src/api/calendarApi/calendarApi"
+import {
+  useGetCalendarEventByHashQuery,
+  useSaveCalendarEventsLogMutation,
+} from "src/api/calendarApi/calendarApi"
 import RTCDataChannel from "react-native-webrtc/lib/typescript/RTCDataChannel"
 import { screenHeight, screenWidth } from "@utils/screenResponsive"
 import { isIOS } from "@utils/platformChecker"
@@ -444,14 +447,12 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     // const data = JSON.parse(event.data);
     // if(data) {
     //   const { segments } = JSON.parse(event.data.toString());
-
     //   if (segments) {
     //     const currentTime = new Date().toLocaleTimeString('en-US', {
     //       hour: '2-digit',
     //       minute: '2-digit',
     //       hour12: false,
     //     });
-
     //     const subtitles = segments.slice(-5).map((segment: { text: string }) => ({
     //       userName: userRefName.current ?? 'Guest',
     //       message: segment.text,
@@ -657,9 +658,9 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     saveCalendarEventsLog({
       durationInSeconds: moment().unix() - eventStartedTimeRef.current,
       event: {
-        id: getCalendarEventByHashData?.id!
-      }
-    });
+        id: getCalendarEventByHashData?.id!,
+      },
+    })
     reset({
       index: 0,
       routes: [{ name: ScreensEnum.MAIN }],

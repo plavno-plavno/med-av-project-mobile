@@ -45,25 +45,27 @@ const MeetingDetailsScreen = () => {
     hash: String(hash),
   })
 
-  const [invitedParticipants, setInvitedParticipants] = useState<any[]>([]);
-  const [meInvited, setMeInvited] = useState<boolean | null>(null);
+  const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
+  const [meInvited, setMeInvited] = useState<boolean | null>(null)
 
-  const {joinEvent} = useMeetingAccess({
+  const { joinEvent } = useMeetingAccess({
     setInvitedParticipants,
     setMeInvited,
     invitedParticipants,
     eventId: String(getCalendarEventByHashData?.id),
-  });
+  })
 
   useEffect(() => {
-    if(getCalendarEventByHashData){
+    if (getCalendarEventByHashData) {
       setInvitedParticipants(
-        getCalendarEventByHashData?.participants.map(({ user }: { user: any }) => user),
-      );
+        getCalendarEventByHashData?.participants.map(
+          ({ user }: { user: any }) => user
+        )
+      )
       const isCurrentUserInvited = getCalendarEventByHashData.participants.some(
-        ({ user }: { user: any }) => user.id === authMe?.id,
-      );
-      setMeInvited(isCurrentUserInvited);
+        ({ user }: { user: any }) => user.id === authMe?.id
+      )
+      setMeInvited(isCurrentUserInvited)
     }
   }, [getCalendarEventByHashData])
 

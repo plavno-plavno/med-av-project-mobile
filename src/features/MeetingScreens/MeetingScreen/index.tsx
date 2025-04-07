@@ -80,11 +80,10 @@ const MeetingScreen = () => {
     peerConnection
   )
 
-  
-  const [invitedParticipants, setInvitedParticipants] = useState<any[]>([]);
-  const [meInvited, setMeInvited] = useState<boolean | null>(null);
+  const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
+  const [meInvited, setMeInvited] = useState<boolean | null>(null)
 
-  const { 
+  const {
     joinEvent,
     requestJoinEvent,
     respondJoinRequest,
@@ -92,12 +91,29 @@ const MeetingScreen = () => {
     setIsRequestModalOpen,
     newUser,
     isRequestingJoin,
-   } = useMeetingAccess({
+  } = useMeetingAccess({
     setInvitedParticipants,
     setMeInvited,
     invitedParticipants,
     eventId: eventId!,
-   })
+  })
+
+  const handleResponse = async (accepted: boolean) => {
+    if (!newUser?.socketId || !eventId) {
+      console.error("Missing required data to process response")
+      return
+    }
+
+    // Respond to join request
+    respondJoinRequest({
+      eventId: String(eventId),
+      socketId: newUser.socketId,
+      userId: String(newUser.id),
+      accepted,
+    })
+
+    setIsRequestModalOpen(false)
+  }
 
   useKeepAwake()
   useStatusBar("light-content", colors.dark)
@@ -161,7 +177,7 @@ const MeetingScreen = () => {
   //   }
 
   //   initSockets()
-    
+
   //   // connectWebSocket()
 
   //   return () => {
@@ -243,13 +259,12 @@ const MeetingScreen = () => {
       active: false,
     },
   ]
-console.log(eventId, 'eventIdeventIdeventId');
-
+  //   console.log(eventId, "eventIdeventIdeventId")
+  //
   useEffect(() => {
-    if(!!participants.length){
+    if (!!participants.length) {
       setTimeout(() => {
-
-        joinEvent({ eventId: String(eventId) });
+        joinEvent({ eventId: String(eventId) })
       }, 5000)
     }
   }, [participants.length])
@@ -261,15 +276,13 @@ console.log(eventId, 'eventIdeventIdeventId');
     <>
       <SafeAreaView edges={["top"]} style={styles.container}>
         <View style={styles.mainWrapper}>
-          {/* <NewJoinRequestModal
-            name={"Valery J"}
-            onAccept={function (): void {
-              throw new Error("Function not implemented.")
-            }}
-            onDecline={function (): void {
-              throw new Error("Function not implemented.")
-            }}
-          /> */}
+          {isRequestModalOpen && (
+            <NewJoinRequestModal
+              name={"Valery J"}
+              onAccept={() => handleResponse(true)}
+              onDecline={() => handleResponse(false)}
+            />
+          )}
           <View style={styles.upperControlContainer}>
             <Text style={styles.title}>{meetingTitle}</Text>
             <View>
