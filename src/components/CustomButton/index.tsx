@@ -14,7 +14,7 @@ import { helpers } from "@utils/theme"
 
 interface IProps {
   onPress?: () => void
-  text?: string
+  text?: string | React.ReactNode
   disabled?: boolean
   type?: "primary" | "secondary"
   rightIcon?: IconName

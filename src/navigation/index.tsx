@@ -76,25 +76,34 @@ const Navigation: React.FC = () => {
   useEffect(() => {
     const handleDeepLink = (event: { url: string }) => {
       if (event?.url) {
-        console.log("Received URL:", event.url)
         const { query, url } = queryString.parseUrl(event.url)
 
-        const pathMatch = url.match(/^.*:\/\/([^?]*)/)
-        const pathname = pathMatch ? `/${pathMatch[1]}` : undefined
+        if (query.redirect) {
+          const redirectPath =
+            typeof query.redirect === "string" && query.redirect.startsWith("/")
+              ? query.redirect
+              : `/${query.redirect}`
+              ? query.redirect
+              : `/${query.redirect}`
 
-        if (query.hash) {
-          if (pathname === "/password-change") {
-            navigationRef?.current?.navigate(ScreensEnum.RESET_PASSWORD, {
-              hash: query.hash,
-            })
-          } else if (pathname === "/auth/setPassword") {
+          if (redirectPath === "/auth/setPassword") {
             navigationRef?.current?.navigate(ScreensEnum.CREATE_PASSWORD, {
               hash: query.hash,
             })
-          } else if (pathname === "/meetings") {
-            navigationRef?.current?.navigate(ScreensEnum.MEETING_DETAILS, {
+          } else if (redirectPath === "/password-change") {
+            navigationRef?.current?.navigate(ScreensEnum.RESET_PASSWORD, {
               hash: query.hash,
             })
+          } else if (redirectPath.includes("/meetings")) {
+            const meetingHash =
+              typeof redirectPath === "string"
+                ? redirectPath.split("/meetings/")[1]
+                : undefined
+            if (meetingHash) {
+              navigationRef?.current?.navigate(ScreensEnum.MEETING_DETAILS, {
+                hash: meetingHash,
+              })
+            }
           }
         }
       }
