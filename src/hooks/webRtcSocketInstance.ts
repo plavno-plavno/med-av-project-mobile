@@ -2,6 +2,7 @@ import { io, Socket } from 'socket.io-client';
 import { useState, useEffect } from 'react';
 import * as Keychain from "react-native-keychain";
 import Config from "react-native-config";
+import { navigationRef } from 'src/navigation/RootNavigation';
 
 const socketURL = Config.SOCKET_WEB_RTC_URL;
 const isProduction = Config.ENV === 'production'
@@ -43,6 +44,7 @@ export const initializeSocket = async (url: string) => {
       setTimeout(() => initializeSocket(scalerSocketURL), 2000 * retryCount);
     } else {
       console.error("Max reconnect attempts reached. Not retrying.");
+      navigationRef.current?.goBack?.()
       setErrorState?.("Connection lost. Unable to reconnect.");
     }
   });

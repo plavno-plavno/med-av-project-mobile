@@ -19,9 +19,9 @@ import { useKeepAwake } from "@sayem314/react-native-keep-awake"
 import Subtitles from "src/components/Subtitles"
 import Loading from "src/components/Loading"
 // import Config from "react-native-config"
-import { useMeetingRecording } from "src/hooks/useMeetingRecording"
 import NewJoinRequestModal from "src/modals/MeetingModals/NewJoinRequestModal"
 import { useMeetingAccess } from "src/hooks/useMeetingAccess"
+import { useMediasoupRecording } from "src/hooks/mediasoupSocketInstance"
 
 // const recordingUrl = Config.SOCKET_RECORDING_URL
 
@@ -75,9 +75,9 @@ const MeetingScreen = () => {
     setClearCanvas,
     speechLanguage,
   } = useWebRtc(instanceMeetingOwner!)
-  const { startRecording, stopRecording, isRecording } = useMeetingRecording(
+  const { startRecording, stopRecording, isRecording } = useMediasoupRecording(
+    instanceMeetingOwner!,
     String(roomId),
-    peerConnection
   )
 
   const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
@@ -91,6 +91,7 @@ const MeetingScreen = () => {
     setIsRequestModalOpen,
     newUser,
     isRequestingJoin,
+    socketInstance,
   } = useMeetingAccess({
     setInvitedParticipants,
     setMeInvited,
@@ -259,17 +260,13 @@ const MeetingScreen = () => {
       active: false,
     },
   ]
-  //   console.log(eventId, "eventIdeventIdeventId")
-  //
   useEffect(() => {
-    if (!!participants.length) {
-      setTimeout(() => {
+    if (!!participants.length && socketInstance) {
         joinEvent({ eventId: String(eventId) })
-      }, 5000)
     }
-  }, [participants.length])
+  }, [participants?.length, socketInstance])
 
-  if (!participants.length) {
+  if (!participants?.length) {
     return <Loading />
   }
   return (

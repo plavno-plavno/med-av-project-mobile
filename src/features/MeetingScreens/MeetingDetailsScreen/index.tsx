@@ -45,6 +45,7 @@ const MeetingDetailsScreen = () => {
     hash: String(hash),
   })
   const roomId = getCalendarEventByHashData?.meetId
+console.log(roomId, 'ROOM ID ROOM ID ROOM ID  ROOM ID ROOM ID ROOM ID');
 
   const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
   const [meInvited, setMeInvited] = useState<boolean | null>(null)

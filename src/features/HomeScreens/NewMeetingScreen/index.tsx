@@ -26,7 +26,7 @@ type ParamList = {
 
 const NewMeetingScreen = () => {
   const { t } = useTranslation()
-  const naviqation = useNavigation<ROUTES>()
+  const navigation = useNavigation<ROUTES>()
   const sheetRef = useRef<BottomSheetMethods>(null)
   const scrollRef = useRef<KeyboardAwareScrollView>(null)
 
@@ -43,7 +43,7 @@ const NewMeetingScreen = () => {
   const onCreateInstantEvent = async () => {
     try {
       const res = await createInstantEvent().unwrap()
-      naviqation.navigate(ScreensEnum.MEETING_DETAILS, {
+      navigation.navigate(ScreensEnum.MEETING_DETAILS, {
         hash: res?.hash,
         ownerEmail: res?.createdBy?.email,
       })

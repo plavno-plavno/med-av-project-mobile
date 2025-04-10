@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useRef } from "react"
 import { NavigationContainer } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { navigationRef } from "./RootNavigation"
@@ -38,6 +38,8 @@ const Stack = createNativeStackNavigator()
 const Navigation: React.FC = () => {
   const { refetch: authMeRefetch } = useAuthMeQuery()
   const { refetch: timezoneRefetch } = useTimezoneQuery()
+  const isDeepLinkExist = useRef(false);
+
   const getRoute = async () => {
     try {
       const accessToken = await Keychain.getGenericPassword({
@@ -53,7 +55,9 @@ const Navigation: React.FC = () => {
             ? ScreensEnum.MAIN
             : ScreensEnum.SETUP_PROFILE
 
-        RootNavigation.navigate(initialCheck)
+            if(!isDeepLinkExist.current){
+              RootNavigation.navigate(initialCheck)
+            }
       } else {
         RootNavigation.navigate(ScreensEnum.ONBOARDING)
       }
@@ -76,8 +80,8 @@ const Navigation: React.FC = () => {
   useEffect(() => {
     const handleDeepLink = (event: { url: string }) => {
       if (event?.url) {
+        isDeepLinkExist.current = true;
         const { query, url } = queryString.parseUrl(event.url)
-
         if (query.redirect) {
           const redirectPath =
             typeof query.redirect === "string" && query.redirect.startsWith("/")

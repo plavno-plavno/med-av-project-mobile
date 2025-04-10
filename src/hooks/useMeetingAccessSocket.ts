@@ -53,7 +53,7 @@ export const useMeetingAccessSocket = () => {
       })
       socketRef.current.on("connect", attemptReconnect)
       socketRef.current.on("connect_error", (error: any) => {
-        console.error("WebRTC Socket connection error:", error.message)
+        console.error("Use Meeting Access Socket connection error:", error.message)
         attemptReconnect()
       })
     })
