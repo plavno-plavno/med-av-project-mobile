@@ -296,31 +296,35 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   useEffect(() => {
     const setupSocket = async () => {
       if (!socketRef.current && roomId) {
-        const scalerFindFreeMachineData = await scalerFindFreeMachine({
-          id: roomId,
-        }).unwrap()
-        console.log(
-          scalerFindFreeMachineData,
-          "scalerFindFreeMachineDatascalerFindFreeMachineData"
-        )
-        await scalerFindFreeMachinePairSTT({ id: roomId! })
-        await new Promise((resolve) => setTimeout(resolve, 2000))
-        const rtcUrl = `https://${
-          scalerFindFreeMachineData?.dns ||
-          scalerFindFreeMachineData?.ip ||
-          scalerFindFreeMachineData.rtc
-        }${
-          scalerFindFreeMachineData?.port
-            ? ":" + scalerFindFreeMachineData?.port
-            : ":5000"
-        }`
+        try {
+          const scalerFindFreeMachineData = await scalerFindFreeMachine({
+            id: roomId,
+          }).unwrap()
+          console.log(
+            scalerFindFreeMachineData,
+            "scalerFindFreeMachineDatascalerFindFreeMachineData"
+          )
+          await scalerFindFreeMachinePairSTT({ id: roomId! })
+          await new Promise((resolve) => setTimeout(resolve, 2000))
+          const rtcUrl = `https://${
+            scalerFindFreeMachineData?.dns ||
+            scalerFindFreeMachineData?.ip ||
+            scalerFindFreeMachineData.rtc
+          }${
+            scalerFindFreeMachineData?.port
+              ? ":" + scalerFindFreeMachineData?.port
+              : ":5000"
+          }`
 
-        await initializeSocket(rtcUrl)
-        socketRef.current = getSocket()
-        peerConnection.current = createPeerConnection()
-        setTimeout(() => {
-          startCall()
-        }, 2000)
+          await initializeSocket(rtcUrl)
+          socketRef.current = getSocket()
+          peerConnection.current = createPeerConnection()
+          setTimeout(() => {
+            startCall()
+          }, 2000)
+        } catch (error) {
+          setError(true)
+        }
       }
 
       if (socketRef.current && !socketRef.current.connected) {

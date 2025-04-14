@@ -20,6 +20,7 @@ import { useGetCalendarEventByHashQuery } from "src/api/calendarApi/calendarApi"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
 import { useMeetingAccess } from "src/hooks/useMeetingAccess"
 import { ActivityIndicator } from "react-native-paper"
+import useWebRtc from "src/hooks/useWebRtc"
 
 type ParamList = {
   Detail: {
@@ -34,9 +35,9 @@ const MeetingDetailsScreen = () => {
   const { navigate } = useNavigation<ROUTES>()
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const { hash, ownerEmail } = route.params
-
   const { data: authMe } = useAuthMeQuery()
   const isCreatorMode = authMe?.email === ownerEmail
+  const { rtcError } = useWebRtc(false)
 
   const [isVideoOff, setIsVideoOff] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
@@ -45,7 +46,6 @@ const MeetingDetailsScreen = () => {
     hash: String(hash),
   })
   const roomId = getCalendarEventByHashData?.meetId
-console.log(roomId, 'ROOM ID ROOM ID ROOM ID  ROOM ID ROOM ID ROOM ID');
 
   const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
   const [meInvited, setMeInvited] = useState<boolean | null>(null)
@@ -136,7 +136,6 @@ console.log(roomId, 'ROOM ID ROOM ID ROOM ID  ROOM ID ROOM ID ROOM ID');
       setMeInvited(isCurrentUserInvited)
     }
   }, [getCalendarEventByHashData])
-
   return (
     <ScreenWrapper
       title={getCalendarEventByHashData?.title || hash}

@@ -11,7 +11,7 @@ import MeetingChatModal from "src/modals/MeetingModals/MeetingChatModal"
 import { BottomSheetMethods } from "@devvie/bottom-sheet"
 import VideoGrid from "src/components/VideoGrid/VideoGrid"
 import ParticipantsModal from "src/modals/MeetingModals/ParticipantsModal"
-import { useRoute, RouteProp } from "@react-navigation/native"
+import { useRoute, RouteProp, useNavigation } from "@react-navigation/native"
 import SubtitlesModal from "src/modals/MeetingModals/SubtitlesModal"
 import { Toast } from "react-native-toast-message/lib/src/Toast"
 import { useTranslation } from "react-i18next"
@@ -74,12 +74,13 @@ const MeetingScreen = () => {
     clearCanvas,
     setClearCanvas,
     speechLanguage,
+    rtcError,
   } = useWebRtc(instanceMeetingOwner!)
   const { startRecording, stopRecording, isRecording } = useMediasoupRecording(
     instanceMeetingOwner!,
-    String(roomId),
+    String(roomId)
   )
-
+  const { goBack } = useNavigation()
   const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
   const [meInvited, setMeInvited] = useState<boolean | null>(null)
 
@@ -260,12 +261,21 @@ const MeetingScreen = () => {
       active: false,
     },
   ]
+
   useEffect(() => {
     if (!!participants.length && socketInstance) {
-        joinEvent({ eventId: String(eventId) })
+      joinEvent({ eventId: String(eventId) })
     }
   }, [participants?.length, socketInstance])
 
+  if (rtcError) {
+    Toast.show({
+      type: "error",
+      text1:
+        "Connection to media servers cannot be established, please consider rejoining",
+    })
+    goBack()
+  }
   if (!participants?.length) {
     return <Loading />
   }
