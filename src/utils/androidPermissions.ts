@@ -38,3 +38,12 @@ export const requestUserPermission = async () => {
     console.log('Authorization status:', authStatus);
   }
 }
+
+export const requestRecordingPermissions = async () => {
+
+  if (Platform.OS === 'android') {
+    const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.RECORD_AUDIO)
+    return granted
+
+  } else return true
+}
