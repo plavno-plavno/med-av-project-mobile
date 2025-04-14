@@ -21,6 +21,7 @@ import Loading from "src/components/Loading"
 import Config from "react-native-config"
 import NewJoinRequestModal from "src/modals/MeetingModals/NewJoinRequestModal"
 import { useMeetingAccess } from "src/hooks/useMeetingAccess"
+import { useAudioRecorder } from "src/hooks/useAudioRecorder"
 import { NativeEventEmitter, NativeModules } from "react-native"
 const { ScreenRecorder } = NativeModules
 import RNFS from 'react-native-fs';
@@ -45,6 +46,8 @@ const MeetingScreen = () => {
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const { isCreatorMode, title, hash, instanceMeetingOwner, eventId } =
     route.params
+
+  const { onStartRecord, onStopRecord } = useAudioRecorder()
   const {
     socketRef,
     localStream,
@@ -314,8 +317,10 @@ const MeetingScreen = () => {
 
         if (isRecording) {
           stopRecording()
+          onStopRecord()
         } else {
           startRecording()
+          onStartRecord()
         }
       },
       style: { opacity: isRecording ? 1 : 0.5 },
