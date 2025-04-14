@@ -18,12 +18,15 @@ import { useTranslation } from "react-i18next"
 import { useKeepAwake } from "@sayem314/react-native-keep-awake"
 import Subtitles from "src/components/Subtitles"
 import Loading from "src/components/Loading"
-// import Config from "react-native-config"
+import Config from "react-native-config"
 import NewJoinRequestModal from "src/modals/MeetingModals/NewJoinRequestModal"
 import { useMeetingAccess } from "src/hooks/useMeetingAccess"
-import { useMediasoupRecording } from "src/hooks/mediasoupSocketInstance"
+import { NativeEventEmitter, NativeModules } from "react-native"
+const { ScreenRecorder } = NativeModules
+import RNFS from 'react-native-fs';
+import Base64 from 'react-native-base64';
 
-// const recordingUrl = Config.SOCKET_RECORDING_URL
+const recordingUrl = Config.SOCKET_RECORDING_URL
 
 type ParamList = {
   Detail: {
@@ -74,15 +77,17 @@ const MeetingScreen = () => {
     clearCanvas,
     setClearCanvas,
     speechLanguage,
+    meetId,
     rtcError,
   } = useWebRtc(instanceMeetingOwner!)
-  const { startRecording, stopRecording, isRecording } = useMediasoupRecording(
-    instanceMeetingOwner!,
-    String(roomId)
-  )
   const { goBack } = useNavigation()
+  const [isRecording, setIsRecording] = useState(false);
+
   const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
   const [meInvited, setMeInvited] = useState<boolean | null>(null)
+
+  const recordingNameRef = useRef<any>();
+  const startTimeRef = useRef<any>();
 
   const {
     joinEvent,
@@ -106,7 +111,6 @@ const MeetingScreen = () => {
       return
     }
 
-    // Respond to join request
     respondJoinRequest({
       eventId: String(eventId),
       socketId: newUser.socketId,
@@ -135,58 +139,156 @@ const MeetingScreen = () => {
   const handleParticipantsOpen = () => {
     sheetParticipantsRef.current?.open()
   }
-  // const isInitialized = useRef(false)
-  // useEffect(() => {
-  //   if (peerConnection) {
-  //     updatePeerConnections(peerConnection)
-  //   }
-  // }, [peerConnection])
 
-  // useEffect(() => {
-  //   let reconnectTimeout: NodeJS.Timeout | null = null
 
-  //   const connectWebSocket = () => {
-  //     if (wsRef.current) {
-  //       wsRef.current.close()
-  //     }
+  const saveChunkToFile = async (chunk: any) => {
+    try {
+      const filePath = `${RNFS.DocumentDirectoryPath}/recording-${Date.now()}.webm`;
+      const decodedData = Base64.decode(chunk);
+      await RNFS.writeFile(filePath, decodedData, 'base64');
 
-  //     wsRef.current = new WebSocket(recordingUrl!)
+      RNFS.stat(filePath)
+        .then((statResult) => {
+          console.log('File size:', statResult.size);
+          if (statResult.size > 0) {
+            RNFS.readFile(filePath, 'base64')
+              .then((fileData) => {
+                console.log('File data (base64):', fileData);
+              })
+              .catch((error) => {
+                console.error('Failed to read file:', error);
+              });
+          } else {
+            console.log('File is empty.');
+          }
+        })
+        .catch((error) => {
+          console.error('Failed to get file stats:', error);
+        });
 
-  //     wsRef.current.onopen = () => {
-  //       console.log("WebSocket connected")
-  //       if (reconnectTimeout) {
-  //         clearTimeout(reconnectTimeout)
-  //         reconnectTimeout = null
-  //       }
-  //     }
+      console.log(`Chunk saved to file at: ${filePath}`);
+    } catch (error) {
+      console.error("Failed to save chunk to file:", error);
+    }
+  };
 
-  //     wsRef.current.onerror = (error) => {
-  //       console.error("WebSocket error:", error)
-  //       console.log("WebSocket connection error. Reconnecting...")
-  //       if (!reconnectTimeout) {
-  //         reconnectTimeout = setTimeout(connectWebSocket, 3000)
-  //       }
-  //     }
+  useEffect(() => {
+    const eventEmitter = new NativeEventEmitter(ScreenRecorder)
+    const chunkListener = eventEmitter.addListener(
+      "onVideoChunk",
+      ({ chunk }) => {
+        console.log("Received chunk:", chunk)
+        sendChunkToServer(chunk)
+      }
+    )
 
-  //     wsRef.current.onclose = () => {
-  //       console.warn("WebSocket connection closed")
-  //     }
-  //   }
-  //   const initSockets = async () => {
-  //     if (!isInitialized.current) {
-  //       isInitialized.current = true
-  //     }
-  //   }
+    return () => {
+      chunkListener.remove()
+    }
+  }, [])
 
-  //   initSockets()
+  const startRecording = async () => {
+    try {
+      // if (wsRef.current?.readyState === WebSocket.OPEN) {
+      //  recordingNameRef.current = `recording-mobile-${Date.now()}`
+      // startTimeRef.current = Date.now()
+      await ScreenRecorder.startRecording();
+      console.log("Recording started")
+      setIsRecording(true)
+      // }
+    } catch (error) {
+      console.error(
+        "Failed to start recording:",
+        { ScreenRecorder, froMNATIVE: NativeModules.ScreenRecorder },
+        error
+      )
+    }
+  }
+  const stopRecording = async () => {
+    try {
+      if (ScreenRecorder && isRecording) {
+        await ScreenRecorder.stopRecording()
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+          const duration = startTimeRef.current
+            ? Math.floor((Date.now() - startTimeRef.current) / 1000)
+            : 0
 
-  //   // connectWebSocket()
+          wsRef.current.send(
+            JSON.stringify({
+              fileName: recordingNameRef.current,
+              fileExtension: "webm",
+              action: "end",
+              meetId,
+              userId: localUserId,
+              duration,
+            })
+          )
+        }
+        startTimeRef.current = null
+      }
+      setIsRecording(false)
+    } catch (error) {
+      console.error("Failed to stop recording:", error)
+    }
+  }
 
-  //   return () => {
-  //     if (reconnectTimeout) clearTimeout(reconnectTimeout)
-  //     wsRef.current?.close()
-  //   }
-  // }, [eventId])
+  useEffect(() => {
+    let reconnectTimeout: NodeJS.Timeout | null = null
+
+    const connectWebSocket = () => {
+      if (wsRef.current) {
+        wsRef.current.close()
+      }
+
+      wsRef.current = new WebSocket(recordingUrl!)
+
+      wsRef.current.onopen = () => {
+        console.log("WebSocket connected")
+        if (reconnectTimeout) {
+          clearTimeout(reconnectTimeout)
+          reconnectTimeout = null
+        }
+      }
+
+      wsRef.current.onerror = (error) => {
+        console.error("WebSocket error:", error)
+        console.log("WebSocket connection error. Reconnecting...")
+        if (!reconnectTimeout) {
+          reconnectTimeout = setTimeout(connectWebSocket, 3000)
+        }
+      }
+
+      wsRef.current.onclose = () => {
+        console.warn("WebSocket connection closed")
+      }
+    }
+
+    connectWebSocket()
+
+    return () => {
+      if (reconnectTimeout) clearTimeout(reconnectTimeout)
+      wsRef.current?.close()
+    }
+  }, [])
+
+  const sendChunkToServer = async (base64Chunk: any) => {
+    try {
+      await saveChunkToFile(base64Chunk);
+      // if (wsRef.current?.readyState === WebSocket.OPEN) {
+      //   wsRef.current.send(
+      //     JSON.stringify({
+      //       fileName: recordingNameRef.current,
+      //       fileExtension: "mp4",
+      //       chunks: base64Chunk,
+      //       action: "stream",
+      //     })          
+      //   )
+      //   console.log('chunk sent');
+      // }
+    } catch (error) {
+      console.error("Failed to send chunk:", error)
+    }
+  }
 
   const callTopActions = [
     {
@@ -276,9 +378,9 @@ const MeetingScreen = () => {
     })
     goBack()
   }
-  if (!participants?.length) {
-    return <Loading />
-  }
+  // if (!participants?.length) {
+  //   return <Loading />
+  // }
   return (
     <>
       <SafeAreaView edges={["top"]} style={styles.container}>
