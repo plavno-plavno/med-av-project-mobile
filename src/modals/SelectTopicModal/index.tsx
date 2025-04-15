@@ -52,7 +52,10 @@ const SelectTopicModal = ({ sheetRef, formikRef, setTopicId }: any) => {
       disableKeyboardHandling
     >
       <View style={styles.container}>
-        <ModalHeader title={t("SelectTopic")} sheetRef={sheetRef} />
+        <ModalHeader
+          title={t("SelectTopic")}
+          onClose={sheetRef?.current?.close()}
+        />
         <FlatList
           scrollEnabled
           showsVerticalScrollIndicator={false}

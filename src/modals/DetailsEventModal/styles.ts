@@ -1,3 +1,4 @@
+import { screenHeight } from "@utils/screenResponsive"
 import { fontFamilies, fontWeights } from "@utils/theme"
 import { StyleSheet } from "react-native"
 import { moderateScale } from "react-native-size-matters"
@@ -7,7 +8,6 @@ export const styles = StyleSheet.create({
   container: {
     height: "100%",
     paddingHorizontal: moderateScale(20),
-
     backgroundColor: colors.white,
     gap: moderateScale(24),
   },
@@ -47,5 +47,34 @@ export const styles = StyleSheet.create({
     flexWrap: "wrap",
     flexDirection: "row",
     gap: moderateScale(8),
+  },
+  srtContainer: {
+    width: "100%",
+    position: "absolute",
+    padding: moderateScale(16),
+    borderRadius: moderateScale(8),
+    borderColor: colors.lightGray,
+    borderWidth: moderateScale(1),
+    backgroundColor: colors.white,
+    height: screenHeight * 0.46,
+    boxShadow: "0px 0px 0px 2px rgba(78, 183, 189, 0.16)",
+    zIndex: 1,
+    top: 0,
+    gap: moderateScale(8),
+  },
+  srtTitle: {
+    ...fontFamilies.interManropeBold16,
+    ...fontWeights.fontWeight600,
+    color: colors.dark,
+  },
+  srtWrapper: {
+    flexDirection: "row",
+    gap: moderateScale(8),
+    alignItems: "center",
+  },
+  srtDate: {
+    ...fontFamilies.interManropeSemiBold16,
+    ...fontWeights.fontWeight400,
+    color: colors.charcoal,
   },
 })

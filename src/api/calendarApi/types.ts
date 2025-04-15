@@ -26,6 +26,8 @@ export interface IGetCalendarEventDetailsResponse {
   createdBy: ICreatedBy
   hash: string
   timezone: Timezone
+  isOwner: boolean
+  srtFiles?: any[]
 }
 
 export interface IGetCalendarEventHashResponse
@@ -177,29 +179,29 @@ export interface ITimezoneOptionsRequest {
 }
 
 export interface ISaveCalendarEventsLogRequest {
-  durationInSeconds: number;
+  durationInSeconds: number
   event: {
-    id: number;
+    id: number
   }
 }
 
 export interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
+  id: number
+  firstName: string
+  lastName: string
 }
 
 export interface IGetRequestsByEventIdResponse {
-  id: number;
-  isOwner: boolean;
-  color: string;
-  createdAt: string;
-  createdBy: User;
-  description: string;
-  startDate: string;
-  endDate: string;
-  title: string;
-  status: string;
-  participants: User[];
-  socketId: string;
+  id: number
+  isOwner: boolean
+  color: string
+  createdAt: string
+  createdBy: User
+  description: string
+  startDate: string
+  endDate: string
+  title: string
+  status: string
+  participants: User[]
+  socketId: string
 }

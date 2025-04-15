@@ -23,8 +23,8 @@ import NewJoinRequestModal from "src/modals/MeetingModals/NewJoinRequestModal"
 import { useMeetingAccess } from "src/hooks/useMeetingAccess"
 import { NativeEventEmitter, NativeModules } from "react-native"
 const { ScreenRecorder } = NativeModules
-import RNFS from 'react-native-fs';
-import Base64 from 'react-native-base64';
+import RNFS from "react-native-fs"
+import Base64 from "react-native-base64"
 
 const recordingUrl = Config.SOCKET_RECORDING_URL
 
@@ -81,13 +81,13 @@ const MeetingScreen = () => {
     rtcError,
   } = useWebRtc(instanceMeetingOwner!)
   const { goBack } = useNavigation()
-  const [isRecording, setIsRecording] = useState(false);
+  const [isRecording, setIsRecording] = useState(false)
 
   const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
   const [meInvited, setMeInvited] = useState<boolean | null>(null)
 
-  const recordingNameRef = useRef<any>();
-  const startTimeRef = useRef<any>();
+  const recordingNameRef = useRef<any>()
+  const startTimeRef = useRef<any>()
 
   const {
     joinEvent,
@@ -140,37 +140,38 @@ const MeetingScreen = () => {
     sheetParticipantsRef.current?.open()
   }
 
-
   const saveChunkToFile = async (chunk: any) => {
     try {
-      const filePath = `${RNFS.DocumentDirectoryPath}/recording-${Date.now()}.webm`;
-      const decodedData = Base64.decode(chunk);
-      await RNFS.writeFile(filePath, decodedData, 'base64');
+      const filePath = `${
+        RNFS.DocumentDirectoryPath
+      }/recording-${Date.now()}.webm`
+      const decodedData = Base64.decode(chunk)
+      await RNFS.writeFile(filePath, decodedData, "base64")
 
       RNFS.stat(filePath)
         .then((statResult) => {
-          console.log('File size:', statResult.size);
+          console.log("File size:", statResult.size)
           if (statResult.size > 0) {
-            RNFS.readFile(filePath, 'base64')
+            RNFS.readFile(filePath, "base64")
               .then((fileData) => {
-                console.log('File data (base64):', fileData);
+                console.log("File data (base64):", fileData)
               })
               .catch((error) => {
-                console.error('Failed to read file:', error);
-              });
+                console.error("Failed to read file:", error)
+              })
           } else {
-            console.log('File is empty.');
+            console.log("File is empty.")
           }
         })
         .catch((error) => {
-          console.error('Failed to get file stats:', error);
-        });
+          console.error("Failed to get file stats:", error)
+        })
 
-      console.log(`Chunk saved to file at: ${filePath}`);
+      console.log(`Chunk saved to file at: ${filePath}`)
     } catch (error) {
-      console.error("Failed to save chunk to file:", error);
+      console.error("Failed to save chunk to file:", error)
     }
-  };
+  }
 
   useEffect(() => {
     const eventEmitter = new NativeEventEmitter(ScreenRecorder)
@@ -192,7 +193,7 @@ const MeetingScreen = () => {
       // if (wsRef.current?.readyState === WebSocket.OPEN) {
       //  recordingNameRef.current = `recording-mobile-${Date.now()}`
       // startTimeRef.current = Date.now()
-      await ScreenRecorder.startRecording();
+      await ScreenRecorder.startRecording()
       console.log("Recording started")
       setIsRecording(true)
       // }
@@ -273,7 +274,7 @@ const MeetingScreen = () => {
 
   const sendChunkToServer = async (base64Chunk: any) => {
     try {
-      await saveChunkToFile(base64Chunk);
+      await saveChunkToFile(base64Chunk)
       // if (wsRef.current?.readyState === WebSocket.OPEN) {
       //   wsRef.current.send(
       //     JSON.stringify({
@@ -281,7 +282,7 @@ const MeetingScreen = () => {
       //       fileExtension: "mp4",
       //       chunks: base64Chunk,
       //       action: "stream",
-      //     })          
+      //     })
       //   )
       //   console.log('chunk sent');
       // }
@@ -370,14 +371,17 @@ const MeetingScreen = () => {
     }
   }, [participants?.length, socketInstance])
 
-  if (rtcError) {
-    Toast.show({
-      type: "error",
-      text1:
-        "Connection to media servers cannot be established, please consider rejoining",
-    })
-    goBack()
-  }
+  useEffect(() => {
+    if (rtcError) {
+      Toast.show({
+        type: "error",
+        text1:
+          "Connection to media servers cannot be established, please consider rejoining",
+      })
+      goBack()
+    }
+  }, [rtcError])
+
   // if (!participants?.length) {
   //   return <Loading />
   // }

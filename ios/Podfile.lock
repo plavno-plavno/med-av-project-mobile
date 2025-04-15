@@ -1463,6 +1463,48 @@ PODS:
     - Yoga
   - react-native-netinfo (11.4.1):
     - React-Core
+  - react-native-quick-base64 (2.1.2):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
+  - react-native-record-screen (0.6.2):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-safe-area-context (5.0.0):
     - DoubleConversion
     - glog
@@ -2248,6 +2290,8 @@ DEPENDENCIES:
   - "react-native-keep-awake (from `../node_modules/@sayem314/react-native-keep-awake`)"
   - react-native-keyboard-controller (from `../node_modules/react-native-keyboard-controller`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
+  - react-native-quick-base64 (from `../node_modules/react-native-quick-base64`)
+  - react-native-record-screen (from `../node_modules/react-native-record-screen`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-splash-screen (from `../node_modules/react-native-splash-screen`)
   - react-native-video (from `../node_modules/react-native-video`)
@@ -2405,6 +2449,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-keyboard-controller"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
+  react-native-quick-base64:
+    :path: "../node_modules/react-native-quick-base64"
+  react-native-record-screen:
+    :path: "../node_modules/react-native-record-screen"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-splash-screen:
@@ -2562,6 +2610,8 @@ SPEC CHECKSUMS:
   react-native-keep-awake: 951bc65f46a6d0ff9e5671e9b71552c10241d22a
   react-native-keyboard-controller: 3428e4761623fd6a242d9bf3573112f8ebe92238
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
+  react-native-quick-base64: 6ddd4121d8dcb412ad32ca5fa67633dbea8d3761
+  react-native-record-screen: 0ea95fbf7a8976bc03f71bd5b55d4f8037442778
   react-native-safe-area-context: d6406c2adbd41b2e09ab1c386781dc1c81a90919
   react-native-splash-screen: 4312f786b13a81b5169ef346d76d33bc0c6dc457
   react-native-video: f8c4b39b3b5db30a113d69e376c2ca08f7d90a98

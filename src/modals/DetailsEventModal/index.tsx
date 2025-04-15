@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { screenHeight } from "@utils/screenResponsive"
-import { Text, View } from "react-native"
+import { FlatList, Text, TouchableOpacity, View } from "react-native"
 import colors from "src/assets/colors"
 import BottomSheet, { type BottomSheetMethods } from "@devvie/bottom-sheet"
 import { styles } from "./styles"
@@ -18,11 +18,17 @@ import Participants from "src/components/Participants"
 import Toast from "react-native-toast-message"
 import { ActivityIndicator } from "react-native-paper"
 import { formatTime } from "@utils/utils"
-import { useAuthMeQuery } from "src/api/userApi/userApi"
 import { DateTimeFormatEnum } from "@utils/enums"
 import { copyToClipboard } from "@utils/clipboard"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 import { navigate } from "src/navigation/RootNavigation"
+import { isAndroid, isIOS } from "@utils/platformChecker"
+import RNFetchBlob from "react-native-blob-util"
+import Share from "react-native-share"
+import * as Keychain from "react-native-keychain"
+import Config from "react-native-config"
+
+const baseURL = Config.BASE_API_URL
 
 const DetailsEventModal = ({
   handleOpenScheduleModal,
@@ -36,25 +42,33 @@ const DetailsEventModal = ({
   onClose: () => void
 }) => {
   const { t } = useTranslation()
-
   const [isAcceptEventLoading, setIsAcceptEventLoading] = useState(false)
   const [isDeclineEventLoading, setIsDeclineEventLoading] = useState(false)
-
+  const [isOpenSrtModal, setIsOpenSrtModal] = useState(false)
   const {
     data: eventDetailsData,
     isLoading: isEventDetailsLoading,
     refetch: eventDetailsRefetch,
   } = useGetCalendarEventDetailsQuery({ id: eventId }, { skip: !eventId })
-  const { data: authMeData } = useAuthMeQuery()
+  const {
+    isOwner,
+    hash,
+    status,
+    startDate,
+    endDate,
+    title,
+    description,
+    srtFiles,
+  } = eventDetailsData || {}
+
+  console.log("\x1b[31m%s\x1b[0m", "eventDetailsData", eventDetailsData)
   const { refetch: calendarEventsRefetch } = useGetCalendarEventsQuery()
-  const [updateEvent, { isLoading: isUpdateEventLoading }] =
-    useUpdateEventMutation()
+  const [updateEvent] = useUpdateEventMutation()
   const [deleteEvent, { isLoading: isDeleteEventLoading }] =
     useDeleteEventMutation()
 
-  const isCreatorMode = authMeData?.email === eventDetailsData?.createdBy?.email
-  const isAccepted = !isCreatorMode && eventDetailsData?.status === "accept"
-  const isDeclined = !isCreatorMode && eventDetailsData?.status === "decline"
+  const isAccepted = !isOwner && status === "accept"
+  const isDeclined = !isOwner && status === "decline"
   const handleDeleteEvent = async () => {
     await deleteEvent({ id: eventId }).unwrap()
     calendarEventsRefetch()
@@ -90,10 +104,70 @@ const DetailsEventModal = ({
   }
 
   const handleAcceptEvent = () => {
-    if (isCreatorMode) {
+    if (isOwner) {
       handleOpenScheduleModal(eventId)
     } else {
       handleTogglerEvent({ status: "accept" })
+    }
+  }
+
+  const handleSrtDownload = async ({ id }: { id: number }) => {
+    try {
+      const { dirs } = RNFetchBlob.fs
+      const dirToSave = isIOS() ? dirs.DocumentDir : dirs.DownloadDir
+      const fileName = `Transcript from Svensacall.txt`
+      const filePath = `${dirToSave}/${fileName}`
+
+      const configfb = {
+        fileCache: true,
+        addAndroidDownloads: {
+          useDownloadManager: true,
+          notification: true,
+          mediaScannable: true,
+          title: fileName,
+          path: filePath,
+          mime: "application/x-subrip",
+        },
+        path: filePath,
+        notification: true,
+        mediaScannable: true,
+        title: fileName,
+      }
+
+      const accessToken = await Keychain.getGenericPassword({
+        service: "accessToken",
+      })
+      if (!accessToken) return
+
+      RNFetchBlob.config(configfb)
+        .fetch("GET", `${baseURL}srt/download/${id}`, {
+          Authorization: `Bearer ${accessToken.password}`,
+          Accept: "application/octet-stream",
+        })
+        .then((res) => {
+          console.log("SRT download successful", res)
+
+          if (isIOS()) {
+            RNFetchBlob.fs.writeFile(filePath, res.data, "base64")
+            RNFetchBlob.ios.previewDocument(filePath)
+          }
+
+          if (isAndroid()) {
+            console.log("File downloaded to", res.path())
+          }
+
+          Share.open({
+            url: `file://${res.path()}`,
+            title: "Save or Share SRT",
+          }).catch((error: any) => {
+            console.error("Error sharing SRT file:", error)
+          })
+        })
+        .catch((e) => {
+          console.error("SRT download error:", e)
+        })
+    } catch (error: any) {
+      console.error("Error downloading SRT file:", error?.message || error)
     }
   }
 
@@ -101,7 +175,7 @@ const DetailsEventModal = ({
     <>
       <BottomSheet
         ref={sheetRef}
-        height={screenHeight * 0.87}
+        height={screenHeight * (screenHeight < 700 ? 1 : 0.87)}
         backdropMaskColor={colors.blackOpacity08}
         style={styles.bottomSheet}
         disableBodyPanning
@@ -116,7 +190,7 @@ const DetailsEventModal = ({
                 <Icon name={"closeButton"} onPress={onClose} />
               </View>
               <View style={styles.content}>
-                <Text style={styles.subtitle}>{eventDetailsData?.title}</Text>
+                <Text style={styles.subtitle}>{title}</Text>
                 <View
                   style={[
                     helpers.gap8,
@@ -135,7 +209,7 @@ const DetailsEventModal = ({
                     onPress={() => {
                       onClose()
                       navigate(ScreensEnum.MEETING_DETAILS, {
-                        hash: eventDetailsData?.hash,
+                        hash: hash,
                         ownerEmail: eventDetailsData?.createdBy?.email,
                       })
                     }}
@@ -153,9 +227,7 @@ const DetailsEventModal = ({
                       },
                     ]}
                     onPress={() =>
-                      copyToClipboard(
-                        `https://svensacall.com/meetings/${eventDetailsData?.hash}`
-                      )
+                      copyToClipboard(`https://svensacall.com/meetings/${hash}`)
                     }
                   />
                 </View>
@@ -163,18 +235,14 @@ const DetailsEventModal = ({
                   <View style={styles.infoWrapper}>
                     <Icon name="calendarIcon" />
                     <Text style={styles.text}>
-                      {eventDetailsData?.startDate &&
-                        moment(eventDetailsData.startDate).format(
-                          DateTimeFormatEnum.ddddMMMMD
-                        )}
+                      {startDate &&
+                        moment(startDate).format(DateTimeFormatEnum.ddddMMMMD)}
                     </Text>
                   </View>
                   <View style={styles.infoWrapper}>
                     <Icon name="clock" />
                     <Text style={styles.text}>
-                      {formatTime(eventDetailsData?.startDate) +
-                        " – " +
-                        formatTime(eventDetailsData?.endDate)}
+                      {formatTime(startDate) + " – " + formatTime(endDate)}
                     </Text>
                   </View>
                   <View style={styles.infoWrapper}>
@@ -191,7 +259,7 @@ const DetailsEventModal = ({
                       )}
                     </View>
                   </View>
-                  {eventDetailsData?.description && (
+                  {description && (
                     <View
                       style={[
                         helpers.flexRow,
@@ -201,9 +269,63 @@ const DetailsEventModal = ({
                     >
                       <Icon name="info" />
                       <Text style={[styles.text, { color: colors.midGrey }]}>
-                        {eventDetailsData?.description}
+                        {description}
                       </Text>
                     </View>
+                  )}
+                  {isOwner && (
+                    <>
+                      <CustomButton
+                        text="Open srt files list"
+                        onPress={() => {
+                          setIsOpenSrtModal(!isOpenSrtModal)
+                        }}
+                      />
+
+                      {isOpenSrtModal && (
+                        <FlatList
+                          data={srtFiles}
+                          style={[styles.srtContainer]}
+                          keyExtractor={(item) => item.id.toString()}
+                          ListHeaderComponent={
+                            <View>
+                              <View
+                                style={[
+                                  helpers.flexRowBetween,
+                                  helpers.alignItemsCenter,
+                                ]}
+                              >
+                                <Text style={styles.srtTitle}>SRT Files</Text>
+                                <Icon
+                                  name="closeButton"
+                                  onPress={() => setIsOpenSrtModal(false)}
+                                />
+                              </View>
+                            </View>
+                          }
+                          renderItem={({ item: srtFile }) => (
+                            <TouchableOpacity
+                              onPress={() =>
+                                handleSrtDownload({ id: srtFile?.id })
+                              }
+                              style={[
+                                helpers.flexRow,
+                                helpers.alignItemsCenter,
+                                helpers.gap8,
+                                styles.srtWrapper,
+                              ]}
+                            >
+                              <Text style={styles.srtDate}>
+                                {moment(srtFile?.createdAt).format(
+                                  DateTimeFormatEnum.dmmmyyyhhmm
+                                )}
+                              </Text>
+                              <Icon name={"download"} />
+                            </TouchableOpacity>
+                          )}
+                        />
+                      )}
+                    </>
                   )}
                 </View>
               </View>
@@ -222,13 +344,13 @@ const DetailsEventModal = ({
                   <CustomButton
                     isLoading={isDeleteEventLoading || isDeclineEventLoading}
                     onPress={() => {
-                      if (isCreatorMode) {
+                      if (isOwner) {
                         handleDeleteEvent()
                       } else {
                         handleTogglerEvent({ status: "decline" })
                       }
                     }}
-                    text={isCreatorMode ? t("DeleteMeeting") : t("Decline")}
+                    text={isOwner ? t("DeleteMeeting") : t("Decline")}
                     textStyle={{ color: colors.alertRed }}
                     style={[
                       {
@@ -240,7 +362,7 @@ const DetailsEventModal = ({
                 {!isAccepted && (
                   <CustomButton
                     isLoading={isAcceptEventLoading}
-                    text={isCreatorMode ? t("EditDetails") : t("Accept")}
+                    text={isOwner ? t("EditDetails") : t("Accept")}
                     onPress={handleAcceptEvent}
                   />
                 )}
