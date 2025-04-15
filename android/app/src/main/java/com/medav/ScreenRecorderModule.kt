@@ -79,58 +79,46 @@ class ScreenRecorderModule(reactContext: ReactApplicationContext) :
         }
     }
 
-    private fun startForegroundService() {
-        val serviceIntent = Intent(reactApplicationContext, ScreenCaptureService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            reactApplicationContext.startForegroundService(serviceIntent)
-        } else {
-            reactApplicationContext.startService(serviceIntent)
-        }
-    }
-
     private fun startScreenCapture(resultCode: Int, data: Intent) {
-        // Start the foreground service
-        startForegroundService()
+        // Start screen capture after user grants permission
+        mediaProjection = mediaProjectionManager!!.getMediaProjection(resultCode, data)
+        if (mediaProjection == null) {
+            Log.e("ScreenRecorder", "MediaProjection is null")
+            return
+        }
 
-        // Delay to ensure the foreground service is fully active
-        Handler(Looper.getMainLooper()).postDelayed({
-            mediaProjection = mediaProjectionManager!!.getMediaProjection(resultCode, data)
-            if (mediaProjection == null) {
-                Log.e("ScreenRecorder", "MediaProjection is null. Foreground service may not be running.")
-                return@postDelayed
-            }
-            Log.d("ScreenRecorder", "MediaProjection started")
+        Log.d("ScreenRecorder", "MediaProjection started")
 
-            handlerThread = HandlerThread("ScreenRecorderThread")
-            handlerThread?.start()
-            handler = Handler(handlerThread!!.looper)
+        handlerThread = HandlerThread("ScreenRecorderThread")
+        handlerThread?.start()
+        handler = Handler(handlerThread!!.looper)
 
-            val width = 1280
-            val height = 720
+        val width = 1280
+        val height = 720
 
-            val format = MediaFormat.createVideoFormat("video/avc", width, height)
-            format.setInteger(MediaFormat.KEY_BIT_RATE, 5000000) // 5Mbps
-            format.setInteger(MediaFormat.KEY_FRAME_RATE, 30)
-            format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
-            format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
+        val mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height)
+        mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, 2000000)  // 2 Mbps
+        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30)     // 30 fps
+        mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
+        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1) // 1-second keyframe interval
 
-            mediaCodec = MediaCodec.createEncoderByType("video/avc")
-            mediaCodec?.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-            inputSurface = mediaCodec?.createInputSurface()
-            mediaCodec?.start()
+        mediaCodec = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_AVC)
+        mediaCodec?.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+        inputSurface = mediaCodec?.createInputSurface()
+        mediaCodec?.start()
 
-            Log.d("ScreenRecorder", "MediaCodec configured & started")
+        Log.d("ScreenRecorder", "MediaCodec configured & started")
 
-            mediaProjection?.createVirtualDisplay(
-                "ScreenRecorder",
-                width, height, 1,
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                inputSurface, null, handler
-            )
+        // Create Virtual Display for the screen capture output
+        mediaProjection?.createVirtualDisplay(
+            "ScreenRecorder",
+            width, height, 1,
+            DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+            inputSurface, null, handler
+        )
 
-            recording = true
-            startEncodingThread()
-        }, FOREGROUND_DELAY_MS)
+        recording = true
+        startEncodingThread()
     }
 
     private fun startEncodingThread() {
@@ -176,16 +164,10 @@ class ScreenRecorderModule(reactContext: ReactApplicationContext) :
             .emit("onVideoChunk", payload)
     }
 
-    private fun stopForegroundService() {
-        val serviceIntent = Intent(reactApplicationContext, ScreenCaptureService::class.java)
-        reactApplicationContext.stopService(serviceIntent)
-    }
-
     @ReactMethod
     fun stopRecording() {
         Log.d("ScreenRecorder", "Stopping recording...")
         recording = false
-        stopForegroundService()
         mediaCodec?.stop()
         mediaCodec?.release()
         mediaCodec = null
