@@ -96,13 +96,13 @@ const ParticipantItem = ({
               </View>
             ) : (
               <View style={styles.rtcView}>
-              <RTCView
-                mirror={true}
-                streamURL={mediaStream?.toURL?.()}
-                style={styles.rtcView}
-                objectFit="cover"
+                <RTCView
+                  mirror={true}
+                  streamURL={mediaStream?.toURL?.()}
+                  style={styles.rtcView}
+                  objectFit="cover"
                 />
-                </View>
+              </View>
             )}
             <Text style={styles.userName}>
               {user?.firstName} {lastNameInitial}.

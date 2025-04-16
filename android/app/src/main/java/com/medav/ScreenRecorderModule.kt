@@ -19,6 +19,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
 class ScreenRecorderModule(reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext), ActivityEventListener {
@@ -30,12 +31,16 @@ class ScreenRecorderModule(reactContext: ReactApplicationContext) :
     private val executorService = Executors.newSingleThreadExecutor()
     private var handlerThread: HandlerThread? = null
     private var handler: Handler? = null
-    private var recording = false
+    private val isRecording = AtomicBoolean(false)
+    private var currentPromise: Promise? = null
 
     // Default chunk size: 1 MB
     private var chunkSize: Int = 1024 * 1024
+    private val accumulator = ByteArrayOutputStream()
+    private val accumulatorLock = Object()
 
     companion object {
+        private const val TAG = "ScreenRecorderModule"
         private const val REQUEST_CODE_SCREEN_RECORD = 1001
         private const val FOREGROUND_DELAY_MS = 1000L // 1 second delay
     }
@@ -51,19 +56,29 @@ class ScreenRecorderModule(reactContext: ReactApplicationContext) :
     @ReactMethod
     fun setChunkSize(size: Int) {
         chunkSize = size
-        Log.d("ScreenRecorder", "Chunk size set to $chunkSize bytes")
+        Log.d(TAG, "Chunk size set to $chunkSize bytes")
     }
 
     @ReactMethod
-    fun startRecording() {
-        val activity = currentActivity
-        if (activity == null) {
-            Log.e("ScreenRecorder", "Activity is null")
-            return
+    fun startRecording(promise: Promise) {
+        try {
+            val activity = currentActivity
+            if (activity == null) {
+                promise.reject("ACTIVITY_NULL", "Activity is null")
+                return
+            }
+            if (isRecording.get()) {
+                promise.reject("ALREADY_RECORDING", "Screen recording is already in progress")
+                return
+            }
+            currentPromise = promise
+            mediaProjectionManager = activity.getSystemService(Activity.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+            val intent = mediaProjectionManager!!.createScreenCaptureIntent()
+            activity.startActivityForResult(intent, REQUEST_CODE_SCREEN_RECORD, null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error starting recording", e)
+            promise.reject("START_ERROR", e.message, e)
         }
-        mediaProjectionManager = activity.getSystemService(Activity.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        val intent = mediaProjectionManager!!.createScreenCaptureIntent()
-        activity.startActivityForResult(intent, REQUEST_CODE_SCREEN_RECORD, null)
     }
 
     override fun onActivityResult(
@@ -72,13 +87,17 @@ class ScreenRecorderModule(reactContext: ReactApplicationContext) :
         resultCode: Int,
         data: Intent?
     ) {
-        if (requestCode == REQUEST_CODE_SCREEN_RECORD && resultCode == Activity.RESULT_OK && data != null) {
-            Log.d("ScreenRecorder", "onActivityResult received, starting capture")
-            startScreenCapture(resultCode, data)
+        if (requestCode == REQUEST_CODE_SCREEN_RECORD) {
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                Log.d(TAG, "onActivityResult received, starting capture")
+                startScreenCapture(resultCode, data)
+            } else {
+                currentPromise?.reject("PERMISSION_DENIED", "Screen capture permission denied")
+                currentPromise = null
+            }
         }
     }
 
-    // Optional: Start a foreground service if needed (make sure you have ScreenCaptureService properly implemented and declared)
     private fun startForegroundService() {
         val serviceIntent = Intent(reactApplicationContext, ScreenCaptureService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -89,100 +108,140 @@ class ScreenRecorderModule(reactContext: ReactApplicationContext) :
     }
 
     private fun startScreenCapture(resultCode: Int, data: Intent) {
-        // Start the foreground service
-        startForegroundService()
+        try {
+            startForegroundService()
 
-        // Delay to ensure the foreground service is fully active
-        Handler(Looper.getMainLooper()).postDelayed({
-            mediaProjection = mediaProjectionManager!!.getMediaProjection(resultCode, data)
-            if (mediaProjection == null) {
-                Log.e("ScreenRecorder", "MediaProjection is null. Foreground service may not be running.")
-                return@postDelayed
+            Handler(Looper.getMainLooper()).postDelayed({
+                try {
+                    mediaProjection = mediaProjectionManager!!.getMediaProjection(resultCode, data)
+                    if (mediaProjection == null) {
+                        throw Exception("MediaProjection is null")
+                    }
+                    Log.d(TAG, "MediaProjection started")
+
+                    handlerThread = HandlerThread("ScreenRecorderThread")
+                    handlerThread?.start()
+                    handler = Handler(handlerThread!!.looper)
+
+                    setupMediaCodec()
+                    setupVirtualDisplay()
+
+                    isRecording.set(true)
+                    startEncodingThread()
+                    currentPromise?.resolve(null)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error in startScreenCapture", e)
+                    cleanup()
+                    currentPromise?.reject("SETUP_ERROR", e.message, e)
+                }
+                currentPromise = null
+            }, FOREGROUND_DELAY_MS)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in startScreenCapture", e)
+            cleanup()
+            currentPromise?.reject("SETUP_ERROR", e.message, e)
+            currentPromise = null
+        }
+    }
+
+    private fun setupMediaCodec() {
+        val width = 1280
+        val height = 720
+        val metrics = reactApplicationContext.resources.displayMetrics
+
+        val mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height).apply {
+            setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
+            setInteger(MediaFormat.KEY_BIT_RATE, 6_000_000) // 6 Mbps - matched with iOS
+            setInteger(MediaFormat.KEY_FRAME_RATE, 30)      // 30 fps - matched with iOS
+            setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1) // 1 second between keyframes
+            // H.264 High Profile for better quality
+            setInteger(MediaFormat.KEY_PROFILE, MediaCodecInfo.CodecProfileLevel.AVCProfileHigh)
+            setInteger(MediaFormat.KEY_LEVEL, MediaCodecInfo.CodecProfileLevel.AVCLevel31)
+            // Additional settings for better compatibility and quality
+            setInteger(MediaFormat.KEY_REPEAT_PREVIOUS_FRAME_AFTER, 1000000)
+            setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, width * height)
+            // B-frames settings (if supported by the device)
+            try {
+                setInteger(MediaFormat.KEY_MAX_B_FRAMES, 0) // Disable B-frames for lower latency
+            } catch (e: Exception) {
+                Log.d(TAG, "B-frames setting not supported on this device")
             }
-            Log.d("ScreenRecorder", "MediaProjection started")
+        }
 
-            handlerThread = HandlerThread("ScreenRecorderThread")
-            handlerThread?.start()
-            handler = Handler(handlerThread!!.looper)
+        // Find an encoder that supports our requirements
+        val encoderName = MediaCodecList(MediaCodecList.REGULAR_CODECS).findEncoderForFormat(mediaFormat)
+        if (encoderName == null) {
+            throw RuntimeException("No suitable encoder found for H.264 High Profile")
+        }
 
-            val width = 1280
-            val height = 720
+        mediaCodec = MediaCodec.createByCodecName(encoderName).apply {
+            configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+            inputSurface = createInputSurface()
+            start()
+        }
+    }
 
-            // Use proper densityDpi from device metrics
-            val metrics = reactApplicationContext.resources.displayMetrics
-            val densityDpi = metrics.densityDpi
+    private fun setupVirtualDisplay() {
+        val width = 1280
+        val height = 720
+        val metrics = reactApplicationContext.resources.displayMetrics
 
-            val mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height).apply {
-                setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
-                setInteger(MediaFormat.KEY_BIT_RATE, 2_000_000) // 4 Mbps
-                setInteger(MediaFormat.KEY_FRAME_RATE, 30) // 60 fps
-                setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1) // 1 second between keyframes
-            }
-            mediaCodec = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_AVC)
-            mediaCodec?.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-            inputSurface = mediaCodec?.createInputSurface()
-            mediaCodec?.start()
-
-            Log.d("ScreenRecorder", "MediaCodec configured & started")
-
-            // Create Virtual Display using proper densityDpi
-            mediaProjection?.createVirtualDisplay(
-                "ScreenRecorder",
-                width, height, densityDpi,
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
-                inputSurface, null, handler
-            )
-            Log.d("ScreenRecorder", "VirtualDisplay created: ${width}x${height} @ ${densityDpi}dpi")
-
-            recording = true
-            startEncodingThread()
-        }, FOREGROUND_DELAY_MS)
+        mediaProjection?.createVirtualDisplay(
+            "ScreenRecorder",
+            width, height, metrics.densityDpi,
+            DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
+            inputSurface, null, handler
+        )
     }
 
     private fun startEncodingThread() {
         executorService.execute {
-            Log.d("ScreenRecorder", "Encoding thread started")
+            Log.d(TAG, "Encoding thread started")
             try {
                 val bufferInfo = MediaCodec.BufferInfo()
-                val accumulator = ByteArrayOutputStream()
-                while (recording) {
-                    // Optionally, force an I-frame every 3 seconds
-                    if (System.currentTimeMillis() % 1000 < 100) {  // roughly every 1 second
+                while (isRecording.get()) {
+                    // Request keyframe periodically
+                    if (System.currentTimeMillis() % 1000 < 100) {
                         val params = Bundle()
                         params.putInt(MediaCodec.PARAMETER_KEY_REQUEST_SYNC_FRAME, 0)
                         mediaCodec?.setParameters(params)
-                        Log.d("ScreenRecorder", "Requested I-frame")
                     }
-                    Log.d("ScreenRecorder", "Waiting for output buffer...")
+
                     val outputBufferIndex = mediaCodec?.dequeueOutputBuffer(bufferInfo, 10000) ?: -1
-                    Log.d("ScreenRecorder", "OutputBufferIndex: $outputBufferIndex, flags: ${bufferInfo.flags}")
                     if (outputBufferIndex >= 0) {
                         val outputBuffer = mediaCodec?.getOutputBuffer(outputBufferIndex)
-                        // Set proper position and limit to read valid data
                         if (outputBuffer != null && bufferInfo.size > 0) {
                             outputBuffer.position(bufferInfo.offset)
                             outputBuffer.limit(bufferInfo.offset + bufferInfo.size)
-                            val chunk = ByteArray(bufferInfo.size)
-                            outputBuffer.get(chunk)
-                            accumulator.write(chunk)
+
+                            synchronized(accumulatorLock) {
+                                val chunk = ByteArray(bufferInfo.size)
+                                outputBuffer.get(chunk)
+                                accumulator.write(chunk)
+
+                                if (accumulator.size() >= chunkSize) {
+                                    val dataToSend = accumulator.toByteArray()
+                                    val base64Chunk = Base64.encodeToString(dataToSend, Base64.NO_WRAP)
+                                    sendChunkToJS(base64Chunk)
+                                    accumulator.reset()
+                                }
+                            }
                         }
                         mediaCodec?.releaseOutputBuffer(outputBufferIndex, false)
+                    }
+                }
 
-                        // If accumulator has reached chunkSize, emit the chunk
-                        if (accumulator.size() >= chunkSize) {
-                            val dataToSend = accumulator.toByteArray()
-                            val base64Chunk = Base64.encodeToString(dataToSend, Base64.NO_WRAP)
-                            sendChunkToJS(base64Chunk)
-                            Log.d("ScreenRecorder", "Chunk sent: ${dataToSend.size} bytes")
-                            accumulator.reset()
-                        }
-                    } else {
-                        // If no output, wait a bit to avoid busy looping
-                        Thread.sleep(50)
+                // Send any remaining data
+                synchronized(accumulatorLock) {
+                    if (accumulator.size() > 0) {
+                        val dataToSend = accumulator.toByteArray()
+                        val base64Chunk = Base64.encodeToString(dataToSend, Base64.NO_WRAP)
+                        sendChunkToJS(base64Chunk)
+                        accumulator.reset()
                     }
                 }
             } catch (e: Exception) {
-                Log.e("ScreenRecorder", "Error in encoding thread: ${e.message}")
+                Log.e(TAG, "Error in encoding thread", e)
             }
         }
     }
@@ -197,21 +256,37 @@ class ScreenRecorderModule(reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun stopRecording() {
-        Log.d("ScreenRecorder", "Stopping recording...")
-        recording = false
-        stopForegroundService()
-        mediaCodec?.stop()
-        mediaCodec?.release()
-        mediaCodec = null
-        mediaProjection?.stop()
-        mediaProjection = null
-        inputSurface?.release()
-        inputSurface = null
-        handlerThread?.quitSafely()
-        handlerThread = null
-        handler = null
-        Log.d("ScreenRecorder", "Recording stopped")
+    fun stopRecording(promise: Promise) {
+        try {
+            Log.d(TAG, "Stopping recording...")
+            isRecording.set(false)
+            cleanup()
+            promise.resolve(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error stopping recording", e)
+            promise.reject("STOP_ERROR", e.message, e)
+        }
+    }
+
+    private fun cleanup() {
+        try {
+            stopForegroundService()
+            mediaCodec?.stop()
+            mediaCodec?.release()
+            mediaCodec = null
+            mediaProjection?.stop()
+            mediaProjection = null
+            inputSurface?.release()
+            inputSurface = null
+            handlerThread?.quitSafely()
+            handlerThread = null
+            handler = null
+            synchronized(accumulatorLock) {
+                accumulator.reset()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error in cleanup", e)
+        }
     }
 
     private fun stopForegroundService() {
@@ -220,4 +295,9 @@ class ScreenRecorderModule(reactContext: ReactApplicationContext) :
     }
 
     override fun onNewIntent(intent: Intent?) {}
+
+    override fun onCatalystInstanceDestroy() {
+        cleanup()
+        super.onCatalystInstanceDestroy()
+    }
 }

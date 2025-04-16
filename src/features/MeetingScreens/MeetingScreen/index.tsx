@@ -22,10 +22,10 @@ import Config from "react-native-config"
 import NewJoinRequestModal from "src/modals/MeetingModals/NewJoinRequestModal"
 import { useMeetingAccess } from "src/hooks/useMeetingAccess"
 import { useAudioRecorder } from "src/hooks/useAudioRecorder"
-import { NativeEventEmitter, NativeModules } from "react-native"
-const { ScreenRecorder } = NativeModules
+import { useScreenRecorder } from "src/hooks/useScreenRecorder"
 import RNFS from "react-native-fs"
 import Base64 from "react-native-base64"
+import { Buffer } from "buffer";
 
 // const recordingUrl = Config.SOCKET_RECORDING_URL
 
@@ -48,6 +48,28 @@ const MeetingScreen = () => {
     route.params
 
   const { onStartRecord, onStopRecord } = useAudioRecorder()
+
+  const sendChunkToServer = async (base64Chunk: any) => {
+    try {
+      await saveChunkToFile(base64Chunk)
+      // if (wsRef.current?.readyState === WebSocket.OPEN) {
+      //   wsRef.current.send(
+      //     JSON.stringify({
+      //       fileName: recordingNameRef.current,
+      //       fileExtension: "mp4",
+      //       chunks: base64Chunk,
+      //       action: "stream",
+      //     })
+      //   )
+      //   console.log('chunk sent');
+      // }
+    } catch (error) {
+      console.error("Failed to send chunk:", error)
+    }
+  }
+  const { startRecording, stopRecording, isRecording } = useScreenRecorder({
+    onChunkReceived: sendChunkToServer,
+  })
   const {
     socketRef,
     localStream,
@@ -84,7 +106,6 @@ const MeetingScreen = () => {
     rtcError,
   } = useWebRtc(instanceMeetingOwner!)
   const { goBack } = useNavigation()
-  const [isRecording, setIsRecording] = useState(false)
 
   const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
   const [meInvited, setMeInvited] = useState<boolean | null>(null)
@@ -146,95 +167,25 @@ const MeetingScreen = () => {
   const saveChunkToFile = async (chunk: any) => {
     console.log("saveChunkToFile")
     try {
-      const filePath = `${
-        RNFS.DocumentDirectoryPath
-      }/recording-${roomId}.webm`
-      const decodedData = Base64.decode(chunk)
+      const filePath = `${RNFS.DocumentDirectoryPath}/recording-${roomId}.h264`
+      const binary = Buffer.from(chunk, "base64") // convert base64 to binary
       const fileExists = await RNFS.exists(filePath)
       if (fileExists) {
         // Append to file instead of overwriting
-        await RNFS.appendFile(filePath, decodedData, "base64")
+        await RNFS.appendFile(filePath, binary.toString("base64"), "base64")
       } else {
         // If file doesn't exist, create a new file
-        await RNFS.writeFile(filePath, decodedData, "base64")
+        await RNFS.writeFile(filePath, binary.toString("base64"), "base64")
       }
 
-    // Get file stats to check the size
-    const statResult = await RNFS.stat(filePath);
-    console.log("File size:", statResult.size);
+      // Get file stats to check the size
+      const statResult = await RNFS.stat(filePath)
+      console.log("File size:", statResult.size)
 
-    // Optionally, read the file after saving (for debugging)
-    if (statResult.size > 0) {
-      const fileData = await RNFS.readFile(filePath, 'base64');
-      console.log("File data (base64):", fileData);
-    } else {
-      console.log("File is empty.");
-    }
 
       console.log(`Chunk saved to file at: ${filePath}`)
     } catch (error) {
       console.error("Failed to save chunk to file:", error)
-    }
-  }
-
-  useEffect(() => {
-    const eventEmitter = new NativeEventEmitter(ScreenRecorder)
-    const chunkListener = eventEmitter.addListener(
-      "onVideoChunk",
-      ({ chunk }) => {
-        // console.log("Received chunk:", chunk)
-        sendChunkToServer(chunk)
-      }
-    )
-
-    return () => {
-      chunkListener.remove()
-    }
-  }, [])
-
-  const startRecording = async () => {
-    console.log("startRecordingstartRecordingstartRecording")
-    try {
-      // if (wsRef.current?.readyState === WebSocket.OPEN) {
-      //  recordingNameRef.current = `recording-mobile-${Date.now()}`
-      // startTimeRef.current = Date.now()
-      await ScreenRecorder.startRecording()
-      console.log("Recording started")
-      setIsRecording(true)
-      // }
-    } catch (error) {
-      console.error(
-        "Failed to start recording:",
-        { ScreenRecorder, froMNATIVE: NativeModules.ScreenRecorder },
-        error
-      )
-    }
-  }
-  const stopRecording = async () => {
-    try {
-      if (ScreenRecorder && isRecording) {
-        await ScreenRecorder.stopRecording()
-        if (wsRef.current?.readyState === WebSocket.OPEN) {
-          const duration = startTimeRef.current
-            ? Math.floor((Date.now() - startTimeRef.current) / 1000)
-            : 0
-
-          wsRef.current.send(
-            JSON.stringify({
-              fileName: recordingNameRef.current,
-              fileExtension: "webm",
-              action: "end",
-              meetId,
-              userId: localUserId,
-              duration,
-            })
-          )
-        }
-        startTimeRef.current = null
-      }
-      setIsRecording(false)
-    } catch (error) {
-      console.error("Failed to stop recording:", error)
     }
   }
 
@@ -276,25 +227,6 @@ const MeetingScreen = () => {
   //     wsRef.current?.close()
   //   }
   // }, [])
-
-  const sendChunkToServer = async (base64Chunk: any) => {
-    try {
-      await saveChunkToFile(base64Chunk)
-      // if (wsRef.current?.readyState === WebSocket.OPEN) {
-      //   wsRef.current.send(
-      //     JSON.stringify({
-      //       fileName: recordingNameRef.current,
-      //       fileExtension: "mp4",
-      //       chunks: base64Chunk,
-      //       action: "stream",
-      //     })
-      //   )
-      //   console.log('chunk sent');
-      // }
-    } catch (error) {
-      console.error("Failed to send chunk:", error)
-    }
-  }
 
   const callTopActions = [
     {
