@@ -275,11 +275,19 @@ const DetailsEventModal = ({
                   )}
                   {isOwner && (
                     <>
-                      <CustomButton
+                      {/* <CustomButton
                         text="Open srt files list"
                         onPress={() => {
                           setIsOpenSrtModal(!isOpenSrtModal)
                         }}
+                      /> */}
+                      <CustomButton
+                        text={t("OpenSrtFilesList")}
+                        type="secondary"
+                        // leftIcon="copy"
+                        onPress={() =>
+                          setIsOpenSrtModal(!isOpenSrtModal)
+                        }
                       />
 
                       {isOpenSrtModal && (
@@ -295,7 +303,7 @@ const DetailsEventModal = ({
                                   helpers.alignItemsCenter,
                                 ]}
                               >
-                                <Text style={styles.srtTitle}>SRT Files</Text>
+                                <Text style={styles.srtTitle}>{t('SRTFiles')}</Text>
                                 <Icon
                                   name="closeButton"
                                   onPress={() => setIsOpenSrtModal(false)}

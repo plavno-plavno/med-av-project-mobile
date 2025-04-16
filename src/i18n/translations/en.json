@@ -143,5 +143,7 @@
   "incorrectOldPassword": "Incorrect old password",
   "DeleteAccountDescription": "Deleting your account will remove \nall of your information from our database. \nThis cannot be undone.",
   "GettingReady": "Getting ready...",
-  "YouLeftTheMeeting": "You left the meeting. Use meeting link to join again."
+  "YouLeftTheMeeting": "You left the meeting. Use meeting link to join again.",
+  "OpenSrtFilesList": "Open srt files list",
+  "SRTFiles": "SRT Files"
 }
