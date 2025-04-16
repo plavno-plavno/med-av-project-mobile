@@ -56,11 +56,10 @@ export const styles = StyleSheet.create({
     borderColor: colors.lightGray,
     borderWidth: moderateScale(1),
     backgroundColor: colors.white,
-    height: screenHeight * 0.46,
+    height: screenHeight * 0.5,
     boxShadow: "0px 0px 0px 2px rgba(78, 183, 189, 0.16)",
     zIndex: 1,
-    top: 0,
-    gap: moderateScale(8),
+    top: moderateScale(30),
   },
   srtTitle: {
     ...fontFamilies.interManropeBold16,

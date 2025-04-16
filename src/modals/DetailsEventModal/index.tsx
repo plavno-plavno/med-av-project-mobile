@@ -27,6 +27,7 @@ import RNFetchBlob from "react-native-blob-util"
 import Share from "react-native-share"
 import * as Keychain from "react-native-keychain"
 import Config from "react-native-config"
+import { moderateScale } from "react-native-size-matters"
 
 const baseURL = Config.BASE_API_URL
 
@@ -273,7 +274,8 @@ const DetailsEventModal = ({
                       </Text>
                     </View>
                   )}
-                  {isOwner && (
+
+                  {isOwner && !!srtFiles?.length && (
                     <>
                       {/* <CustomButton
                         text="Open srt files list"
@@ -294,6 +296,7 @@ const DetailsEventModal = ({
                         <FlatList
                           data={srtFiles}
                           style={[styles.srtContainer]}
+                          contentContainerStyle={{gap: moderateScale(8)}}
                           keyExtractor={(item) => item.id.toString()}
                           ListHeaderComponent={
                             <View>

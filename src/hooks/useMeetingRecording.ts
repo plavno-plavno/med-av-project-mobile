@@ -49,7 +49,7 @@ export const useMeetingRecording = (roomId: string | null, peerConnection: any) 
     console.log("Initializing socket...");
     const token = await getToken();
     console.log("Token retrieved:", token);
-    socketRecRef.current = io('http://192.168.0.105:6600', {
+    socketRecRef.current = io(socketRecRef.current, {
       transports: ['websocket'],
       autoConnect: true,
       auth: { token },

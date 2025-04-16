@@ -11,22 +11,19 @@ import MeetingChatModal from "src/modals/MeetingModals/MeetingChatModal"
 import { BottomSheetMethods } from "@devvie/bottom-sheet"
 import VideoGrid from "src/components/VideoGrid/VideoGrid"
 import ParticipantsModal from "src/modals/MeetingModals/ParticipantsModal"
-import { useRoute, RouteProp, useNavigation } from "@react-navigation/native"
+import { useRoute, RouteProp } from "@react-navigation/native"
 import SubtitlesModal from "src/modals/MeetingModals/SubtitlesModal"
 import { Toast } from "react-native-toast-message/lib/src/Toast"
 import { useTranslation } from "react-i18next"
 import { useKeepAwake } from "@sayem314/react-native-keep-awake"
 import Subtitles from "src/components/Subtitles"
 import Loading from "src/components/Loading"
-import Config from "react-native-config"
 import NewJoinRequestModal from "src/modals/MeetingModals/NewJoinRequestModal"
 import { useMeetingAccess } from "src/hooks/useMeetingAccess"
+import RNFS from "react-native-fs"
+import Share from "react-native-share"
 import { NativeEventEmitter, NativeModules } from "react-native"
 const { ScreenRecorder } = NativeModules
-import RNFS from "react-native-fs"
-import Base64 from "react-native-base64"
-
-const recordingUrl = Config.SOCKET_RECORDING_URL
 
 type ParamList = {
   Detail: {
@@ -77,17 +74,11 @@ const MeetingScreen = () => {
     clearCanvas,
     setClearCanvas,
     speechLanguage,
-    meetId,
-    rtcError,
   } = useWebRtc(instanceMeetingOwner!)
-  const { goBack } = useNavigation()
   const [isRecording, setIsRecording] = useState(false)
 
   const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
   const [meInvited, setMeInvited] = useState<boolean | null>(null)
-
-  const recordingNameRef = useRef<any>()
-  const startTimeRef = useRef<any>()
 
   const {
     joinEvent,
@@ -140,156 +131,61 @@ const MeetingScreen = () => {
     sheetParticipantsRef.current?.open()
   }
 
-  const saveChunkToFile = async (chunk: any) => {
+  const [recordingChunks, setRecordingChunks] = useState<string[]>([]);
+
+  const saveRecordingToFile = async () => {
     try {
-      const filePath = `${
-        RNFS.DocumentDirectoryPath
-      }/recording-${Date.now()}.webm`
-      const decodedData = Base64.decode(chunk)
-      await RNFS.writeFile(filePath, decodedData, "base64")
+      const combinedChunks = recordingChunks.map(chunk => atob(chunk)).join('');
+      const path = `${RNFS.DocumentDirectoryPath}/recording.video.raw`;
+      await RNFS.writeFile(path, combinedChunks, 'utf8');
+      console.log("Recording saved to file at:", path);
 
-      RNFS.stat(filePath)
-        .then((statResult) => {
-          console.log("File size:", statResult.size)
-          if (statResult.size > 0) {
-            RNFS.readFile(filePath, "base64")
-              .then((fileData) => {
-                console.log("File data (base64):", fileData)
-              })
-              .catch((error) => {
-                console.error("Failed to read file:", error)
-              })
-          } else {
-            console.log("File is empty.")
-          }
-        })
-        .catch((error) => {
-          console.error("Failed to get file stats:", error)
-        })
+      await Share.open({
+        url: `file://${path}`,
+        title: "Save or Share",
+      }).catch((error) => console.error("Error sharing file:", error));
 
-      console.log(`Chunk saved to file at: ${filePath}`)
     } catch (error) {
-      console.error("Failed to save chunk to file:", error)
+      console.error("Failed to save recording to file:", error);
     }
-  }
+  };
+
+  const eventEmitter = useRef(new NativeEventEmitter(ScreenRecorder));
 
   useEffect(() => {
-    const eventEmitter = new NativeEventEmitter(ScreenRecorder)
-    const chunkListener = eventEmitter.addListener(
-      "onVideoChunk",
-      ({ chunk }) => {
-        console.log("Received chunk:", chunk)
-        sendChunkToServer(chunk)
-      }
-    )
+    const chunkListener = eventEmitter.current.addListener("onVideoChunk", ({ chunk }) => {
+      console.log("Received chunk:", chunk);
+      setRecordingChunks((prevChunks) => [...prevChunks, chunk]);
+    });
 
     return () => {
-      chunkListener.remove()
-    }
-  }, [])
+      chunkListener.remove();
+    };
+  }, []);
 
   const startRecording = async () => {
     try {
-      // if (wsRef.current?.readyState === WebSocket.OPEN) {
-      //  recordingNameRef.current = `recording-mobile-${Date.now()}`
-      // startTimeRef.current = Date.now()
-      await ScreenRecorder.startRecording()
-      console.log("Recording started")
-      setIsRecording(true)
-      // }
+      await ScreenRecorder.startRecording();
+      console.log("Recording started");
+      setIsRecording(true);
+      setRecordingChunks([]);
     } catch (error) {
-      console.error(
-        "Failed to start recording:",
-        { ScreenRecorder, froMNATIVE: NativeModules.ScreenRecorder },
-        error
-      )
+      console.error("Failed to start recording:", error);
     }
-  }
+  };
+
   const stopRecording = async () => {
     try {
       if (ScreenRecorder && isRecording) {
-        await ScreenRecorder.stopRecording()
-        if (wsRef.current?.readyState === WebSocket.OPEN) {
-          const duration = startTimeRef.current
-            ? Math.floor((Date.now() - startTimeRef.current) / 1000)
-            : 0
-
-          wsRef.current.send(
-            JSON.stringify({
-              fileName: recordingNameRef.current,
-              fileExtension: "webm",
-              action: "end",
-              meetId,
-              userId: localUserId,
-              duration,
-            })
-          )
-        }
-        startTimeRef.current = null
+        await ScreenRecorder.stopRecording();
+        console.log("Recording stopped");
+        setIsRecording(false);
+        saveRecordingToFile();
       }
-      setIsRecording(false)
     } catch (error) {
-      console.error("Failed to stop recording:", error)
+      console.error("Failed to stop recording:", error);
     }
-  }
-
-  useEffect(() => {
-    let reconnectTimeout: NodeJS.Timeout | null = null
-
-    const connectWebSocket = () => {
-      if (wsRef.current) {
-        wsRef.current.close()
-      }
-
-      wsRef.current = new WebSocket(recordingUrl!)
-
-      wsRef.current.onopen = () => {
-        console.log("WebSocket connected")
-        if (reconnectTimeout) {
-          clearTimeout(reconnectTimeout)
-          reconnectTimeout = null
-        }
-      }
-
-      wsRef.current.onerror = (error) => {
-        console.error("WebSocket error:", error)
-        console.log("WebSocket connection error. Reconnecting...")
-        if (!reconnectTimeout) {
-          reconnectTimeout = setTimeout(connectWebSocket, 3000)
-        }
-      }
-
-      wsRef.current.onclose = () => {
-        console.warn("WebSocket connection closed")
-      }
-    }
-
-    connectWebSocket()
-
-    return () => {
-      if (reconnectTimeout) clearTimeout(reconnectTimeout)
-      wsRef.current?.close()
-    }
-  }, [])
-
-  const sendChunkToServer = async (base64Chunk: any) => {
-    try {
-      await saveChunkToFile(base64Chunk)
-      // if (wsRef.current?.readyState === WebSocket.OPEN) {
-      //   wsRef.current.send(
-      //     JSON.stringify({
-      //       fileName: recordingNameRef.current,
-      //       fileExtension: "mp4",
-      //       chunks: base64Chunk,
-      //       action: "stream",
-      //     })
-      //   )
-      //   console.log('chunk sent');
-      // }
-    } catch (error) {
-      console.error("Failed to send chunk:", error)
-    }
-  }
+  };
 
   const callTopActions = [
     {
@@ -371,20 +267,9 @@ const MeetingScreen = () => {
     }
   }, [participants?.length, socketInstance])
 
-  useEffect(() => {
-    if (rtcError) {
-      Toast.show({
-        type: "error",
-        text1:
-          "Connection to media servers cannot be established, please consider rejoining",
-      })
-      goBack()
-    }
-  }, [rtcError])
-
-  // if (!participants?.length) {
-  //   return <Loading />
-  // }
+  if (!participants?.length) {
+    return <Loading />
+  }
   return (
     <>
       <SafeAreaView edges={["top"]} style={styles.container}>

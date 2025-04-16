@@ -48,9 +48,6 @@ export const useMeetingAccessSocket = () => {
           )
         }
       }
-      socketRef.current.onAny((res) => {
-        console.log(res, 'onAnyonAnyonAnyonAnyonAnyonAnyonAnyonAnyonAny');
-      })
       socketRef.current.on("connect", attemptReconnect)
       socketRef.current.on("connect_error", (error: any) => {
         console.error("Use Meeting Access Socket connection error:", error.message)

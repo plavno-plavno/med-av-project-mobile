@@ -326,7 +326,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
           const rtcUrl = `https://${
             scalerFindFreeMachineData?.dns ||
             scalerFindFreeMachineData?.ip ||
-            scalerFindFreeMachineData.rtc
+            scalerFindFreeMachineData?.rtc
           }${
             scalerFindFreeMachineData?.port
               ? ":" + scalerFindFreeMachineData?.port
@@ -340,6 +340,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
             startCall()
           }, 2000)
         } catch (error) {
+          console.log(error, 'error startCall');
           setError(true)
         }
       }
@@ -819,7 +820,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
       const sttRes = await scalerFindFreeMachinePairSTT({
         id: String(meetId),
       }).unwrap()
-      sttUrlRef.current = `wss://${sttRes.stt}`
+      sttUrlRef.current = `wss://${sttRes?.stt}`
       const usersAudioVideoMap: Record<
         string,
         { isAudioOn: boolean; isVideoOn: boolean; socketId: string }
