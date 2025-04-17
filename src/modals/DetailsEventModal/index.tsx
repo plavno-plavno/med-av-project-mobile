@@ -116,7 +116,7 @@ const DetailsEventModal = ({
     try {
       const { dirs } = RNFetchBlob.fs
       const dirToSave = isIOS() ? dirs.DocumentDir : dirs.DownloadDir
-      const fileName = `Transcript from Svensacall.txt`
+      const fileName = `Transcript from Svensacall-${id}.txt`
       const filePath = `${dirToSave}/${fileName}`
 
       const configfb = {
