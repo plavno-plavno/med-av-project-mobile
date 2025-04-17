@@ -4,9 +4,7 @@ import moment from "moment"
 import { StyleSheet, Text, View } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import RNFetchBlob from "react-native-blob-util"
-import {
-  useRemoveRecordingsMutation,
-} from "src/api/helpCenterApi/helpCenterApi"
+import { useRemoveRecordingsMutation } from "src/api/helpCenterApi/helpCenterApi"
 import colors from "src/assets/colors"
 import Share from "react-native-share"
 import { isAndroid, isIOS } from "@utils/platformChecker"
@@ -20,13 +18,15 @@ const RecordingCard = ({
   title,
   duration,
   date,
+  srt,
   recordingsDataRefetch,
 }: {
   id: number
   title: string
   duration: string
   date?: string
-  recordingsDataRefetch: () => void;
+  srt?: any
+  recordingsDataRefetch: () => void
 }) => {
   const [removeRecordings] = useRemoveRecordingsMutation()
   const formatDuration = (totalSeconds: number) => {
@@ -48,21 +48,79 @@ const RecordingCard = ({
 
   const onDeleteRecordingPress = async () => {
     try {
-      const res = await removeRecordings({ id }).unwrap();
-      console.log(res, 'onDeleteRecordingPressonDeleteRecordingPress');
-      
-      recordingsDataRefetch();
+      const res = await removeRecordings({ id }).unwrap()
+      console.log(res, "onDeleteRecordingPressonDeleteRecordingPress")
+
+      recordingsDataRefetch()
     } catch (error) {
-      console.log(error, 'error onDeleteRecordingPress');
-      
+      console.log(error, "error onDeleteRecordingPress")
+    }
+  }
+
+  const handleSrtDownload = async () => {
+    try {
+      const { dirs } = RNFetchBlob.fs
+      const dirToSave = isIOS() ? dirs.DocumentDir : dirs.DownloadDir
+      const fileName = `Transcript from Svensacall-${srt?.id}.txt`
+      const filePath = `${dirToSave}/${fileName}`
+
+      const configfb = {
+        fileCache: true,
+        addAndroidDownloads: {
+          useDownloadManager: true,
+          notification: true,
+          mediaScannable: true,
+          title: fileName,
+          path: filePath,
+          mime: "application/x-subrip",
+        },
+        path: filePath,
+        notification: true,
+        mediaScannable: true,
+        title: fileName,
+      }
+
+      const accessToken = await Keychain.getGenericPassword({
+        service: "accessToken",
+      })
+      if (!accessToken) return
+
+      RNFetchBlob.config(configfb)
+        .fetch("GET", `${baseURL}srt/download/${srt?.id}`, {
+          Authorization: `Bearer ${accessToken.password}`,
+          Accept: "application/octet-stream",
+        })
+        .then((res) => {
+          console.log("SRT download successful", res)
+
+          if (isIOS()) {
+            RNFetchBlob.fs.writeFile(filePath, res.data, "base64")
+            RNFetchBlob.ios.previewDocument(filePath)
+          }
+
+          if (isAndroid()) {
+            console.log("File downloaded to", res.path())
+          }
+
+          Share.open({
+            url: `file://${res.path()}`,
+            title: "Save or Share SRT",
+          }).catch((error: any) => {
+            console.error("Error sharing SRT file:", error)
+          })
+        })
+        .catch((e) => {
+          console.error("SRT download error:", e)
+        })
+    } catch (error: any) {
+      console.error("Error downloading SRT file:", error?.message || error)
     }
   }
 
   const onRecordDownload = async () => {
     try {
-      const { dirs } = RNFetchBlob.fs;
-      const dirToSave =
-        isIOS() ? dirs.DocumentDir : dirs.DownloadDir;
+      const { dirs } = RNFetchBlob.fs
+      const dirToSave = isIOS() ? dirs.DocumentDir : dirs.DownloadDir
 
       const configfb = {
         fileCache: true,
@@ -72,56 +130,56 @@ const RecordingCard = ({
           mediaScannable: true,
           title: `${title}.mp4`,
           path: `${dirs.DownloadDir}/recording.mp4`,
-          mime: 'video/mp4',
+          mime: "video/mp4",
         },
         useDownloadManager: true,
         notification: true,
         mediaScannable: true,
         title: `${title}.mp4`,
         path: `${dirToSave}/${title}.mp4`,
-      };
+      }
 
       const accessToken = await Keychain.getGenericPassword({
         service: "accessToken",
-      });
-      if (!accessToken) return;
+      })
+      if (!accessToken) return
 
       RNFetchBlob.config(configfb)
         .fetch("GET", `${baseURL}recordings/download/${id}`, {
           Authorization: `Bearer ${accessToken?.password}`,
         })
         .then((res) => {
-          console.log("Download successful", res);
+          console.log("Download successful", res)
 
           if (isIOS()) {
-            RNFetchBlob.fs.writeFile(configfb.path, res.data, "base64");
-            RNFetchBlob.ios.previewDocument(configfb.path);
+            RNFetchBlob.fs.writeFile(configfb.path, res.data, "base64")
+            RNFetchBlob.ios.previewDocument(configfb.path)
           }
 
           if (isAndroid()) {
-            console.log("File downloaded to", res.path());
+            console.log("File downloaded to", res.path())
           }
 
           Share.open({
             url: `file://${res.path()}`,
             title: "Save or Share",
           }).catch((error: any) => {
-            console.error("Error sharing file:", error);
-          });
+            console.error("Error sharing file:", error)
+          })
         })
         .catch((e) => {
-          console.error("Download error:", e);
-        });
+          console.error("Download error:", e)
+        })
     } catch (error: any) {
-      console.error("Error saving file:", error?.message || error);
+      console.error("Error saving file:", error?.message || error)
     }
-  };
+  }
 
   const handleDownloadRecord = async () => {
     try {
       onRecordDownload()
     } catch (error) {
-      console.log(error, 'error handleDownloadRecord');
+      console.log(error, "error handleDownloadRecord")
     }
   }
   return (
@@ -138,6 +196,7 @@ const RecordingCard = ({
       <View style={[helpers.flexRow, helpers.gap12]}>
         <Icon name="deleteAccount" onPress={onDeleteRecordingPress} />
         <Icon name="download" onPress={handleDownloadRecord} />
+        {srt && <Icon name="subtitles" onPress={handleSrtDownload} />}
       </View>
     </View>
   )

@@ -62,7 +62,6 @@ const DetailsEventModal = ({
     srtFiles,
   } = eventDetailsData || {}
 
-  console.log("\x1b[31m%s\x1b[0m", "eventDetailsData", eventDetailsData)
   const { refetch: calendarEventsRefetch } = useGetCalendarEventsQuery()
   const [updateEvent] = useUpdateEventMutation()
   const [deleteEvent, { isLoading: isDeleteEventLoading }] =
@@ -274,7 +273,6 @@ const DetailsEventModal = ({
                       </Text>
                     </View>
                   )}
-
                   {isOwner && !!srtFiles?.length && (
                     <>
                       {/* <CustomButton
@@ -287,16 +285,14 @@ const DetailsEventModal = ({
                         text={t("OpenSrtFilesList")}
                         type="secondary"
                         // leftIcon="copy"
-                        onPress={() =>
-                          setIsOpenSrtModal(!isOpenSrtModal)
-                        }
+                        onPress={() => setIsOpenSrtModal(!isOpenSrtModal)}
                       />
 
                       {isOpenSrtModal && (
                         <FlatList
                           data={srtFiles}
                           style={[styles.srtContainer]}
-                          contentContainerStyle={{gap: moderateScale(8)}}
+                          contentContainerStyle={{ gap: moderateScale(8) }}
                           keyExtractor={(item) => item.id.toString()}
                           ListHeaderComponent={
                             <View>
@@ -306,7 +302,9 @@ const DetailsEventModal = ({
                                   helpers.alignItemsCenter,
                                 ]}
                               >
-                                <Text style={styles.srtTitle}>{t('SRTFiles')}</Text>
+                                <Text style={styles.srtTitle}>
+                                  {t("SRTFiles")}
+                                </Text>
                                 <Icon
                                   name="closeButton"
                                   onPress={() => setIsOpenSrtModal(false)}

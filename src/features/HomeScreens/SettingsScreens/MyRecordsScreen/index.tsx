@@ -16,11 +16,14 @@ const MyRecordsScreen = () => {
 
   const [page, setPage] = React.useState(1)
 
-  const { data: recordingsData, isLoading: recordingsLoading, refetch: recordingsDataRefetch } =
-    useGetRecordingsQuery({
-      limit: 10,
-      page,
-    })
+  const {
+    data: recordingsData,
+    isLoading: recordingsLoading,
+    refetch: recordingsDataRefetch,
+  } = useGetRecordingsQuery({
+    limit: 10,
+    page,
+  })
 
   const [recordings, setRecordings] = React.useState<IRecordingsEntity[]>([])
   const isRecordingsLoadingMore =
@@ -32,9 +35,11 @@ const MyRecordsScreen = () => {
     }
   }
 
-  useFocusEffect(useCallback(() => {
-    recordingsDataRefetch()
-  }, []))
+  useFocusEffect(
+    useCallback(() => {
+      recordingsDataRefetch()
+    }, [])
+  )
 
   useEffect(() => {
     if (isRecordingsLoadingMore) {
@@ -44,7 +49,6 @@ const MyRecordsScreen = () => {
       ])
     }
   }, [recordingsData])
-
   return (
     <>
       <ScreenWrapper
@@ -71,6 +75,7 @@ const MyRecordsScreen = () => {
                 duration={item?.duration}
                 date={item?.createdAt}
                 recordingsDataRefetch={recordingsDataRefetch}
+                srt={item?.srt}
               />
             )}
             keyExtractor={(item) => String(item?.id)}

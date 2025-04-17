@@ -20,6 +20,7 @@ export interface IRecordingsEntity {
   duration: string
   time: string
   createdAt?: string
+  srt?: any
 }
 
 export interface FaqEntity {

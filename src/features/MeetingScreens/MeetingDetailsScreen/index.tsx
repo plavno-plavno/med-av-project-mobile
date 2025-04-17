@@ -129,7 +129,7 @@ const MeetingDetailsScreen = () => {
         )
       )
       const isCurrentUserInvited = getCalendarEventByHashData.participants.some(
-        ({ user }: { user: any }) => user.id === authMe?.id
+        ({ user }: { user: any }) => user?.id === authMe?.id
       )
       setMeInvited(isCurrentUserInvited)
     }
