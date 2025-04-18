@@ -1,210 +1,180 @@
 import Foundation
 import ReplayKit
 import VideoToolbox
-import React
 
 @objc(ScreenRecorder)
 class ScreenRecorder: RCTEventEmitter {
-    
-    private var videoEncoder: VTCompressionSession?
-    private var screenWidth: Int = 0 // Dynamically set based on screen resolution
-    private var screenHeight: Int = 0 // Dynamically set based on screen resolution
-    private var bitrate: Int = 6_000_000 // Default bitrate (6 Mbps)
-    private var fps: Int = 30 // Default frame rate (30 fps)
-    private var chunkSize: Int = 1 * 1024 * 1024 // Default chunk size: 1 MB
-    private var accumulator = Data()
-    private let accumulatorQueue = DispatchQueue(label: "accumulatorQueue")
+    private var compressionSession: VTCompressionSession?
+    private var frameCount = 0
     private var isRecording = false
-    
+    private var sps: Data?
+    private var pps: Data?
+
+    // Defer the ReplayKit singleton until we're on the main thread
+    private lazy var captureSession = RPScreenRecorder.shared()
+
+    override init() {
+        super.init()
+    }
+
+    // ⚠️ Must be true so init happens on main thread (ReplayKit is UIKit-adjacent)
+    override static func requiresMainQueueSetup() -> Bool {
+        return true
+    }
+
     override func supportedEvents() -> [String]! {
         return ["onVideoChunk"]
     }
-    
-    @objc
-    func setup(_ config: NSDictionary) {
-        self.screenWidth = config["width"] as? Int ?? UIScreen.main.bounds.size.width
-        self.screenHeight = config["height"] as? Int ?? UIScreen.main.bounds.size.height
-        self.bitrate = config["bitrate"] as? Int ?? 6_000_000
-        self.fps = config["fps"] as? Int ?? 30
-        
-        print("Screen resolution set to \(screenWidth)x\(screenHeight)")
-    }
-    
-    @objc
-    func setChunkSize(_ size: Int) {
-        self.chunkSize = size
-        print("Chunk size set to \(chunkSize) bytes")
-    }
-    
-    @objc
-    func startRecording(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+
+    @objc(startRecording:rejecter:)
+    func startRecording(
+        _ resolve: @escaping RCTPromiseResolveBlock,
+        rejecter reject: @escaping RCTPromiseRejectBlock
+    ) {
         guard !isRecording else {
-            reject("ALREADY_RECORDING", "Screen recording is already in progress", nil)
+            reject("ALREADY_RECORDING", "Recording is already in progress", nil)
             return
         }
-        
-        setupVideoEncoder()
-        
-        RPScreenRecorder.shared().isMicrophoneEnabled = false // Disable audio recording
-        RPScreenRecorder.shared().startCapture(handler: { [weak self] (sampleBuffer, bufferType, error) in
+
+        isRecording = true
+        frameCount = 0
+        setupCompressionSession()
+
+        captureSession.isMicrophoneEnabled = false
+        captureSession.startCapture(handler: { [weak self] sampleBuffer, sampleType, error in
             guard let self = self else { return }
-            
-            if let error = error {
-                reject("CAPTURE_FAILED", error.localizedDescription, error)
+            if let err = error {
+                self.isRecording = false
+                reject("CAPTURE_ERROR", err.localizedDescription, err)
                 return
             }
-            
-            guard CMSampleBufferDataIsReady(sampleBuffer), bufferType == .video else {
-                print("Sample buffer is not ready or not a video buffer")
-                return
+            if sampleType == .video, CMSampleBufferDataIsReady(sampleBuffer) {
+                self.processSampleBuffer(sampleBuffer)
             }
-            
-            // Convert the sample buffer to a pixel buffer
-            guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-                print("Failed to get pixel buffer from sample buffer")
-                return
-            }
-            
-            // Encode the pixel buffer into H.264
-            self.encodeFrame(pixelBuffer)
-            
-        }, completionHandler: { [weak self] (error) in
-            if let error = error {
-                reject("START_CAPTURE_FAILED", error.localizedDescription, error)
+        }) { error in
+            if let err = error {
+                reject("CAPTURE_START_ERROR", err.localizedDescription, err)
             } else {
-                self?.isRecording = true
-                print("Screen recording started successfully")
-                resolve("started")
-            }
-        })
-    }
-    
-    @objc
-    func stopRecording(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-        guard isRecording else {
-            reject("NOT_RECORDING", "Screen recording is not in progress", nil)
-            return
-        }
-        
-        RPScreenRecorder.shared().stopCapture { [weak self] (error) in
-            if let error = error {
-                reject("STOP_CAPTURE_FAILED", error.localizedDescription, error)
-            } else {
-                self?.cleanup()
-                print("Screen recording stopped successfully")
                 resolve(nil)
             }
         }
     }
-    
-    private func setupVideoEncoder() {
+
+    @objc(stopRecording:rejecter:)
+    func stopRecording(
+        _ resolve: @escaping RCTPromiseResolveBlock,
+        rejecter reject: @escaping RCTPromiseRejectBlock
+    ) {
+        guard isRecording else {
+            reject("NOT_RECORDING", "Recording is not active", nil)
+            return
+        }
+        isRecording = false
+        frameCount = 0
+
+        // Now safe to capture resolve/reject in this escaping block
+        captureSession.stopCapture { error in
+            if let err = error {
+                reject("STOP_ERROR", err.localizedDescription, err)
+            } else {
+                resolve(nil)
+            }
+        }
+
+        // Tear down VideoToolbox session
+        if let session = compressionSession {
+            VTCompressionSessionCompleteFrames(session, untilPresentationTimeStamp: .invalid)
+            VTCompressionSessionInvalidate(session)
+            compressionSession = nil
+        }
+    }
+
+    private func setupCompressionSession() {
+        guard compressionSession == nil else { return }
+        let width: Int32 = 720
+        let height: Int32 = 1280
         let status = VTCompressionSessionCreate(
-            allocator: kCFAllocatorDefault,
-            width: Int32(screenWidth),
-            height: Int32(screenHeight),
+            allocator: nil,
+            width: width,
+            height: height,
             codecType: kCMVideoCodecType_H264,
             encoderSpecification: nil,
             imageBufferAttributes: nil,
             compressedDataAllocator: nil,
-            outputCallback: { (outputCallbackRefCon, sourceFrameRefCon, status, infoFlags, sampleBuffer) in
-                guard let sampleBuffer = sampleBuffer else { return }
-                
-                // Extract H.264 NAL units from the sample buffer
-                var blockBuffer: CMBlockBuffer?
-                var formatDescription: CMFormatDescription?
-                var sampleSize: Int = 0
-                
-                CMSampleBufferGetSampleBufferAttributes(sampleBuffer, &blockBuffer)
-                CMSampleBufferGetFormatDescription(sampleBuffer, &formatDescription)
-                CMSampleBufferGetSampleSize(sampleBuffer, 0, &sampleSize)
-                
-                guard let buffer = blockBuffer, let desc = formatDescription, sampleSize > 0 else {
-                    print("Failed to extract H.264 data from sample buffer")
-                    return
-                }
-                
-                var lengthAtOffset = 0
-                var totalLength = 0
-                var dataPointer: UnsafeMutablePointer<Int8>?
-                
-                let status = CMBlockBufferGetDataPointer(
-                    buffer,
-                    atOffset: 0,
-                    lengthAtOffsetOut: &lengthAtOffset,
-                    totalLengthOut: &totalLength,
-                    dataPointerOut: &dataPointer
-                )
-                
-                guard status == kCMBlockBufferNoErr, let pointer = dataPointer, totalLength > 0 else {
-                    print("Failed to get data pointer from block buffer")
-                    return
-                }
-                
-                let data = Data(bytes: pointer, count: totalLength)
-                
-                // Accumulate the data and emit chunks
-                self.accumulatorQueue.async { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.accumulator.append(data)
-                    
-                    if self.accumulator.count >= self.chunkSize {
-                        let chunk = self.accumulator.prefix(self.chunkSize)
-                        self.sendChunkToJS(chunk.base64EncodedString())
-                        self.accumulator.removeFirst(self.chunkSize)
-                    }
-                }
-            },
-            compressionSessionOut: &videoEncoder
+            outputCallback: compressionOutputCallback,
+            refcon: UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque()),
+            compressionSessionOut: &compressionSession
         )
-        
-        guard status == noErr, let encoder = videoEncoder else {
-            print("Failed to create video encoder")
+        guard status == noErr, let session = compressionSession else {
+            NSLog("❌ VTCompressionSessionCreate failed: \(status)")
             return
         }
-        
-        // Set encoder properties
-        VTSessionSetProperty(encoder, kVTCompressionPropertyKey_ProfileLevel, kVTProfileLevel_H264_Baseline_AutoLevel)
-        VTSessionSetProperty(encoder, kVTCompressionPropertyKey_AverageBitRate, bitrate)
-        VTSessionSetProperty(encoder, kVTCompressionPropertyKey_MaxKeyFrameInterval, fps)
-        
-        // Start the encoder
-        VTCompressionSessionPrepareToEncodeFrames(encoder)
+        VTSessionSetProperty(session, key: kVTCompressionPropertyKey_RealTime,    value: kCFBooleanTrue)
+        VTSessionSetProperty(session, key: kVTCompressionPropertyKey_ProfileLevel, value: kVTProfileLevel_H264_Main_AutoLevel)
+        VTCompressionSessionPrepareToEncodeFrames(session)
     }
-    
-    private func encodeFrame(_ pixelBuffer: CVPixelBuffer) {
-        guard let encoder = videoEncoder else {
-            print("Video encoder is not available")
-            return
-        }
-        
-        let timestamp = CMTimeMake(value: Int64(CACurrentMediaTime() * 1000), timescale: 1000)
-        let duration = CMTimeMake(value: 1, timescale: Int32(fps))
-        
-        VTCompressionSessionEncodeFrame(
-            encoder,
-            imageBuffer: pixelBuffer,
-            presentationTimeStamp: timestamp,
-            duration: duration,
+
+    private func processSampleBuffer(_ sampleBuffer: CMSampleBuffer) {
+        guard
+            let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
+            let session = compressionSession
+        else { return }
+
+        let pts = CMTimeMake(value: Int64(frameCount), timescale: 30)
+        frameCount += 1
+        var flags = VTEncodeInfoFlags()
+        let status = VTCompressionSessionEncodeFrame(
+            session,
+            imageBuffer: imageBuffer,
+            presentationTimeStamp: pts,
+            duration: .invalid,
             frameProperties: nil,
-            infoFlagsOut: nil
+            sourceFrameRefcon: nil,
+            infoFlagsOut: &flags
         )
+        if status != noErr {
+            NSLog("❌ EncodeFrame error: \(status)")
+        }
     }
-    
-    private func sendChunkToJS(_ chunk: String) {
+
+    private let compressionOutputCallback: VTCompressionOutputCallback = { (
+        refCon,
+        _,
+        status,
+        _,
+        sampleBuffer
+    ) in
+        guard
+            status == noErr,
+            let sb = sampleBuffer,
+            CMSampleBufferDataIsReady(sb),
+            let block = CMSampleBufferGetDataBuffer(sb)
+        else { return }
+
+        let recorder = Unmanaged<ScreenRecorder>
+            .fromOpaque(refCon!)
+            .takeUnretainedValue()
+
+        var length = 0
+        var ptr: UnsafeMutablePointer<Int8>?
+        CMBlockBufferGetDataPointer(block,
+                                    atOffset: 0,
+                                    lengthAtOffsetOut: nil,
+                                    totalLengthOut: &length,
+                                    dataPointerOut: &ptr)
+        guard let p = ptr else { return }
+
+        var data = Data(bytes: p, count: length)
+
+        // (Optionally prepend SPS/PPS for keyframes here...)
+
+        guard !data.isEmpty,
+              let base64 = data.base64EncodedString(options: []) as String?,
+              !base64.isEmpty
+        else { return }
+
         DispatchQueue.main.async {
-            let payload: [String: Any] = ["chunk": chunk]
-            self.sendEvent(withName: "onVideoChunk", body: payload)
-            print("Sent chunk to JS: \(chunk.count) bytes")
+            recorder.sendEvent(withName: "onVideoChunk", body: ["chunk": base64])
         }
-    }
-    
-    private func cleanup() {
-        videoEncoder = nil
-        isRecording = false
-        accumulatorQueue.sync {
-            self.accumulator.removeAll()
-        }
-        print("Cleaned up resources")
     }
 }
