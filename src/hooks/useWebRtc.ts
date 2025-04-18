@@ -170,6 +170,8 @@ type ParamList = {
   }
 }
 
+const getFullName = (user: User) => user.firstName + ' ' + user.lastName;
+
 // const config = {
 //   iceServers: [
 //     { urls: "stun:stun.l.google.com:19302" },
@@ -633,6 +635,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
           isRecordingOn: false,
         },
         isOwner: instanceMeetingOwner,
+        username: getFullName(authMeData as any)
       })
       if (isSpeakerOn) {
         if (isIOS()) {
