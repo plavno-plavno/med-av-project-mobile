@@ -24,8 +24,7 @@ import { useMeetingAccess } from "src/hooks/useMeetingAccess"
 import { useAudioRecorder } from "src/hooks/useAudioRecorder"
 import { useScreenRecorder } from "src/hooks/useScreenRecorder"
 import RNFS from "react-native-fs"
-import Base64 from "react-native-base64"
-import { Buffer } from "buffer";
+import { Buffer } from "buffer"
 
 // const recordingUrl = Config.SOCKET_RECORDING_URL
 
@@ -182,7 +181,6 @@ const MeetingScreen = () => {
       const statResult = await RNFS.stat(filePath)
       console.log("File size:", statResult.size)
 
-
       console.log(`Chunk saved to file at: ${filePath}`)
     } catch (error) {
       console.error("Failed to save chunk to file:", error)
@@ -228,6 +226,21 @@ const MeetingScreen = () => {
   //   }
   // }, [])
 
+  const removeFileIfExisted = async () => {
+    const filePath = `${RNFS.DocumentDirectoryPath}/recording-${roomId}.h264`
+    try {
+      const fileExists = await RNFS.exists(filePath)
+      if (fileExists) {
+        await RNFS.unlink(filePath)
+        console.log("Recording file deleted:", filePath)
+      }
+    } catch (error) {
+      console.warn("Error stopping recorder or file not found.", error)
+    } finally {
+      return
+    }
+  }
+
   const callTopActions = [
     {
       name: "swapCamera",
@@ -254,8 +267,10 @@ const MeetingScreen = () => {
           stopRecording()
           onStopRecord()
         } else {
-          startRecording()
-          onStartRecord()
+          removeFileIfExisted().finally(async () => {
+            await startRecording()
+            onStartRecord()
+          })
         }
       },
       style: { opacity: isRecording ? 1 : 0.5 },
