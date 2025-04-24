@@ -68,6 +68,7 @@ const LoginScreen = () => {
         routes: [{ name: initialCheck }],
       })
     } catch (error) {
+      console.log(error, 'error handleLogin');
       const { setErrors } = formikRef.current
       setErrors({ email: t("InvalidEmailOrPassword") })
     }

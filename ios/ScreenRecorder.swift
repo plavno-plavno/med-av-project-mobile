@@ -1,121 +1,220 @@
 import Foundation
 import ReplayKit
-import React
+import VideoToolbox
 
 @objc(ScreenRecorder)
 class ScreenRecorder: RCTEventEmitter {
-
+    private var videoChunkSize: Int = 1 * 1024 * 1024
+    private var compressionSession: VTCompressionSession?
     private var isRecording = false
-    private var chunkSize: Int = 1024 * 1024 // Default chunk size: 1 MB
-    private var accumulator = Data() // Accumulate video data
-    private var frameCount = 0
-    private let frameSkip = 3 // Skip every 3 frames to reduce processing
+    private var frameCount: Int64 = 0
 
-    override func supportedEvents() -> [String]! {
-        print("Supported events requested")
-        return ["onVideoChunk"]
+    // Persistent NAL buffer for video frames
+    private var nalUnitAccumulator = Data()
+
+    override static func requiresMainQueueSetup() -> Bool { return true }
+    override func supportedEvents() -> [String]! { return ["onVideoChunk"] }
+
+    @objc(setChunkSize:)
+    func setChunkSize(_ size: NSNumber) {
+        videoChunkSize = size.intValue
+        print("[iOS] videoChunkSize set to \(videoChunkSize)")
     }
 
-    // Встановлення розміру чанку
-    @objc func setChunkSize(_ size: Int) {
-        chunkSize = size
-        print("Chunk size set to \(chunkSize) bytes")
-    }
-
-    // Початок запису та збору чанків
-    @objc func startRecording(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-        if isRecording {
-            reject("ALREADY_RECORDING", "Recording is already in progress", nil)
+    @objc(startRecording:rejecter:)
+    func startRecording(_ resolve: @escaping RCTPromiseResolveBlock,
+                        rejecter reject: @escaping RCTPromiseRejectBlock) {
+        guard !isRecording else {
+            reject("ALREADY_RECORDING", "Already recording", nil)
             return
         }
 
         isRecording = true
+        frameCount = 0
+        nalUnitAccumulator = Data()
+        setupCompressionSession()
+
         let recorder = RPScreenRecorder.shared()
-        recorder.isMicrophoneEnabled = true // Увімкнути запис мікрофона, якщо потрібно
-
-        recorder.startCapture(handler: { [weak self] (sampleBuffer, bufferType, error) in
-            guard let self = self else { return }
-
-            if let error = error {
-                print("Capture error: \(error.localizedDescription)")
-                return
+        recorder.isMicrophoneEnabled = false  // Ensure no audio is recorded
+        recorder.startCapture(
+            handler: { [weak self] sampleBuffer, type, error in
+                guard let self = self else { return }
+                if let err = error {
+                    self.isRecording = false
+                    reject("CAPTURE_ERROR", err.localizedDescription, err)
+                    return
+                }
+                guard type == .video, CMSampleBufferDataIsReady(sampleBuffer) else { return }
+                self.encodeFrame(sampleBuffer)
+            },
+            completionHandler: { error in
+                if let err = error {
+                    reject("START_FAILED", err.localizedDescription, err)
+                } else {
+                    resolve(nil)
+                }
             }
-
-            if bufferType == .video {
-                self.processVideoSample(sampleBuffer)
-            }
-        }, completionHandler: { error in
-            if let error = error {
-                reject("START_CAPTURE_FAILED", error.localizedDescription, error)
-            } else {
-                resolve("Recording started")
-            }
-        })
+        )
     }
 
-    // Зупинка запису
-    @objc func stopRecording(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    @objc(stopRecording:rejecter:)
+    func stopRecording(_ resolve: @escaping RCTPromiseResolveBlock,
+                       rejecter reject: @escaping RCTPromiseRejectBlock) {
         guard isRecording else {
-            reject("NOT_RECORDING", "No recording in progress", nil)
+            reject("NOT_RECORDING", "No active recording", nil)
             return
         }
 
-        let recorder = RPScreenRecorder.shared()
-        recorder.stopCapture { [weak self] error in
-            guard let self = self else { return }
-
-            self.isRecording = false
-            if let error = error {
-                reject("STOP_CAPTURE_FAILED", error.localizedDescription, error)
+        isRecording = false
+        RPScreenRecorder.shared().stopCapture { error in
+            if let err = error {
+                reject("STOP_FAILED", err.localizedDescription, err)
             } else {
-                resolve("Recording stopped")
+                resolve(nil)
             }
         }
-    }
 
-    // Обробка відео-кадрів
-    private func processVideoSample(_ sampleBuffer: CMSampleBuffer) {
-        frameCount += 1
-        if frameCount % frameSkip != 0 {
-            return // Пропускаємо кожен N-ий кадр
+        // Clean up compression session and send remaining chunks
+        if let session = compressionSession {
+            VTCompressionSessionCompleteFrames(session, untilPresentationTimeStamp: .invalid)
+            VTCompressionSessionInvalidate(session)
+            compressionSession = nil
         }
 
-        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-            print("Failed to get pixel buffer")
+        if !nalUnitAccumulator.isEmpty {
+            let b64 = nalUnitAccumulator.base64EncodedString()
+            sendEvent(withName: "onVideoChunk", body: ["chunk": b64])
+            nalUnitAccumulator = Data()
+        }
+    }
+
+    private func setupCompressionSession() {
+        let width: Int32 = 1280
+        let height: Int32 = 720
+        var session: VTCompressionSession?
+        let status = VTCompressionSessionCreate(
+            allocator: nil,
+            width: width,
+            height: height,
+            codecType: kCMVideoCodecType_H264,
+            encoderSpecification: nil,
+            imageBufferAttributes: nil,
+            compressedDataAllocator: nil,
+            outputCallback: compressionOutputCallback,
+            refcon: UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque()),
+            compressionSessionOut: &session
+        )
+        guard status == noErr, let enc = session else {
+            NSLog("❌ VTCompressionSessionCreate failed: \(status)")
             return
         }
+        compressionSession = enc
 
-        if let compressedData = convertPixelBufferToJPEGData(pixelBuffer) {
-            accumulator.append(compressedData)
+        let props: [(CFString, CFTypeRef)] = [
+            (kVTCompressionPropertyKey_RealTime, kCFBooleanTrue),
+            (kVTCompressionPropertyKey_ExpectedFrameRate, 30 as CFTypeRef),
+            (kVTCompressionPropertyKey_MaxKeyFrameInterval, 30 as CFTypeRef),
+            (kVTCompressionPropertyKey_AverageBitRate, 6_000_000 as CFTypeRef),
+            (kVTCompressionPropertyKey_ProfileLevel, kVTProfileLevel_H264_High_3_1),
+            (kVTCompressionPropertyKey_AllowFrameReordering, kCFBooleanFalse),
+            (kVTCompressionPropertyKey_PixelAspectRatio, [
+              kCMFormatDescriptionKey_PixelAspectRatioHorizontalSpacing: 1,
+              kCMFormatDescriptionKey_PixelAspectRatioVerticalSpacing: 1
+          ]  as CFDictionary),
+        ]
+        for (key, val) in props {
+            VTSessionSetProperty(enc, key: key, value: val)
         }
 
-        print("Accumulated data size: \(accumulator.count) bytes")
+        VTCompressionSessionPrepareToEncodeFrames(enc)
+    }
 
-        if accumulator.count >= chunkSize {
-            let chunk = accumulator.prefix(chunkSize)
-            sendChunkToJS(chunk)
-            accumulator.removeFirst(chunkSize)
-            print("Chunk sent: \(chunk.count) bytes, remaining: \(accumulator.count) bytes")
+    private func encodeFrame(_ sampleBuffer: CMSampleBuffer) {
+        guard let imgBuf = CMSampleBufferGetImageBuffer(sampleBuffer),
+              let session = compressionSession else { return }
+
+        // Use current time as timestamp for frame
+        let timestamp = CMClockGetTime(CMClockGetHostTimeClock())
+
+        var flags = VTEncodeInfoFlags()
+        let status = VTCompressionSessionEncodeFrame(
+            session,
+            imageBuffer: imgBuf,
+            presentationTimeStamp: timestamp,
+            duration: .invalid, // optional, can also calculate if you want constant frame time
+            frameProperties: nil,
+            sourceFrameRefcon: nil,
+            infoFlagsOut: &flags
+        )
+        if status != noErr {
+            NSLog("❌ EncodeFrame failed: \(status)")
         }
     }
 
-    // Конвертація CVPixelBuffer у стиснутий JPEG
-    private func convertPixelBufferToJPEGData(_ pixelBuffer: CVPixelBuffer) -> Data? {
-        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-        let context = CIContext()
-        
-        guard let jpegData = context.jpegRepresentation(of: ciImage, colorSpace: CGColorSpaceCreateDeviceRGB(), options: [:]) else {
-            print("Failed to convert to JPEG")
-            return nil
+    private let compressionOutputCallback: VTCompressionOutputCallback = { refCon, _, status, _, sb in
+        guard status == noErr,
+              let sampleBuffer = sb,
+              CMSampleBufferDataIsReady(sampleBuffer),
+              let blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer)
+        else { return }
+
+        let recorder = Unmanaged<ScreenRecorder>.fromOpaque(refCon!).takeUnretainedValue()
+
+        var totalLength: Int = 0
+        var dataPointer: UnsafeMutablePointer<Int8>?
+        let status = CMBlockBufferGetDataPointer(blockBuffer, atOffset: 0, lengthAtOffsetOut: nil, totalLengthOut: &totalLength, dataPointerOut: &dataPointer)
+        guard status == kCMBlockBufferNoErr, let dataPtr = dataPointer else { return }
+
+        var nalUnitData = Data()
+
+        // Check for keyframe to prepend SPS/PPS
+        let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false)
+        var isKeyFrame = true
+        if let arr = attachments as? [CFDictionary],
+           let attachment = arr.first,
+           let val = CFDictionaryGetValue(attachment, Unmanaged.passUnretained(kCMSampleAttachmentKey_NotSync).toOpaque()) {
+            isKeyFrame = CFBooleanGetValue(unsafeBitCast(val, to: CFBoolean.self)) == false
         }
-        
-        return jpegData
+
+        if isKeyFrame, let desc = CMSampleBufferGetFormatDescription(sampleBuffer) {
+            var spsPointer: UnsafePointer<UInt8>?, ppsPointer: UnsafePointer<UInt8>?
+            var spsSize = 0, ppsSize = 0, spsCount = 0, ppsCount = 0
+
+            CMVideoFormatDescriptionGetH264ParameterSetAtIndex(desc, parameterSetIndex: 0, parameterSetPointerOut: &spsPointer, parameterSetSizeOut: &spsSize, parameterSetCountOut: &spsCount, nalUnitHeaderLengthOut: nil)
+            CMVideoFormatDescriptionGetH264ParameterSetAtIndex(desc, parameterSetIndex: 1, parameterSetPointerOut: &ppsPointer, parameterSetSizeOut: &ppsSize, parameterSetCountOut: &ppsCount, nalUnitHeaderLengthOut: nil)
+
+            if let sps = spsPointer, let pps = ppsPointer {
+                nalUnitData.append(contentsOf: [0x00, 0x00, 0x00, 0x01])
+                nalUnitData.append(UnsafeBufferPointer(start: sps, count: spsSize))
+                nalUnitData.append(contentsOf: [0x00, 0x00, 0x00, 0x01])
+                nalUnitData.append(UnsafeBufferPointer(start: pps, count: ppsSize))
+            }
+        }
+
+        // Add NAL units with start code
+        let avcHeaderLength = 4
+        var offset = 0
+        while offset < totalLength {
+            var nalLength: UInt32 = 0
+            memcpy(&nalLength, dataPtr + offset, avcHeaderLength)
+            nalLength = CFSwapInt32BigToHost(nalLength)
+
+            nalUnitData.append([0x00, 0x00, 0x00, 0x01], count: 4)
+            nalUnitData.append(Data(bytes: dataPtr + offset + avcHeaderLength, count: Int(nalLength)))
+            offset += avcHeaderLength + Int(nalLength)
+        }
+
+        recorder.sendVideoChunk(nalUnitData)
     }
 
-    // Відправка чанку у JS
-    private func sendChunkToJS(_ chunk: Data) {
-        let base64Chunk = chunk.base64EncodedString()
-        print("Sending chunk to JS: \(base64Chunk.prefix(50))...") // Логуємо перші 50 символів
-        self.sendEvent(withName: "onVideoChunk", body: ["chunk": base64Chunk])
+    private func sendVideoChunk(_ data: Data) {
+        nalUnitAccumulator.append(data)
+
+        while nalUnitAccumulator.count >= videoChunkSize {
+            let chunk = nalUnitAccumulator.prefix(videoChunkSize)
+            let b64 = chunk.base64EncodedString()
+            sendEvent(withName: "onVideoChunk", body: ["chunk": b64])
+            nalUnitAccumulator.removeFirst(videoChunkSize)
+        }
     }
 }

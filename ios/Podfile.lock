@@ -1617,7 +1617,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-webrtc (124.0.4):
+  - react-native-webrtc (124.0.5):
     - JitsiWebRTC (~> 124.0.0)
     - React-Core
   - react-native-webview (13.13.2):
@@ -2590,7 +2590,7 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: d6406c2adbd41b2e09ab1c386781dc1c81a90919
   react-native-splash-screen: 4312f786b13a81b5169ef346d76d33bc0c6dc457
   react-native-video: f8c4b39b3b5db30a113d69e376c2ca08f7d90a98
-  react-native-webrtc: 48295e7228279470c4f5acb38570e170723bd3b2
+  react-native-webrtc: 0f1c94069ff1eb9d8fb1618c2dc71f73542c8cfa
   react-native-webview: 08a61d1d92fee7875c8702e70f7da1d706a9d2dc
   React-nativeconfig: f7ab6c152e780b99a8c17448f2d99cf5f69a2311
   React-NativeModulesApple: 70600f7edfc2c2a01e39ab13a20fd59f4c60df0b
@@ -2641,4 +2641,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: d65ef309ca336b1aada86bcec24642e7edb39d3b
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

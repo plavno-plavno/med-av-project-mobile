@@ -229,6 +229,7 @@ const VideoGrid = ({
             streamURL={sharedScreenStream.toURL()}
             style={[helpers.width100Percent, helpers.height100Percent]}
             objectFit="cover"
+            zOrder={0}
           />
           <Canvas ref={canvasRef} style={styles.canvas} />
         </View>

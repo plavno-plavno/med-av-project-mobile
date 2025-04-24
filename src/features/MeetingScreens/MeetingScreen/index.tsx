@@ -20,13 +20,16 @@ import Subtitles from "src/components/Subtitles"
 import Loading from "src/components/Loading"
 import NewJoinRequestModal from "src/modals/MeetingModals/NewJoinRequestModal"
 import { useMeetingAccess } from "src/hooks/useMeetingAccess"
+import { useAudioRecorder } from "src/hooks/useAudioRecorder"
+import { useScreenRecorder } from "src/hooks/useScreenRecorder"
 import RNFS from "react-native-fs"
-import Share from "react-native-share"
+import { Buffer } from "buffer"
 import { NativeEventEmitter, NativeModules } from "react-native"
 import { useScreenSharing } from "src/hooks/useScreenSharing"
-import { useMeetingRecording } from "src/hooks/useMeetingRecording"
 
 const { ScreenRecorder } = NativeModules
+
+// const recordingUrl = Config.SOCKET_RECORDING_URL
 
 type ParamList = {
   Detail: {
@@ -45,6 +48,30 @@ const MeetingScreen = () => {
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const { isCreatorMode, title, hash, instanceMeetingOwner, eventId } =
     route.params
+
+  const { onStartRecord, onStopRecord } = useAudioRecorder()
+
+  const sendChunkToServer = async (base64Chunk: any) => {
+    try {
+      await saveChunkToFile(base64Chunk)
+      // if (wsRef.current?.readyState === WebSocket.OPEN) {
+      //   wsRef.current.send(
+      //     JSON.stringify({
+      //       fileName: recordingNameRef.current,
+      //       fileExtension: "mp4",
+      //       chunks: base64Chunk,
+      //       action: "stream",
+      //     })
+      //   )
+      //   console.log('chunk sent');
+      // }
+    } catch (error) {
+      console.error("Failed to send chunk:", error)
+    }
+  }
+  const { startRecording, stopRecording, isRecording } = useScreenRecorder({
+    onChunkReceived: sendChunkToServer,
+  })
   const {
     socketRef,
     localStream,
@@ -80,6 +107,9 @@ const MeetingScreen = () => {
   const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
   const [meInvited, setMeInvited] = useState<boolean | null>(null)
 
+  const recordingNameRef = useRef<any>()
+  const startTimeRef = useRef<any>()
+
   const {
     joinEvent,
     requestJoinEvent,
@@ -101,19 +131,6 @@ const MeetingScreen = () => {
     sharingOwner,
     sharedScreen,
   } = useScreenSharing(roomId!);
-
-  const {
-    startRecording,
-    stopRecording,
-    isRecording,
-    updatePeerConnections,
-  } = useMeetingRecording(roomId!)
-
-  useEffect(() => {
-    if(peerConnection){
-      updatePeerConnections(peerConnection)
-    }
-  }, [peerConnection])
 
   const handleResponse = async (accepted: boolean) => {
     if (!newUser?.socketId || !eventId) {
@@ -150,61 +167,83 @@ const MeetingScreen = () => {
     sheetParticipantsRef.current?.open()
   }
 
-  const [recordingChunks, setRecordingChunks] = useState<string[]>([]);
-
-  const saveRecordingToFile = async () => {
+  const saveChunkToFile = async (chunk: any) => {
+    console.log("saveChunkToFile")
     try {
-      const combinedChunks = recordingChunks.map(chunk => atob(chunk)).join('');
-      const path = `${RNFS.DocumentDirectoryPath}/recording.video.raw`;
-      await RNFS.writeFile(path, combinedChunks, 'utf8');
-      console.log("Recording saved to file at:", path);
+      const filePath = `${RNFS.DocumentDirectoryPath}/recording-${roomId}.h264`
+      const binary = Buffer.from(chunk, "base64") // convert base64 to binary
+      const fileExists = await RNFS.exists(filePath)
+      if (fileExists) {
+        // Append to file instead of overwriting
+        await RNFS.appendFile(filePath, binary.toString("base64"), "base64")
+      } else {
+        // If file doesn't exist, create a new file
+        await RNFS.writeFile(filePath, binary.toString("base64"), "base64")
+      }
 
-      await Share.open({
-        url: `file://${path}`,
-        title: "Save or Share",
-      }).catch((error) => console.error("Error sharing file:", error));
+      // Get file stats to check the size
+      const statResult = await RNFS.stat(filePath)
+      console.log("File size:", statResult.size)
 
+      console.log(`Chunk saved to file at: ${filePath}`)
     } catch (error) {
-      console.error("Failed to save recording to file:", error);
+      console.error("Failed to save chunk to file:", error)
     }
-  };
+  }
 
-  const eventEmitter = useRef(new NativeEventEmitter(ScreenRecorder));
+  // useEffect(() => {
+  //   let reconnectTimeout: NodeJS.Timeout | null = null
 
-  useEffect(() => {
-    const chunkListener = eventEmitter.current.addListener("onVideoChunk", ({ chunk }) => {
-      console.log("Received chunk:", chunk);
-      setRecordingChunks((prevChunks) => [...prevChunks, chunk]);
-    });
-
-    return () => {
-      chunkListener.remove();
-    };
-  }, []);
-
-  // const startRecording = async () => {
-  //   try {
-  //     await ScreenRecorder.startRecording();
-  //     console.log("Recording started");
-  //     setIsRecording(true);
-  //     setRecordingChunks([]);
-  //   } catch (error) {
-  //     console.error("Failed to start recording:", error);
-  //   }
-  // };
-
-  // const stopRecording = async () => {
-  //   try {
-  //     if (ScreenRecorder && isRecording) {
-  //       await ScreenRecorder.stopRecording();
-  //       console.log("Recording stopped");
-  //       setIsRecording(false);
-  //       saveRecordingToFile();
+  //   const connectWebSocket = () => {
+  //     if (wsRef.current) {
+  //       wsRef.current.close()
   //     }
-  //   } catch (error) {
-  //     console.error("Failed to stop recording:", error);
+
+  //     wsRef.current = new WebSocket(recordingUrl!)
+
+  //     wsRef.current.onopen = () => {
+  //       console.log("WebSocket connected")
+  //       if (reconnectTimeout) {
+  //         clearTimeout(reconnectTimeout)
+  //         reconnectTimeout = null
+  //       }
+  //     }
+
+  //     wsRef.current.onerror = (error) => {
+  //       console.error("WebSocket error:", error)
+  //       console.log("WebSocket connection error. Reconnecting...")
+  //       if (!reconnectTimeout) {
+  //         reconnectTimeout = setTimeout(connectWebSocket, 3000)
+  //       }
+  //     }
+
+  //     wsRef.current.onclose = () => {
+  //       console.warn("WebSocket connection closed")
+  //     }
   //   }
-  // };
+
+  //   connectWebSocket()
+
+  //   return () => {
+  //     if (reconnectTimeout) clearTimeout(reconnectTimeout)
+  //     wsRef.current?.close()
+  //   }
+  // }, [])
+
+  const removeFileIfExisted = async () => {
+    const filePath = `${RNFS.DocumentDirectoryPath}/recording-${roomId}.h264`
+    try {
+      const fileExists = await RNFS.exists(filePath)
+      if (fileExists) {
+        await RNFS.unlink(filePath)
+        console.log("Recording file deleted:", filePath)
+      }
+    } catch (error) {
+      console.warn("Error stopping recorder or file not found.", error)
+    } finally {
+      return
+    }
+  }
 
   const callTopActions = [
     {
@@ -230,8 +269,12 @@ const MeetingScreen = () => {
 
         if (isRecording) {
           stopRecording()
+          onStopRecord()
         } else {
-          startRecording()
+          removeFileIfExisted().finally(async () => {
+            await startRecording()
+            onStartRecord()
+          })
         }
       },
       style: { opacity: isRecording ? 1 : 0.5 },
