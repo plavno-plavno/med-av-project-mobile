@@ -23,6 +23,9 @@ import { useMeetingAccess } from "src/hooks/useMeetingAccess"
 import RNFS from "react-native-fs"
 import Share from "react-native-share"
 import { NativeEventEmitter, NativeModules } from "react-native"
+import { useScreenSharing } from "src/hooks/useScreenSharing"
+import { useMeetingRecording } from "src/hooks/useMeetingRecording"
+
 const { ScreenRecorder } = NativeModules
 
 type ParamList = {
@@ -61,13 +64,11 @@ const MeetingScreen = () => {
     localUserId,
     localUserSocketId,
     subtitlesQueue,
-    sharedScreen,
     wsRef,
     endCall,
     toggleMedia,
     switchCamera,
     toggleSpeaker,
-    sharingOwner,
     sendMessage,
     handleChangedRoomLanguage,
     points,
@@ -75,7 +76,6 @@ const MeetingScreen = () => {
     setClearCanvas,
     speechLanguage,
   } = useWebRtc(instanceMeetingOwner!)
-  const [isRecording, setIsRecording] = useState(false)
 
   const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
   const [meInvited, setMeInvited] = useState<boolean | null>(null)
@@ -95,6 +95,25 @@ const MeetingScreen = () => {
     invitedParticipants,
     eventId: eventId!,
   })
+
+  const {
+    isScreenSharing,
+    sharingOwner,
+    sharedScreen,
+  } = useScreenSharing(roomId!);
+
+  const {
+    startRecording,
+    stopRecording,
+    isRecording,
+    updatePeerConnections,
+  } = useMeetingRecording(roomId!)
+
+  useEffect(() => {
+    if(peerConnection){
+      updatePeerConnections(peerConnection)
+    }
+  }, [peerConnection])
 
   const handleResponse = async (accepted: boolean) => {
     if (!newUser?.socketId || !eventId) {
@@ -163,29 +182,29 @@ const MeetingScreen = () => {
     };
   }, []);
 
-  const startRecording = async () => {
-    try {
-      await ScreenRecorder.startRecording();
-      console.log("Recording started");
-      setIsRecording(true);
-      setRecordingChunks([]);
-    } catch (error) {
-      console.error("Failed to start recording:", error);
-    }
-  };
+  // const startRecording = async () => {
+  //   try {
+  //     await ScreenRecorder.startRecording();
+  //     console.log("Recording started");
+  //     setIsRecording(true);
+  //     setRecordingChunks([]);
+  //   } catch (error) {
+  //     console.error("Failed to start recording:", error);
+  //   }
+  // };
 
-  const stopRecording = async () => {
-    try {
-      if (ScreenRecorder && isRecording) {
-        await ScreenRecorder.stopRecording();
-        console.log("Recording stopped");
-        setIsRecording(false);
-        saveRecordingToFile();
-      }
-    } catch (error) {
-      console.error("Failed to stop recording:", error);
-    }
-  };
+  // const stopRecording = async () => {
+  //   try {
+  //     if (ScreenRecorder && isRecording) {
+  //       await ScreenRecorder.stopRecording();
+  //       console.log("Recording stopped");
+  //       setIsRecording(false);
+  //       saveRecordingToFile();
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to stop recording:", error);
+  //   }
+  // };
 
   const callTopActions = [
     {
