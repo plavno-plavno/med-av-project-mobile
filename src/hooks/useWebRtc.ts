@@ -33,6 +33,8 @@ import {
   useScalerFindFreeMachinePairSTTMutation,
 } from "src/api/scalerApi/scalerApi"
 import moment from "moment"
+import { PeerConnectionType, UserInMeeting } from "@utils/meeting"
+import { createPeerConnection } from "@utils/peerConnections"
 
 export type Photo = {
   id: string
@@ -274,14 +276,10 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   const pendingCandidates: RTCIceCandidate[] = []
 
   let isRecording = false
-  const [subtitlesQueue, setSubtitlesQueue] = useState<ISubtitle[]>([])
-  const [sharingOwner, setSharingOwner] = useState<string | null>(null)
+  const [translatedSubtitles, setTranslatedSubtitles] = useState<ISubtitle[]>([])
 
   let collectorAr: Float32Array[] = []
   const screenTrackMidIdRef = useRef<string>()
-  const [sharedScreen, setSharedScreen] = useState<MediaStreamTrack | null>(
-    null
-  )
 
   const speechLanguage = useRef("")
 
@@ -291,6 +289,13 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   const drawChannelRef = useRef<RTCDataChannel | null>(null)
   const [points, setPoints] = useState<Point[]>([])
   const [clearCanvas, setClearCanvas] = useState(false)
+
+  const participantsRef = useRef<UserInMeeting[] | null>(null);
+
+  useEffect(() => {
+    participantsRef.current = participants as any;
+  }, [participants]);
+
 
   useEffect(() => {
     if (localStream) {
@@ -337,7 +342,19 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
           await initializeSocket(rtcUrl)
           socketRef.current = getSocket()
-          peerConnection.current = createPeerConnection()
+          peerConnection.current = createPeerConnection({
+            socketRef,
+            roomId,
+            setRemoteVideoStreams,
+            setRemoteAudioStreams,
+            participantsRef: participantsRef as any,
+            setTranslatedSubtitles: setTranslatedSubtitles as any,
+            messagesChannelRef,
+            drawChannelRef,
+            endCall,
+            startCall,
+            type: PeerConnectionType.USER,
+          });
           setTimeout(() => {
             startCall()
           }, 2000)
@@ -453,16 +470,14 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
   const handleScreenShareJoined = ({ socketId }: { socketId: string }) => {
     setIsScreenShare(true)
-    setSharingOwner(socketId)
   }
 
   const handleStartSharing = ({ socketId }: { socketId: string }) => {
-    setSharingOwner(socketId)
     setIsScreenShare(true)
   }
 
   const handleStopSharing = () => {
-    setSharingOwner(null)
+    // setSharingOwner(null)
     setIsScreenShare(false)
   }
 
@@ -517,93 +532,93 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     }
   }
 
-  const createPeerConnection = () => {
-    if (peerConnection.current) {
-      return peerConnection.current
-    }
-    try {
-      const pc = new RTCPeerConnection(config)
+  // const createPeerConnection = () => {
+  //   if (peerConnection.current) {
+  //     return peerConnection.current
+  //   }
+  //   try {
+  //     const pc = new RTCPeerConnection(config)
 
-      pc.addEventListener("icecandidate", ({ candidate }) => {
-        console.log(candidate, "onIcecandidate")
-        if (candidate) {
-          socketRef.current?.emit("candidate", {
-            candidate,
-            roomId,
-          })
-        }
-      })
-      pc.addEventListener("connectionstatechange", () => {
-        if (pc.connectionState === "failed") {
-          // goBack();
-          console.error(
-            "Connection failed. Consider renegotiating or restarting the connection."
-          )
-        }
-      })
+  //     pc.addEventListener("icecandidate", ({ candidate }) => {
+  //       console.log(candidate, "onIcecandidate")
+  //       if (candidate) {
+  //         socketRef.current?.emit("candidate", {
+  //           candidate,
+  //           roomId,
+  //         })
+  //       }
+  //     })
+  //     pc.addEventListener("connectionstatechange", () => {
+  //       if (pc.connectionState === "failed") {
+  //         // goBack();
+  //         console.error(
+  //           "Connection failed. Consider renegotiating or restarting the connection."
+  //         )
+  //       }
+  //     })
 
-      pc.addEventListener("datachannel", (event) => {
-        const { channel } = event
+  //     pc.addEventListener("datachannel", (event) => {
+  //       const { channel } = event
 
-        if (channel.label.startsWith(DataChannelNames.Messages)) {
-          messagesChannelRef.current = channel
-          setupDataChannel(messagesChannelRef.current, "Messages")
-        } else if (channel.label.startsWith(DataChannelNames.Draw)) {
-          drawChannelRef.current = channel
-          setupDataChannel(drawChannelRef.current, "Draw")
-        }
-      })
+  //       if (channel.label.startsWith(DataChannelNames.Messages)) {
+  //         messagesChannelRef.current = channel
+  //         setupDataChannel(messagesChannelRef.current, "Messages")
+  //       } else if (channel.label.startsWith(DataChannelNames.Draw)) {
+  //         drawChannelRef.current = channel
+  //         setupDataChannel(drawChannelRef.current, "Draw")
+  //       }
+  //     })
 
-      pc.addEventListener("track", (event) => {
-        console.log("Receive track in ontrack", event)
-        const midId = event.transceiver.mid || ""
-        if (event?.track?.kind === "video") {
-          if (midId === screenTrackMidIdRef.current) {
-            setSharedScreen(event.track)
-            return
-          }
+  //     pc.addEventListener("track", (event) => {
+  //       console.log("Receive track in ontrack", event)
+  //       const midId = event.transceiver.mid || ""
+  //       if (event?.track?.kind === "video") {
+  //         if (midId === screenTrackMidIdRef.current) {
+  //           setSharedScreen(event.track)
+  //           return
+  //         }
 
-          setRemoteVideoStreams((prevStreams) => {
-            const exists = prevStreams.some(
-              (stream) => stream.videoTrack.id === event.track?.id
-            )
+  //         setRemoteVideoStreams((prevStreams) => {
+  //           const exists = prevStreams.some(
+  //             (stream) => stream.videoTrack.id === event.track?.id
+  //           )
 
-            if (!exists && event.track) {
-              const newVideoStream: VideoStream = {
-                videoTrack: event.track,
-                midId: midId,
-              }
+  //           if (!exists && event.track) {
+  //             const newVideoStream: VideoStream = {
+  //               videoTrack: event.track,
+  //               midId: midId,
+  //             }
 
-              return [...prevStreams, newVideoStream]
-            }
+  //             return [...prevStreams, newVideoStream]
+  //           }
 
-            return prevStreams
-          })
-        } else if (event.track?.kind === "audio") {
-          setRemoteAudioStreams((prevStreams) => {
-            const exists = prevStreams.some(
-              (stream) => stream.audioTrack.id === event?.track?.id
-            )
+  //           return prevStreams
+  //         })
+  //       } else if (event.track?.kind === "audio") {
+  //         setRemoteAudioStreams((prevStreams) => {
+  //           const exists = prevStreams.some(
+  //             (stream) => stream.audioTrack.id === event?.track?.id
+  //           )
 
-            if (!exists && event?.track) {
-              const newAudioStream: AudioStream = {
-                audioTrack: event?.track,
-                midId: midId,
-              }
+  //           if (!exists && event?.track) {
+  //             const newAudioStream: AudioStream = {
+  //               audioTrack: event?.track,
+  //               midId: midId,
+  //             }
 
-              return [...prevStreams, newAudioStream]
-            }
+  //             return [...prevStreams, newAudioStream]
+  //           }
 
-            return prevStreams
-          })
-        }
-      })
-      return pc
-    } catch (error) {
-      console.error("Failed to create PeerConnection:", error)
-      throw new Error("Could not create RTCPeerConnection")
-    }
-  }
+  //           return prevStreams
+  //         })
+  //       }
+  //     })
+  //     return pc
+  //   } catch (error) {
+  //     console.error("Failed to create PeerConnection:", error)
+  //     throw new Error("Could not create RTCPeerConnection")
+  //   }
+  // }
 
   const handleSocketError = ({ error }: any) => {
     console.log("Socket error:", error.message)
@@ -768,7 +783,19 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
   const handleOffer = async ({ sdp }: { sdp: RTCSessionDescription }) => {
     if (!peerConnection.current) {
-      peerConnection.current = createPeerConnection()
+      peerConnection.current = createPeerConnection({
+        socketRef,
+        roomId,
+        setRemoteVideoStreams,
+        setRemoteAudioStreams,
+        participantsRef: participantsRef as any,
+        setTranslatedSubtitles: setTranslatedSubtitles as any,
+        messagesChannelRef,
+        drawChannelRef,
+        endCall,
+        startCall,
+        type: PeerConnectionType.USER,
+      });
     }
     try {
       RETRY_ATTEMPT++
@@ -878,7 +905,19 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
       }
 
       if (!peerConnection.current) {
-        peerConnection.current = createPeerConnection()
+        peerConnection.current = createPeerConnection({
+          socketRef,
+          roomId,
+          setRemoteVideoStreams,
+          setRemoteAudioStreams,
+          participantsRef: participantsRef as any,
+          setTranslatedSubtitles: setTranslatedSubtitles as any,
+          messagesChannelRef,
+          drawChannelRef,
+          endCall,
+          startCall,
+          type: PeerConnectionType.USER,
+        });
       }
 
       stream.getTracks().forEach((track) => {
@@ -1085,9 +1124,8 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   }
 
   const handlePeerDataChannelMessage = (event: any) => {
-    // console.log("handlePeerDataChannelMessage: ", event)
     const data = JSON.parse(event)
-    setSubtitlesQueue(handleSubtitles(data))
+    setTranslatedSubtitles(handleSubtitles(data))
   }
 
   useEffect(() => {
@@ -1336,8 +1374,8 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     usersVideoTrackToIdMap,
     peerConnection: peerConnection.current,
     rtcError: error,
-    subtitlesQueue,
-    sharedScreen,
+    subtitlesQueue: translatedSubtitles,
+    // sharedScreen,
 
     sttUrl: sttUrlRef,
     localUserId: userRefId.current,
@@ -1353,7 +1391,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     toggleSpeaker,
     switchCamera,
     setLocalStream,
-    sharingOwner,
+    // sharingOwner,
 
     points,
     clearCanvas,
