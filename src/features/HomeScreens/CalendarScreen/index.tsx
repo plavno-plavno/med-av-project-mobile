@@ -208,6 +208,16 @@ const CalendarScreen = () => {
     }
   }
 
+  if (isCalendarEventsLoading) {
+    return (
+      <ActivityIndicator
+        size="large"
+        color={colors.lightAqua}
+        style={{ top: screenHeight * 0.45 }}
+      />
+    )
+  }
+
   return (
     <>
       <ScreenWrapper childrenStyle={styles.container} isCalendarScreen>
@@ -221,52 +231,43 @@ const CalendarScreen = () => {
           }
           contentContainerStyle={{ flexGrow: 1 }}
         >
-          {isCalendarEventsLoading ? (
-            <ActivityIndicator
-              size="large"
-              style={{ top: moderateScale(250) }}
-            />
-          ) : (
-            <Calendar
-              events={transformedEvents}
-              height={screenHeight}
-              mode="day"
-              ampm
-              swipeEnabled={false} // Важливо!
-              overlapOffset={screenWidth * 0.1}
-              date={new Date(selectedDay)}
-              scrollOffsetMinutes={scrollOffsetMinutes}
-              renderEvent={renderEvent}
-              headerContainerStyle={{ display: "none" }}
-              // renderHeader={() => <WeekDays />}
-              hourStyle={styles.hourStyle}
-              eventCellTextColor={colors.ghostWhite}
-              eventCellStyle={(event) => {
-                const participantStatus = findParticipantStatusByEmail(
-                  String(authMeData?.email),
-                  event
-                )
-                return [
-                  styles.cellStyle,
-                  {
-                    backgroundColor:
-                      participantStatus === "accept"
-                        ? event.color
-                        : colors.white,
-                    borderWidth: 1,
-                    borderColor:
-                      participantStatus === "accept"
-                        ? event.color
-                        : participantStatus === "decline"
-                        ? colors.placeholder
-                        : event.color,
-                  },
-                ]
-              }}
-              onPressCell={(e) => handleCreateEvent(e as any)}
-              onPressEvent={onPressEvent}
-            />
-          )}
+          <Calendar
+            events={transformedEvents}
+            height={screenHeight}
+            mode="day"
+            ampm
+            swipeEnabled={false} // Важливо!
+            overlapOffset={screenWidth * 0.1}
+            date={new Date(selectedDay)}
+            scrollOffsetMinutes={scrollOffsetMinutes}
+            renderEvent={renderEvent}
+            headerContainerStyle={{ display: "none" }}
+            // renderHeader={() => <WeekDays />}
+            hourStyle={styles.hourStyle}
+            eventCellTextColor={colors.ghostWhite}
+            eventCellStyle={(event) => {
+              const participantStatus = findParticipantStatusByEmail(
+                String(authMeData?.email),
+                event
+              )
+              return [
+                styles.cellStyle,
+                {
+                  backgroundColor:
+                    participantStatus === "accept" ? event.color : colors.white,
+                  borderWidth: 1,
+                  borderColor:
+                    participantStatus === "accept"
+                      ? event.color
+                      : participantStatus === "decline"
+                      ? colors.placeholder
+                      : event.color,
+                },
+              ]
+            }}
+            onPressCell={(e) => handleCreateEvent(e as any)}
+            onPressEvent={onPressEvent}
+          />
         </ScrollView>
       </ScreenWrapper>
 

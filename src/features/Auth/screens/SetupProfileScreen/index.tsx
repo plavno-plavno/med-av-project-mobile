@@ -165,7 +165,7 @@ const SetupProfileScreen = () => {
                 lastName: authMeData?.lastName || "",
                 subtitlesLanguage: authMeData?.outputLanguage?.id || "",
                 speechLanguage: authMeData?.inputLanguage?.id || "",
-                gmtDelta: timezone?.gmtDelta || "",
+                gmtDelta: timezone?.id || "",
               }}
               validationSchema={validationSetupProfileSchema}
               onSubmit={handleUpdateProfile}
@@ -232,7 +232,7 @@ const SetupProfileScreen = () => {
                       <CustomInput
                         inputType="dropdown"
                         searchField
-                        dropdownPosition={'top'}
+                        dropdownPosition={"top"}
                         dropdownData={timezoneOptions}
                         label={t("Timezone")}
                         placeholder={t("EnterYourTimezone")}
@@ -248,28 +248,25 @@ const SetupProfileScreen = () => {
                         dropdownData={languagesDropdown || []}
                         label={t("SpeechLanguage")}
                         value={values.speechLanguage.toString()}
-                        dropdownPosition={'top'}
+                        dropdownPosition={"top"}
                         onChangeText={(val) =>
                           handleChange("speechLanguage")(val as string)
                         }
                         onBlur={handleBlur("speechLanguage")}
-                        error={
-                          touched.speechLanguage && errors.speechLanguage
-                        }
+                        error={touched.speechLanguage && errors.speechLanguage}
                       />
                       <CustomInput
                         inputType="dropdown"
                         dropdownData={languagesDropdown || []}
                         label={t("SubtitlesLanguage")}
                         value={values.subtitlesLanguage.toString()}
-                        dropdownPosition={'top'}
+                        dropdownPosition={"top"}
                         onChangeText={(val) =>
                           handleChange("subtitlesLanguage")(val as string)
                         }
                         onBlur={handleBlur("subtitlesLanguage")}
                         error={
-                          touched.subtitlesLanguage &&
-                          errors.subtitlesLanguage
+                          touched.subtitlesLanguage && errors.subtitlesLanguage
                         }
                       />
                     </>

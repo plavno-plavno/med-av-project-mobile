@@ -38,7 +38,7 @@ const Stack = createNativeStackNavigator()
 const Navigation: React.FC = () => {
   const { refetch: authMeRefetch } = useAuthMeQuery()
   const { refetch: timezoneRefetch } = useTimezoneQuery()
-  const isDeepLinkExist = useRef(false);
+  const isDeepLinkExist = useRef(false)
 
   const getRoute = async () => {
     try {
@@ -55,9 +55,9 @@ const Navigation: React.FC = () => {
             ? ScreensEnum.MAIN
             : ScreensEnum.SETUP_PROFILE
 
-            if(!isDeepLinkExist.current){
-              RootNavigation.navigate(initialCheck)
-            }
+        if (!isDeepLinkExist.current) {
+          RootNavigation.navigate(initialCheck)
+        }
       } else {
         RootNavigation.navigate(ScreensEnum.ONBOARDING)
       }
@@ -80,7 +80,7 @@ const Navigation: React.FC = () => {
   useEffect(() => {
     const handleDeepLink = (event: { url: string }) => {
       if (event?.url) {
-        isDeepLinkExist.current = true;
+        isDeepLinkExist.current = true
         const { query, url } = queryString.parseUrl(event.url)
         if (query.redirect) {
           const redirectPath =

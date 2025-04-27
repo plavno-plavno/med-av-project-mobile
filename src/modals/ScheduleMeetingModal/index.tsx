@@ -106,7 +106,6 @@ const ScheduleMeetingModal = ({
     useUpdateEventMutation()
 
   const { data: authMe } = useAuthMeQuery()
-
   const { data: getCalendarRecent } = useGetCalendarRecentQuery()
 
   const defaultTimeStart = handleEventTime
