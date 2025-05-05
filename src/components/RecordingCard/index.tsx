@@ -19,14 +19,16 @@ const RecordingCard = ({
   duration,
   date,
   srt,
-  recordingsDataRefetch,
+  refetch,
+  onDeleted,
 }: {
   id: number
   title: string
   duration: string
   date?: string
   srt?: any
-  recordingsDataRefetch: () => void
+  refetch: () => void
+  onDeleted?: () => void | undefined
 }) => {
   const [removeRecordings] = useRemoveRecordingsMutation()
   const formatDuration = (totalSeconds: number) => {
@@ -49,9 +51,8 @@ const RecordingCard = ({
   const onDeleteRecordingPress = async () => {
     try {
       const res = await removeRecordings({ id }).unwrap()
-      console.log(res, 'res onDeleteRecordingPress');
-      
-      recordingsDataRefetch()
+      onDeleted?.()
+      refetch()
     } catch (error) {
       console.log(error, "error onDeleteRecordingPress")
     }

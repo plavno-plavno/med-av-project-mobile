@@ -18,8 +18,8 @@ const MyRecordsScreen = () => {
 
   const {
     data: recordingsData,
-    isLoading: recordingsLoading,
-    refetch: recordingsDataRefetch,
+    isFetching: recordingsFetching,
+    refetch,
   } = useGetRecordingsQuery({
     limit: 20,
     page,
@@ -35,18 +35,24 @@ const MyRecordsScreen = () => {
     }
   }
 
+  const refreshListAfterDelete = () => {
+    setPage(1)
+    setRecordings([])
+    refetch()
+  }
+
   useFocusEffect(
     useCallback(() => {
-      recordingsDataRefetch()
+      refetch()
     }, [])
   )
 
   useEffect(() => {
-    if (isRecordingsLoadingMore) {
-      setRecordings((prev: IRecordingsEntity[]) => [
-        ...prev,
-        ...recordingsData?.data,
-      ])
+    if (recordingsData?.data) {
+      setRecordings((prev: IRecordingsEntity[]) => {
+        if (page === 1) return recordingsData.data
+        return [...prev, ...recordingsData.data]
+      })
     }
   }, [recordingsData])
   return (
@@ -57,7 +63,7 @@ const MyRecordsScreen = () => {
         isCenterTitle
         keyboardVerticalOffset={isIOS() ? moderateScale(-100) : undefined}
       >
-        {recordingsLoading ? (
+        {recordingsFetching ? (
           <Loading />
         ) : !recordingsData?.data?.length ? (
           <NoData />
@@ -74,7 +80,8 @@ const MyRecordsScreen = () => {
                 title={item?.title}
                 duration={item?.duration}
                 date={item?.createdAt}
-                recordingsDataRefetch={recordingsDataRefetch}
+                onDeleted={refreshListAfterDelete}
+                refetch={refetch}
                 srt={item?.srt}
               />
             )}
