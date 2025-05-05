@@ -49,8 +49,8 @@ const RecordingCard = ({
   const onDeleteRecordingPress = async () => {
     try {
       const res = await removeRecordings({ id }).unwrap()
-      console.log(res, "onDeleteRecordingPressonDeleteRecordingPress")
-
+      console.log(res, 'res onDeleteRecordingPress');
+      
       recordingsDataRefetch()
     } catch (error) {
       console.log(error, "error onDeleteRecordingPress")

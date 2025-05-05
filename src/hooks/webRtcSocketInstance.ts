@@ -25,7 +25,7 @@ export const initializeSocket = async (url: string) => {
   if (socket) return socket;
   scalerSocketURL = isProduction ? url : String(socketURL)
   const token = await getToken();
-  socket = io(scalerSocketURL, {
+    socket = io(scalerSocketURL, {
     transports: ['websocket'],
     auth: { token },
   });

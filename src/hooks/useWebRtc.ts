@@ -35,6 +35,9 @@ import {
 import moment from "moment"
 import { PeerConnectionType, UserInMeeting } from "@utils/meeting"
 import { createPeerConnection } from "@utils/peerConnections"
+import { useAudioRecorder } from "./useAudioRecorder"
+import { Platform } from "react-native"
+import { useScreenRecorder } from "./useScreenRecorder"
 
 export type Photo = {
   id: string
@@ -237,7 +240,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
   const { reset, goBack } = useNavigation<ROUTES>()
   const route = useRoute<RouteProp<ParamList, "Detail">>()
-  const [isMuted, setIsMuted] = useState(route.params?.isMuted)
+  const [isMuted, setIsMuted] = useState(!!route.params?.isMuted)
   const [isVideoOff, setIsVideoOff] = useState(route.params?.isVideoOff)
   const [isScreenShare, setIsScreenShare] = useState(false)
   const [isSpeakerOn, setIsSpeakerOn] = useState(true)
@@ -292,6 +295,45 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
   const participantsRef = useRef<UserInMeeting[] | null>(null);
 
+  const recordingNameRef = useRef<any>()
+  const recordingUrl = useRef('');
+
+  const sendChunkToServer = async (base64Chunk: any, type: string) => {
+    try {
+      // await saveChunkToFile(base64Chunk)
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(
+          JSON.stringify({
+            fileName: recordingNameRef.current,
+            fileExtension: type === 'audio' ? 'raw' : "h264",
+            chunks: base64Chunk,
+            action: "stream",
+            platform: Platform.OS,
+            mediaType: type,
+            streamGroup: recordingNameRef.current,
+          })
+        )
+        console.log(type, 'chunk sent', Platform.OS);
+      }
+    } catch (error) {
+      console.error("Failed to send chunk:", error)
+    }
+  }
+
+  const sendSttAudio = (data: string) => {
+    if(!isMuted){
+      addToBufferAndSend(
+        data,
+        sttLanguageRef.current?.toLowerCase?.() || "en",
+        allLanguagesRef.current
+      )
+    }
+  }
+  const { onStartRecord, onStopRecord } = useAudioRecorder({ sendChunkToServer, sendSttAudio, isMuted })
+  const { startRecording, stopRecording, isRecording: isScreenRecording } = useScreenRecorder({
+    onChunkReceived: sendChunkToServer,
+  })
+
   useEffect(() => {
     participantsRef.current = participants as any;
   }, [participants]);
@@ -324,23 +366,15 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
           const scalerFindFreeMachineData = await scalerFindFreeMachine({
             id: roomId,
           }).unwrap()
-          console.log(
-            scalerFindFreeMachineData,
-            "scalerFindFreeMachineDatascalerFindFreeMachineData"
-          )
           await scalerFindFreeMachinePairSTT({ id: roomId! })
           await new Promise((resolve) => setTimeout(resolve, 2000))
-          const rtcUrl = `https://${
-            scalerFindFreeMachineData?.dns ||
-            scalerFindFreeMachineData?.ip ||
-            scalerFindFreeMachineData?.rtc
-          }${
+          const rtcUrl = `https://${scalerFindFreeMachineData?.ip}${
             scalerFindFreeMachineData?.port
               ? ":" + scalerFindFreeMachineData?.port
               : ":5000"
           }`
-
           await initializeSocket(rtcUrl)
+          recordingUrl.current = `https://${scalerFindFreeMachineData?.ip}:8080`;
           socketRef.current = getSocket()
           peerConnection.current = createPeerConnection({
             socketRef,
@@ -374,10 +408,6 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         socketRef.current.on("answer", handleAnswer)
         socketRef.current.on("candidate", handleCandidate)
         socketRef.current.on("user-joined", handleUserJoined)
-        socketRef.current.on(
-          "sharing-participant-joined",
-          handleScreenShareJoined
-        )
         socketRef.current.on("room-languages", handleRoomLanguages)
         socketRef.current.on("mute-audio", userToggledMedia)
         socketRef.current.on("unmute-audio", userToggledMedia)
@@ -466,10 +496,6 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     channel.addEventListener("error", (error) => {
       console.error(`Data channel [${type}] error`, error)
     })
-  }
-
-  const handleScreenShareJoined = ({ socketId }: { socketId: string }) => {
-    setIsScreenShare(true)
   }
 
   const handleStartSharing = ({ socketId }: { socketId: string }) => {
@@ -693,7 +719,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     }
     peerConnection.current = null
     disconnectSocketEvents()
-    AudioRecord.stop()
+    // AudioRecord.stop()
     peerConnection.current = null
     saveCalendarEventsLog({
       durationInSeconds: moment().unix() - eventStartedTimeRef.current,
@@ -889,6 +915,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
       })
 
       const anySharingOn = participantsInfo.some((p) => p.status.isSharingOn)
+console.log(anySharingOn, 'anySharingOnanySharingOnanySharingOn');
 
       setIsScreenShare(anySharingOn)
 
@@ -1157,9 +1184,9 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
         collectorAr = []
       } else {
         console.warn("WebSocket is not open. Saving audio locally.")
-        AudioRecord.stop().then((_res: string) => {
+        // AudioRecord.stop().then((_res: string) => {
           isRecording = false
-        })
+        // })
       }
     } catch (error) {
       console.error("Error processing and sending audio data:", error)
@@ -1169,7 +1196,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
   const captureAndSendAudio = () => {
     if (isRecording) {
       isRecording = false
-      AudioRecord.stop()
+      // AudioRecord.stop()
     }
     AudioRecord.init({
       sampleRate: 44100, // 16 kHz
@@ -1227,7 +1254,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
       })
     )
     if (!isMuted) {
-      captureAndSendAudio()
+      // captureAndSendAudio()
     }
   }
 
@@ -1255,10 +1282,10 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     if (isAudio) {
       if (!isMuted) {
         console.log("Microphone muted. Stopping recording...")
-        AudioRecord.stop()
+        // AudioRecord.stop()
       } else {
         console.log("Microphone unmuted. Restarting recording...")
-        captureAndSendAudio()
+        // captureAndSendAudio()
       }
       setIsMuted((prev) => !prev)
     } else {
@@ -1397,6 +1424,14 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     clearCanvas,
     setClearCanvas,
     accessMeetingSocketRef,
+
+    recordingUrl,
+    onStartRecord,
+    onStopRecord,
+    startRecording,
+    stopRecording,
+    isScreenRecording,
+    recordingNameRef,
   }
 }
 

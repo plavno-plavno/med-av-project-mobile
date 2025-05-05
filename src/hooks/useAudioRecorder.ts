@@ -6,7 +6,7 @@ import RNFS from "react-native-fs";
 import { requestRecordingPermissions } from "@utils/androidPermissions"
 
 
-export const useAudioRecorder = () => {
+export const useAudioRecorder = ({sendChunkToServer, sendSttAudio}: {sendChunkToServer: (args: any, type: string) => void; sendSttAudio: (data: string) => void;}) => {
     const [timerStart, setTimerStart] = useState<number | null>(null);
 
     // Refs for mutable state
@@ -50,8 +50,12 @@ export const useAudioRecorder = () => {
 
         // Subscribe to PCM "data" events for speech detection
         audioRecorderRef.current?.on("data", data => {
-            const pcmData = Buffer.from(data, "base64");
-            pcmChunks.current.push(pcmData);
+            if(isRecordingRef.current){
+                const pcmData = Buffer.from(data, "base64");
+                sendChunkToServer(pcmData, 'audio')
+            }
+            sendSttAudio(data);
+            // pcmChunks.current.push(pcmData);
 
         });
     };
@@ -95,20 +99,20 @@ export const useAudioRecorder = () => {
 
         const filePath = await audioRecorderRef.current?.stop()!;
         console.log("Stopping recording...", filePath);
-        try {
-            const rawFile = await saveRawPcm()
-            console.log("SAVED TO: ", rawFile)
-        } catch (err) { }
-        // Reset flags and state
-        isRecordingRef.current = false;
-        setTimerStart(null);
+        // try {
+        //     // const rawFile = await saveRawPcm()
+        //     // console.log("SAVED TO: ", rawFile)
+        // } catch (err) { }
+        // // Reset flags and state
+        // isRecordingRef.current = false;
+        // setTimerStart(null);
 
         // Clear the event listener after stop
-        audioRecorderRef.current?.on("data", () => { }); // Remove the listener
+        // audioRecorderRef.current?.on("data", () => { }); // Remove the listener
 
-        const totalRecordingTime = new Date().getTime() - timerStart!;
+        // const totalRecordingTime = new Date().getTime() - timerStart!;
 
-        console.log({ totalRecordingTime });
+        // console.log({ totalRecordingTime });
 
     };
 

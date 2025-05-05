@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react"
-import { FlatList, Text, View } from "react-native"
+import React, { useCallback, useEffect, useRef, useState } from "react"
+import { FlatList, Platform, Text, View } from "react-native"
 import useWebRtc from "src/hooks/useWebRtc"
 import { styles } from "./styles"
 import { Icon } from "@components"
@@ -20,16 +20,10 @@ import Subtitles from "src/components/Subtitles"
 import Loading from "src/components/Loading"
 import NewJoinRequestModal from "src/modals/MeetingModals/NewJoinRequestModal"
 import { useMeetingAccess } from "src/hooks/useMeetingAccess"
-import { useAudioRecorder } from "src/hooks/useAudioRecorder"
-import { useScreenRecorder } from "src/hooks/useScreenRecorder"
 import RNFS from "react-native-fs"
 import { Buffer } from "buffer"
-import { NativeEventEmitter, NativeModules } from "react-native"
+import moment from "moment"
 import { useScreenSharing } from "src/hooks/useScreenSharing"
-
-const { ScreenRecorder } = NativeModules
-
-// const recordingUrl = Config.SOCKET_RECORDING_URL
 
 type ParamList = {
   Detail: {
@@ -49,29 +43,6 @@ const MeetingScreen = () => {
   const { isCreatorMode, title, hash, instanceMeetingOwner, eventId } =
     route.params
 
-  const { onStartRecord, onStopRecord } = useAudioRecorder()
-
-  const sendChunkToServer = async (base64Chunk: any) => {
-    try {
-      await saveChunkToFile(base64Chunk)
-      // if (wsRef.current?.readyState === WebSocket.OPEN) {
-      //   wsRef.current.send(
-      //     JSON.stringify({
-      //       fileName: recordingNameRef.current,
-      //       fileExtension: "mp4",
-      //       chunks: base64Chunk,
-      //       action: "stream",
-      //     })
-      //   )
-      //   console.log('chunk sent');
-      // }
-    } catch (error) {
-      console.error("Failed to send chunk:", error)
-    }
-  }
-  const { startRecording, stopRecording, isRecording } = useScreenRecorder({
-    onChunkReceived: sendChunkToServer,
-  })
   const {
     socketRef,
     localStream,
@@ -102,12 +73,20 @@ const MeetingScreen = () => {
     clearCanvas,
     setClearCanvas,
     speechLanguage,
+    meetId,
+
+    recordingUrl,
+    onStartRecord,
+    onStopRecord,
+    startRecording,
+    stopRecording,
+    isScreenRecording,
+    recordingNameRef,
   } = useWebRtc(instanceMeetingOwner!)
 
   const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
   const [meInvited, setMeInvited] = useState<boolean | null>(null)
 
-  const recordingNameRef = useRef<any>()
   const startTimeRef = useRef<any>()
 
   const {
@@ -191,44 +170,48 @@ const MeetingScreen = () => {
     }
   }
 
-  // useEffect(() => {
-  //   let reconnectTimeout: NodeJS.Timeout | null = null
+  useEffect(() => {
+    if(recordingUrl.current){
+    let reconnectTimeout: NodeJS.Timeout | null = null
 
-  //   const connectWebSocket = () => {
-  //     if (wsRef.current) {
-  //       wsRef.current.close()
-  //     }
+    const connectWebSocket = () => {
+      if (wsRef.current) {
+        wsRef.current.close()
+      }
+      // const recordingUrl = 'http://192.168.0.105:8080' 
+      // const recordingUrl = socketRecordingUrl!
 
-  //     wsRef.current = new WebSocket(recordingUrl!)
+      wsRef.current = new WebSocket(recordingUrl.current)
 
-  //     wsRef.current.onopen = () => {
-  //       console.log("WebSocket connected")
-  //       if (reconnectTimeout) {
-  //         clearTimeout(reconnectTimeout)
-  //         reconnectTimeout = null
-  //       }
-  //     }
+      wsRef.current.onopen = () => {
+        console.log("recording connected")
+        if (reconnectTimeout) {
+          clearTimeout(reconnectTimeout)
+          reconnectTimeout = null
+        }
+      }
 
-  //     wsRef.current.onerror = (error) => {
-  //       console.error("WebSocket error:", error)
-  //       console.log("WebSocket connection error. Reconnecting...")
-  //       if (!reconnectTimeout) {
-  //         reconnectTimeout = setTimeout(connectWebSocket, 3000)
-  //       }
-  //     }
+      wsRef.current.onerror = (error) => {
+        console.error("recording error:", error)
+        console.log("recording connection error. Reconnecting...")
+        if (!reconnectTimeout) {
+          reconnectTimeout = setTimeout(connectWebSocket, 3000)
+        }
+      }
 
-  //     wsRef.current.onclose = () => {
-  //       console.warn("WebSocket connection closed")
-  //     }
-  //   }
+      wsRef.current.onclose = () => {
+        console.warn("recording connection closed")
+      }
+    }
 
-  //   connectWebSocket()
+    connectWebSocket()
 
-  //   return () => {
-  //     if (reconnectTimeout) clearTimeout(reconnectTimeout)
-  //     wsRef.current?.close()
-  //   }
-  // }, [])
+    return () => {
+      if (reconnectTimeout) clearTimeout(reconnectTimeout)
+      wsRef.current?.close()
+    }
+  }
+  }, [recordingUrl.current])
 
   const removeFileIfExisted = async () => {
     const filePath = `${RNFS.DocumentDirectoryPath}/recording-${roomId}.h264`
@@ -245,6 +228,27 @@ const MeetingScreen = () => {
     }
   }
 
+  const handleRecordingButton = useCallback(() => {
+    if (!instanceMeetingOwner) {
+      Toast.show({
+        type: "error",
+        text1: t("OnlyCreatorCanStartScreenRecording"),
+      })
+      return
+    }
+    
+    if (isScreenRecording) {
+      handleStopRecording();
+    } else {
+      removeFileIfExisted().finally(async () => {
+        recordingNameRef.current = `recording-${Date.now()}`;
+        await startRecording()
+        onStartRecord()
+        startTimeRef.current = moment()
+      })
+    }
+  }, [isScreenRecording, instanceMeetingOwner])
+
   const callTopActions = [
     {
       name: "swapCamera",
@@ -258,36 +262,47 @@ const MeetingScreen = () => {
     },
     {
       name: "screenRecordStart",
-      onPress: () => {
-        if (!instanceMeetingOwner) {
-          Toast.show({
-            type: "error",
-            text1: t("OnlyCreatorCanStartScreenRecording"),
-          })
-          return
-        }
-
-        if (isRecording) {
-          stopRecording()
-          onStopRecord()
-        } else {
-          removeFileIfExisted().finally(async () => {
-            await startRecording()
-            onStartRecord()
-          })
-        }
-      },
-      style: { opacity: isRecording ? 1 : 0.5 },
+      onPress: handleRecordingButton,
+      style: { opacity: isScreenRecording ? 1 : 0.5 },
       // style: { opacity: false ? 1 : 0.5 },
     },
   ]
+
+  const handleStopRecording = () => {
+    const endPayload = {
+      fileName: recordingNameRef.current,
+      action: 'end',
+      meetId,
+      userId: localUserId,
+      fileExtension: 'raw',
+      platform: Platform.OS,
+      streamGroup: 'mobile',
+      mediaType: 'both'
+    };
+
+    wsRef.current?.send(JSON.stringify(endPayload));
+    onStopRecord()
+    stopRecording()
+    // const endVideoPayload = {
+    //   fileName: `recording-${roomId}`,
+    //   action: 'end',
+    //   meetId,
+    //   userId: localUserId,
+    //   fileExtension: 'h256',
+    //   platform: Platform.OS,
+    //   duration,
+    //   streamGroup: 'mobile'
+    // };
+
+    // wsRef.current?.send(JSON.stringify(endVideoPayload));
+  }
 
   const callBottomActions = [
     {
       name: "callEnd",
       onPress: () => {
-        if (isRecording) {
-          stopRecording()
+        if (isScreenRecording) {
+          handleStopRecording();
         }
         setTimeout(() => {
           endCall()

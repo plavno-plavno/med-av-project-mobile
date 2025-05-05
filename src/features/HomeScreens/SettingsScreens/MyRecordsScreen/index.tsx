@@ -21,7 +21,7 @@ const MyRecordsScreen = () => {
     isLoading: recordingsLoading,
     refetch: recordingsDataRefetch,
   } = useGetRecordingsQuery({
-    limit: 10,
+    limit: 20,
     page,
   })
 

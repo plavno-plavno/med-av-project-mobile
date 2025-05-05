@@ -125,6 +125,7 @@
   "MyRecordings": "My Recordings",
   "RecordingStarted": "Recording started!",
   "RecordingStopped": "Recording stopped!",
+  "FailedToStartRecording": "Failed to start recording",
   "HelpCenter": "Help Center",
   "ContactSupport": "Contact Support",
   "ContactSupportDescription": "Please use the form below to contact support team. We’ll back to you with answer shortly.",

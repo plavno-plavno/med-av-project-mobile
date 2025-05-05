@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { NativeEventEmitter, NativeModules } from "react-native"
+import Toast from "react-native-toast-message"
 
 const { ScreenRecorder } = NativeModules
 
@@ -8,8 +10,8 @@ type ChunkData = {
 }
 
 type UseScreenRecorderProps = {
-  onChunkReceived?: (chunk: string) => void
-}
+  onChunkReceived?: (chunk: string, type: string) => void;
+};
 
 export const useScreenRecorder = ({
   onChunkReceived,
@@ -18,6 +20,7 @@ export const useScreenRecorder = ({
   const [error, setError] = useState<string | null>(null)
   const chunksRef = useRef<string[]>([])
   const eventEmitterRef = useRef<NativeEventEmitter>()
+  const { t } = useTranslation();
 
   useEffect(() => {
     eventEmitterRef.current = new NativeEventEmitter(ScreenRecorder)
@@ -27,7 +30,7 @@ export const useScreenRecorder = ({
         // Store chunk in internal array
         chunksRef.current.push(data.chunk)
         // Call the callback if provided
-        onChunkReceived?.(data.chunk)
+        onChunkReceived?.(data.chunk, 'video');
       }
     )
 
@@ -42,9 +45,17 @@ export const useScreenRecorder = ({
       chunksRef.current = []
       await ScreenRecorder.startRecording()
       setIsRecording(true)
+      Toast.show({
+        type: "success",
+        text1: t("RecordingStarted"),
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to start recording")
       setIsRecording(false)
+      Toast.show({
+        type: 'error',
+        text1: t("FailedToStartRecording"),
+      })
     } finally {
       return
     }
@@ -54,6 +65,10 @@ export const useScreenRecorder = ({
     try {
       await ScreenRecorder.stopRecording()
       setIsRecording(false)
+      Toast.show({
+        type: "success",
+        text1: t("RecordingStopped"),
+      })
       const chunks = [...chunksRef.current]
       chunksRef.current = []
       return chunks

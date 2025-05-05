@@ -73,7 +73,7 @@ export const helpCenterApi = createApi({
     //RECORDINGS
     getRecordings: builder.query<IRecordingsEntityResponse, IBaseParams>({
       query: ({ limit, page }) => ({
-        url: `recordings?limit=${limit}&page=${page}`,
+        url: `recordings?limit=${limit}&page=${page}&order[createdAt]=desc`,
         method: "GET",
       }),
     }),
