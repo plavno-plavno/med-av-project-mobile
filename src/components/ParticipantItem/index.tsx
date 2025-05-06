@@ -46,9 +46,10 @@ const ParticipantItem = ({
 
   const lastNameInitial = user?.lastName?.charAt?.(0) || ""
   const morePeopleWithSharing = totalParticipants - 2
-  const morePeople = totalParticipants - 4
+  const morePeople = totalParticipants - 6
   const isShowMorePeopleScreenShare =
     sharingOwner && totalParticipants >= 3 && idx === 1
+
   const isShowMorePeople = totalParticipants >= 7 && idx === 5
   const isParticipantAvatar = user?.photo?.link
   const isMorePeople = isShowMorePeopleScreenShare || isShowMorePeople
@@ -87,7 +88,7 @@ const ParticipantItem = ({
               <View style={styles.withoutCamera}>
                 {isParticipantAvatar ? (
                   <Image
-                    source={{ uri: user.photo.link }}
+                    source={{ uri: user?.photo?.link }}
                     style={styles.userAvatar}
                   />
                 ) : (

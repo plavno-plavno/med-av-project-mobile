@@ -24,6 +24,7 @@ import RNFS from "react-native-fs"
 import { Buffer } from "buffer"
 import moment from "moment"
 import { useScreenSharing } from "src/hooks/useScreenSharing"
+import { formatLastName } from "@utils/utils"
 
 type ParamList = {
   Detail: {
@@ -105,11 +106,13 @@ const MeetingScreen = () => {
     eventId: eventId!,
   })
 
-  const {
-    isScreenSharing,
-    sharingOwner,
-    sharedScreen,
-  } = useScreenSharing(roomId!);
+  const newUserFullName = `${newUser?.firstName} ${formatLastName(
+    newUser?.lastName
+  )}`
+
+  const { isScreenSharing, sharingOwner, sharedScreen } = useScreenSharing(
+    roomId!
+  )
 
   const handleResponse = async (accepted: boolean) => {
     if (!newUser?.socketId || !eventId) {
@@ -171,46 +174,46 @@ const MeetingScreen = () => {
   }
 
   useEffect(() => {
-    if(recordingUrl.current){
-    let reconnectTimeout: NodeJS.Timeout | null = null
+    if (recordingUrl.current) {
+      let reconnectTimeout: NodeJS.Timeout | null = null
 
-    const connectWebSocket = () => {
-      if (wsRef.current) {
-        wsRef.current.close()
-      }
-      // const recordingUrl = 'http://192.168.0.105:8080' 
-      // const recordingUrl = socketRecordingUrl!
+      const connectWebSocket = () => {
+        if (wsRef.current) {
+          wsRef.current.close()
+        }
+        // const recordingUrl = 'http://192.168.0.105:8080'
+        // const recordingUrl = socketRecordingUrl!
 
-      wsRef.current = new WebSocket(recordingUrl.current)
+        wsRef.current = new WebSocket(recordingUrl.current)
 
-      wsRef.current.onopen = () => {
-        console.log("recording connected")
-        if (reconnectTimeout) {
-          clearTimeout(reconnectTimeout)
-          reconnectTimeout = null
+        wsRef.current.onopen = () => {
+          console.log("recording connected")
+          if (reconnectTimeout) {
+            clearTimeout(reconnectTimeout)
+            reconnectTimeout = null
+          }
+        }
+
+        wsRef.current.onerror = (error) => {
+          console.error("recording error:", error)
+          console.log("recording connection error. Reconnecting...")
+          if (!reconnectTimeout) {
+            reconnectTimeout = setTimeout(connectWebSocket, 3000)
+          }
+        }
+
+        wsRef.current.onclose = () => {
+          console.warn("recording connection closed")
         }
       }
 
-      wsRef.current.onerror = (error) => {
-        console.error("recording error:", error)
-        console.log("recording connection error. Reconnecting...")
-        if (!reconnectTimeout) {
-          reconnectTimeout = setTimeout(connectWebSocket, 3000)
-        }
-      }
+      connectWebSocket()
 
-      wsRef.current.onclose = () => {
-        console.warn("recording connection closed")
+      return () => {
+        if (reconnectTimeout) clearTimeout(reconnectTimeout)
+        wsRef.current?.close()
       }
     }
-
-    connectWebSocket()
-
-    return () => {
-      if (reconnectTimeout) clearTimeout(reconnectTimeout)
-      wsRef.current?.close()
-    }
-  }
   }, [recordingUrl.current])
 
   const removeFileIfExisted = async () => {
@@ -236,12 +239,12 @@ const MeetingScreen = () => {
       })
       return
     }
-    
+
     if (isScreenRecording) {
-      handleStopRecording();
+      handleStopRecording()
     } else {
       removeFileIfExisted().finally(async () => {
-        recordingNameRef.current = `recording-${Date.now()}`;
+        recordingNameRef.current = `recording-${Date.now()}`
         await startRecording()
         onStartRecord()
         startTimeRef.current = moment()
@@ -271,16 +274,16 @@ const MeetingScreen = () => {
   const handleStopRecording = () => {
     const endPayload = {
       fileName: recordingNameRef.current,
-      action: 'end',
+      action: "end",
       meetId,
       userId: localUserId,
-      fileExtension: 'raw',
+      fileExtension: "raw",
       platform: Platform.OS,
-      streamGroup: 'mobile',
-      mediaType: 'both'
-    };
+      streamGroup: "mobile",
+      mediaType: "both",
+    }
 
-    wsRef.current?.send(JSON.stringify(endPayload));
+    wsRef.current?.send(JSON.stringify(endPayload))
     onStopRecord()
     stopRecording()
     // const endVideoPayload = {
@@ -302,7 +305,7 @@ const MeetingScreen = () => {
       name: "callEnd",
       onPress: () => {
         if (isScreenRecording) {
-          handleStopRecording();
+          handleStopRecording()
         }
         setTimeout(() => {
           endCall()
@@ -353,7 +356,7 @@ const MeetingScreen = () => {
         <View style={styles.mainWrapper}>
           {isRequestModalOpen && (
             <NewJoinRequestModal
-              name={"Valery J"}
+              name={newUserFullName || "Guest"}
               onAccept={() => handleResponse(true)}
               onDecline={() => handleResponse(false)}
             />

@@ -114,7 +114,7 @@ const VideoGrid = ({
 
     return participantsSteams
   }
-
+  console.log("\x1b[31m%s\x1b[0m", "participantsGrid", participants)
   const participantsToShow = adaptParticipantsToShow()
 
   const activeSpeaker = useHighlightSpeaker(peerConnection, participantsToShow)
@@ -228,7 +228,6 @@ const VideoGrid = ({
           <RTCView
             streamURL={sharedScreenStream.toURL()}
             style={[helpers.width100Percent, helpers.height100Percent]}
-            objectFit="cover"
             zOrder={0}
           />
           <Canvas ref={canvasRef} style={styles.canvas} />
