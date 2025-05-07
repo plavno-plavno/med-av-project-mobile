@@ -38,8 +38,7 @@ export const useScreenSharing = (roomId: string | null) => {
     roomIdRef.current = roomId;
     screenSharingRef.current = isScreenSharing;
     mySocketId.current = socketRef.current?.id;
-  }, [roomId, isScreenSharing, socketRef.current]);
-
+  }, [roomId, isScreenSharing, socketRef.current?.id]);
 
   useEffect(() => {
     if (!socketRef.current) {
@@ -101,12 +100,10 @@ export const useScreenSharing = (roomId: string | null) => {
           type: PeerConnectionType.SHARING,
         });
       }
-
       socketRef.current?.emit('sharing-peer', {
         roomId: roomIdRef.current,
       });
     }
-
     setIsScreenSharing(anySharingOn);
   };
 

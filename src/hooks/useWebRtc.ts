@@ -10,7 +10,7 @@ import {
 } from "react-native-webrtc"
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { ROUTES } from "src/navigation/RoutesTypes"
-import { useAuthMeQuery } from "src/api/userApi/userApi"
+import { useAuthMeQuery, useGetUsersByIdMutation } from "src/api/userApi/userApi"
 import inCallManager from "react-native-incall-manager"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 import AudioRecord from "react-native-audio-record"
@@ -38,6 +38,7 @@ import { createPeerConnection } from "@utils/peerConnections"
 import { useAudioRecorder } from "./useAudioRecorder"
 import { Platform } from "react-native"
 import { useScreenRecorder } from "./useScreenRecorder"
+import { prepareParticipants } from "./settingUpParticipants"
 
 export type Photo = {
   id: string
@@ -210,7 +211,7 @@ const SUBTITLES_QUEUE_LIMIT = 3
 const TRIES_LIMIT = 7
 let RETRY_ATTEMPT: number = 0
 
-const useWebRtc = (instanceMeetingOwner: boolean) => {
+const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) => {
   const [localStream, setLocalStream] = useState<LocalStream | null>(null)
   const peerConnection = useRef<RTCPeerConnection | null>(null)
   const [participants, setParticipants] = useState<User[]>([])
@@ -255,12 +256,13 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
 
   const [saveCalendarEventsLog] = useSaveCalendarEventsLogMutation()
   const eventStartedTimeRef = useRef(0)
+  const [getUsersById] = useGetUsersByIdMutation()
 
   const { data: getCalendarEventByHashData } = useGetCalendarEventByHashQuery({
     hash: String(route?.params?.hash),
   })
 
-  const invitedParticipantsRef = useRef<User[]>([])
+  const invitedParticipantsRef = useRef<User[]>(invitedParticipants ||[])
 
   const socketRef = useRef<Socket | null>(null)
 
@@ -329,7 +331,7 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
       )
     }
   }
-  const { onStartRecord, onStopRecord } = useAudioRecorder({ sendChunkToServer, sendSttAudio, isMuted })
+  const { onStartRecord, onStopRecord } = useAudioRecorder({ sendChunkToServer, sendSttAudio })
   const { startRecording, stopRecording, isRecording: isScreenRecording } = useScreenRecorder({
     onChunkReceived: sendChunkToServer,
   })
@@ -873,10 +875,10 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
     participantsInfo: ParticipantsInfo[]
   }) => {
     try {
-      const sttRes = await scalerFindFreeMachinePairSTT({
-        id: String(meetId),
-      }).unwrap()
-      sttUrlRef.current = `wss://${sttRes?.stt}`
+      // const sttRes = await scalerFindFreeMachinePairSTT({
+      //   id: String(meetId),
+      // }).unwrap()
+      // sttUrlRef.current = `wss://${sttRes?.stt}`
       const usersAudioVideoMap: Record<
         string,
         { isAudioOn: boolean; isVideoOn: boolean; socketId: string }
@@ -888,35 +890,42 @@ const useWebRtc = (instanceMeetingOwner: boolean) => {
           socketId: participant.socketId,
         }
       })
+console.log(invitedParticipantsRef, 'invitedParticipantsRefinvitedParticipantsRef');
+console.log(participantsInfo, 'participantsInfoparticipantsInfoparticipantsInfo');
 
-      setParticipants((_prev: any): any => {
-        const newUsers = participantsInfo.map(({ userId, socketId }) => {
-          const {
-            firstName = "Guest",
-            lastName = "",
-            photo = null,
-          } = invitedParticipantsRef?.current?.find?.(
-            (invitedParticipants) => userId === invitedParticipants?.id
-          ) || {}
-          return {
-            userId,
-            socketId,
-            firstName,
-            lastName,
-            photo,
-            isAudioOn: usersAudioVideoMap[socketId].isAudioOn,
-            isVideoOn: usersAudioVideoMap[socketId].isVideoOn,
-          }
-        })
-        return [
-          // ...prev,
-          ...newUsers,
-        ]
-      })
+      // setParticipants((_prev: any): any => {
+      //   const newUsers = participantsInfo.map(({ userId, socketId }) => {
+      //     const {
+      //       firstName = "Guest",
+      //       lastName = "",
+      //       photo = null,
+      //     } = invitedParticipantsRef?.current?.find?.(
+      //       (invitedParticipants) => Number(userId) === Number(invitedParticipants?.id)
+      //     ) || {}
+      //     return {
+      //       userId,
+      //       socketId,
+      //       firstName,
+      //       lastName,
+      //       photo,
+      //       isAudioOn: usersAudioVideoMap[socketId].isAudioOn,
+      //       isVideoOn: usersAudioVideoMap[socketId].isVideoOn,
+      //     }
+      //   })
+      //   return [
+      //     // ...prev,
+      //     ...newUsers,
+      //   ]
+      // })
+
+      await prepareParticipants({
+        participantsInfo,
+        invitedParticipantsRef,
+        setParticipants,
+        getUsersById,
+      });
 
       const anySharingOn = participantsInfo.some((p) => p.status.isSharingOn)
-console.log(anySharingOn, 'anySharingOnanySharingOnanySharingOn');
-
       setIsScreenShare(anySharingOn)
 
       const stream = await mediaDevices.getUserMedia({
@@ -1339,45 +1348,64 @@ console.log(anySharingOn, 'anySharingOnanySharingOnanySharingOn');
       { isAudioOn: boolean; isVideoOn: boolean; socketId: string }
     > = {}
 
-    participantsInfo.forEach((participant) => {
-      usersAudioVideoMap[participant.socketId] = {
-        isAudioOn: participant.status.isAudioOn,
-        isVideoOn: participant.status.isVideoOn,
-        socketId: participant.socketId,
-      }
-    })
+    // participantsInfo.forEach((participant) => {
+    //   usersAudioVideoMap[participant.socketId] = {
+    //     isAudioOn: participant.status.isAudioOn,
+    //     isVideoOn: participant.status.isVideoOn,
+    //     socketId: participant.socketId,
+    //   }
+    // })
 
-    setParticipants((_prev: any): any => {
-      const newUsers = participantsInfo.map(({ userId, socketId }) => {
-        const {
-          firstName = "Guest",
-          lastName = "",
-          photo = null,
-        } = invitedParticipantsRef.current.find(({ id }) => userId === id) || {}
+    // setParticipants((_prev: any): any => {
+    //   const newUsers = participantsInfo.map(({ userId, socketId }) => {
+    //     const {
+    //       firstName = "Guest",
+    //       lastName = "",
+    //       photo = null,
+    //     } = invitedParticipantsRef.current.find(({ id }) => userId === id) || {}
 
-        return {
-          userId,
-          socketId,
-          firstName,
-          lastName,
-          photo,
-          isAudioOn: usersAudioVideoMap[socketId].isAudioOn,
-          isVideoOn: usersAudioVideoMap[socketId].isVideoOn,
-        }
-      })
+    //     return {
+    //       userId,
+    //       socketId,
+    //       firstName,
+    //       lastName,
+    //       photo,
+    //       isAudioOn: usersAudioVideoMap[socketId].isAudioOn,
+    //       isVideoOn: usersAudioVideoMap[socketId].isVideoOn,
+    //     }
+    //   })
 
-      return [...newUsers]
-    })
+    //   return [...newUsers]
+    // })
+    await prepareParticipants({
+      participantsInfo,
+      invitedParticipantsRef,
+      setParticipants,
+      getUsersById,
+    });
   }
 
-  useEffect(() => {
-    if (getCalendarEventByHashData) {
-      invitedParticipantsRef.current =
+useEffect(() => {
+  if (getCalendarEventByHashData) {
+    invitedParticipantsRef.current = [
+      ...new Set(
         getCalendarEventByHashData?.participants.map(
           ({ user }: { user: any }) => user
         )
-    }
-  }, [getCalendarEventByHashData])
+      ),
+    ];
+  }
+
+  if (invitedParticipants?.length) {
+    invitedParticipantsRef.current = [
+      ...new Set([
+        ...invitedParticipantsRef.current,
+        ...invitedParticipants,
+      ]),
+    ];
+  }
+}, [getCalendarEventByHashData, invitedParticipants?.length]);
+
 
   return {
     socketRef,

@@ -71,8 +71,7 @@ const DetailsEventModal = ({
   const isDeclined = !isOwner && status === "decline"
 
   const handleDeleteEvent = async () => {
-    const res = await deleteEvent({ id: Number(eventId) }).unwrap()
-    console.log("\x1b[31m%s\x1b[0m", "res", res)
+    const res = await deleteEvent({ id: eventId }).unwrap()
     calendarEventsRefetch()
     Toast.show({
       type: "success",

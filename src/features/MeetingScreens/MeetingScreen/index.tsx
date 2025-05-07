@@ -43,6 +43,7 @@ const MeetingScreen = () => {
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const { isCreatorMode, title, hash, instanceMeetingOwner, eventId } =
     route.params
+    const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
 
   const {
     socketRef,
@@ -83,9 +84,8 @@ const MeetingScreen = () => {
     stopRecording,
     isScreenRecording,
     recordingNameRef,
-  } = useWebRtc(instanceMeetingOwner!)
+  } = useWebRtc(instanceMeetingOwner!, invitedParticipants)
 
-  const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
   const [meInvited, setMeInvited] = useState<boolean | null>(null)
 
   const startTimeRef = useRef<any>()
@@ -342,10 +342,10 @@ const MeetingScreen = () => {
   ]
 
   useEffect(() => {
-    if (!!participants.length && socketInstance) {
+    if (!!participants.length && socketInstance && eventId) {
       joinEvent({ eventId: String(eventId) })
     }
-  }, [participants?.length, socketInstance])
+  }, [participants?.length, socketInstance, eventId])
 
   if (!participants?.length) {
     return <Loading />
