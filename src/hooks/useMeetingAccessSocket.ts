@@ -3,7 +3,7 @@ import { io, Socket } from "socket.io-client"
 import * as Keychain from "react-native-keychain"
 import Config from "react-native-config"
 
-const SOCKET_URL = "wss://backend.svensacall.com/event"
+const SOCKET_URL = Config.SOCKET_MEETING_ACCESS_URL
 
 const getToken = async () => {
   const credentials = await Keychain.getGenericPassword({
@@ -41,6 +41,9 @@ export const useMeetingAccessSocket = () => {
           console.log(
             `Reconnection attempt failed. Retrying in 2 seconds... (${attemptsLeft} attempts left)`
           )
+          if(!attemptsLeft){
+            socketRef.current?.close();
+          }
           setTimeout(attemptReconnect, 2000)
         } else {
           reject(
@@ -51,7 +54,9 @@ export const useMeetingAccessSocket = () => {
       socketRef.current.on("connect", attemptReconnect)
       socketRef.current.on("connect_error", (error: any) => {
         console.error("Use Meeting Access Socket connection error:", error.message)
-        attemptReconnect()
+        if(!!attemptsLeft){
+          attemptReconnect()
+        }
       })
     })
   }, [])

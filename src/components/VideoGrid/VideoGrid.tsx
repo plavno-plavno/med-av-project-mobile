@@ -114,14 +114,16 @@ const VideoGrid = ({
 
     return participantsSteams
   }
-  console.log("\x1b[31m%s\x1b[0m", "participantsGrid", participants)
+
   const participantsToShow = adaptParticipantsToShow()
 
   const activeSpeaker = useHighlightSpeaker(peerConnection, participantsToShow)
   const totalParticipants = participantsToShow.length
 
-  const sharedScreenStream = new MediaStream()
-  if (sharedScreen) sharedScreenStream.addTrack(sharedScreen)
+  let sharedScreenStream;
+  if (sharedScreen) {
+    sharedScreenStream = new MediaStream()
+    sharedScreenStream.addTrack(sharedScreen)}
 
   const renderStream = (item: any, index: number) => {
     const mediaStream = new MediaStream()
@@ -223,11 +225,12 @@ const VideoGrid = ({
 
   return (
     <View style={styles.container}>
-      {isScreenShare && (
+      {isScreenShare && sharedScreenStream && (
         <View style={styles.sharingContainer}>
           <RTCView
             streamURL={sharedScreenStream.toURL()}
             style={[helpers.width100Percent, helpers.height100Percent]}
+            objectFit='contain'
             zOrder={0}
           />
           <Canvas ref={canvasRef} style={styles.canvas} />

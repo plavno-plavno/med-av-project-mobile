@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { View, Text, TouchableOpacity } from "react-native"
 import ScreenWrapper from "src/components/ScreenWrapper"
 import { styles } from "./styles"
@@ -20,6 +20,8 @@ import { useGetCalendarEventByHashQuery } from "src/api/calendarApi/calendarApi"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
 import { useMeetingAccess } from "src/hooks/useMeetingAccess"
 import { ActivityIndicator } from "react-native-paper"
+import * as Keychain from "react-native-keychain"
+import Toast from "react-native-toast-message"
 
 type ParamList = {
   Detail: {
@@ -31,7 +33,7 @@ type ParamList = {
 
 const MeetingDetailsScreen = () => {
   const { t } = useTranslation()
-  const { navigate } = useNavigation<ROUTES>()
+  const { navigate, reset } = useNavigation<ROUTES>()
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const { hash, ownerEmail } = route.params
   const { data: authMe } = useAuthMeQuery()
@@ -134,6 +136,31 @@ const MeetingDetailsScreen = () => {
       setMeInvited(isCurrentUserInvited)
     }
   }, [getCalendarEventByHashData])
+
+  const checkToken = async() => {
+    const accessToken = await Keychain.getGenericPassword({
+      service: "accessToken",
+    })
+    if(!accessToken){
+      setTimeout(() => {
+        preview?.getTracks().forEach((t) => t.stop())
+        preview?.getTracks().forEach((t) => t.release())
+        setPreview(undefined);
+        reset({
+          index: 0,
+          routes: [{ name: ScreensEnum.ONBOARDING }],
+        })
+        Toast.show({
+          type: 'error',
+          text1: 'Unauthorized'
+        })
+      }, 1000)
+    }
+  }
+
+  useFocusEffect(useCallback(() => {
+    checkToken()
+  }, []))
 
   return (
     <ScreenWrapper

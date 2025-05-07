@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import * as Keychain from "react-native-keychain";
 import Config from "react-native-config";
 import { navigationRef } from 'src/navigation/RootNavigation';
+import Toast from 'react-native-toast-message';
 
 const socketURL = Config.SOCKET_WEB_RTC_URL;
 const isProduction = Config.ENV === 'production'
@@ -25,7 +26,7 @@ export const initializeSocket = async (url: string) => {
   if (socket) return socket;
   scalerSocketURL = isProduction ? url : String(socketURL)
   const token = await getToken();
-    socket = io(scalerSocketURL, {
+  socket = io(scalerSocketURL, {
     transports: ['websocket'],
     auth: { token },
   });
@@ -69,6 +70,12 @@ const handleReconnect = () => {
     console.log(`Reconnecting attempt ${retryCount}/${MAX_RETRIES}...`);
     setTimeout(() => initializeSocket(scalerSocketURL), 2000 * retryCount);
   } else {
+    navigationRef.current?.goBack()
+    Toast.show({
+      type: "error",
+      text1:
+        "Connection to media servers cannot be established, please consider rejoining",
+    })
     console.error("Max reconnect attempts reached. Not retrying.");
     setErrorState?.("Connection lost. Unable to reconnect.");
   }

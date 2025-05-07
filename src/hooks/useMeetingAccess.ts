@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useMeetingAccessSocket } from "./useMeetingAccessSocket"
 import {
   useAuthMeQuery,
@@ -34,7 +34,6 @@ export const useMeetingAccess = ({
     invitedParticipantsRef.current = invitedParticipants
   }, [invitedParticipants])
 
-  // 🧩 Init socket listeners
   useEffect(() => {
     if (!socketInstance) return
 

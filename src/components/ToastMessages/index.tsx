@@ -27,7 +27,7 @@ const ToastMessage: React.FC = () => {
       config={toastConfig}
       autoHide={true}
       topOffset={60}
-      visibilityTime={12000}
+      visibilityTime={4000}
     />
   )
 }

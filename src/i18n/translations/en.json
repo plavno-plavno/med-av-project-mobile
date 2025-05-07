@@ -146,5 +146,6 @@
   "GettingReady": "Getting ready...",
   "YouLeftTheMeeting": "You left the meeting. Use meeting link to join again.",
   "OpenSrtFilesList": "Download Subtitles",
-  "SRTFiles": "SRT Files"
+  "SRTFiles": "SRT Files",
+  "Unauthorized": "Unauthorized"
 }
