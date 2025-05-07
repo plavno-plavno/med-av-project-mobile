@@ -42,6 +42,7 @@
         android:allowBackup="false"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
+        android:screenOrientation="portrait"
         android:supportsRtl="true">
         <service
             android:name=".ScreenCaptureService"
