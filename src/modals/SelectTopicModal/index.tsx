@@ -54,7 +54,7 @@ const SelectTopicModal = ({ sheetRef, formikRef, setTopicId }: any) => {
       <View style={styles.container}>
         <ModalHeader
           title={t("SelectTopic")}
-          onClose={sheetRef?.current?.close()}
+          onClose={() => sheetRef?.current?.close()}
         />
         <FlatList
           scrollEnabled

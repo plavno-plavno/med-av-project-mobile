@@ -3,12 +3,16 @@ import { moderateScale } from "react-native-size-matters"
 import { HelpTopicEntity } from "src/api/helpCenterApi/types"
 import colors from "src/assets/colors"
 import { Icon } from "../Icon"
+import React from "react"
 
-const TopicItem = ({
-  topic,
-}: {
-  topic: HelpTopicEntity & { isSelected: boolean; onPress: () => void }
-}) => {
+type Props = {
+  topic: HelpTopicEntity & {
+    isSelected: boolean
+    onPress: () => void
+  }
+}
+
+const TopicItem = ({ topic }: Props) => {
   return (
     <TouchableOpacity style={styles.container} onPress={topic.onPress}>
       <Text>{topic.name}</Text>
@@ -17,7 +21,12 @@ const TopicItem = ({
   )
 }
 
-export default TopicItem
+export default React.memo(TopicItem, (prev, next) => {
+  return (
+    prev.topic.id === next.topic.id &&
+    prev.topic.isSelected === next.topic.isSelected
+  )
+})
 
 const styles = StyleSheet.create({
   container: {
