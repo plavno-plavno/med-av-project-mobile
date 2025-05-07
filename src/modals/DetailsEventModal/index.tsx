@@ -276,7 +276,12 @@ const DetailsEventModal = ({
                     </ScrollView>
                   </View>
                   {description && (
-                    <View style={{ maxHeight: moderateScale(120) }}>
+                    <View
+                      style={{
+                        maxHeight: moderateScale(120),
+                        paddingBottom: moderateScale(30),
+                      }}
+                    >
                       <ScrollView
                         nestedScrollEnabled={true}
                         showsVerticalScrollIndicator={false}
