@@ -69,9 +69,9 @@ const DetailsEventModal = ({
 
   const isAccepted = !isOwner && status === "accept"
   const isDeclined = !isOwner && status === "decline"
-  console.log("\x1b[31m%s\x1b[0m", " isOwner", isOwner)
+
   const handleDeleteEvent = async () => {
-    const res = await deleteEvent({ id: eventId }).unwrap()
+    const res = await deleteEvent({ id: Number(eventId) }).unwrap()
     console.log("\x1b[31m%s\x1b[0m", "res", res)
     calendarEventsRefetch()
     Toast.show({

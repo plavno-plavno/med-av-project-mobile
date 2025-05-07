@@ -25,7 +25,8 @@ const HelpCenterScreen = () => {
 
   const helpCenterTopics = [
     {
-      title: t("MyRequests") + ` (${messageCount})`,
+      title:
+        t("MyRequests") + `${messageCount > 0 ? ` (${messageCount})` : ""}`,
       leftIcon: "myRequest" as IconName,
       rightIcon: "chevronRight" as IconName,
       onPress: () => {

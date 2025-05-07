@@ -68,7 +68,8 @@ const SettingsScreen = () => {
       },
     },
     {
-      title: t("HelpCenter") + ` (${messageCount || 0})`,
+      title:
+        t("HelpCenter") + `${messageCount > 0 ? ` (${messageCount})` : ""}`,
       leftIcon: "helpCenter" as IconName,
       rightIcon: "chevronRight" as IconName,
       onPress: () => {
