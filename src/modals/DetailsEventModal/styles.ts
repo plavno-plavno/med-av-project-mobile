@@ -43,9 +43,12 @@ export const styles = StyleSheet.create({
     color: colors.charcoal,
   },
   participantsContainer: {
-    flexShrink: 1,
-    flexWrap: "wrap",
+    maxHeight: moderateScale(160),
+  },
+
+  participantsContent: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: moderateScale(8),
   },
   srtContainer: {

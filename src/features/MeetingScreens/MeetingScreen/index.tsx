@@ -43,7 +43,7 @@ const MeetingScreen = () => {
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const { isCreatorMode, title, hash, instanceMeetingOwner, eventId } =
     route.params
-    const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
+  const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
 
   const {
     socketRef,
@@ -264,10 +264,8 @@ const MeetingScreen = () => {
       style: { opacity: isSpeakerOn ? 1 : 0.5 },
     },
     {
-      name: "screenRecordStart",
+      name: isScreenRecording ? "recordingOn" : "screenRecordStart",
       onPress: handleRecordingButton,
-      style: { opacity: isScreenRecording ? 1 : 0.5 },
-      // style: { opacity: false ? 1 : 0.5 },
     },
   ]
 

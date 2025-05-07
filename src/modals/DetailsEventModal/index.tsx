@@ -1,6 +1,12 @@
 import React, { useState } from "react"
 import { screenHeight } from "@utils/screenResponsive"
-import { FlatList, Text, TouchableOpacity, View } from "react-native"
+import {
+  FlatList,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native"
 import colors from "src/assets/colors"
 import BottomSheet, { type BottomSheetMethods } from "@devvie/bottom-sheet"
 import { styles } from "./styles"
@@ -67,11 +73,12 @@ const DetailsEventModal = ({
   const [deleteEvent, { isLoading: isDeleteEventLoading }] =
     useDeleteEventMutation()
 
-  const isAccepted = !isOwner && status === "accept"
-  const isDeclined = !isOwner && status === "decline"
+  const isAccepted = status === "accept"
+  const isPending = status === "pending"
+  const isDeclined = status === "decline"
 
   const handleDeleteEvent = async () => {
-    const res = await deleteEvent({ id: eventId }).unwrap()
+    await deleteEvent({ id: eventId }).unwrap()
     calendarEventsRefetch()
     Toast.show({
       type: "success",
@@ -105,11 +112,14 @@ const DetailsEventModal = ({
   }
 
   const handleAcceptEvent = () => {
-    if (isOwner) {
-      handleOpenScheduleModal(eventId)
-    } else {
-      handleTogglerEvent({ status: "accept" })
-    }
+    handleTogglerEvent({ status: "accept" })
+  }
+  const handleDeclineEvent = () => {
+    handleTogglerEvent({ status: "decline" })
+  }
+
+  const handleEditEvent = () => {
+    handleOpenScheduleModal(eventId)
   }
 
   const handleSrtDownload = async ({ id }: { id: number }) => {
@@ -248,7 +258,12 @@ const DetailsEventModal = ({
                   </View>
                   <View style={styles.infoWrapper}>
                     <Icon name="participants" />
-                    <View style={styles.participantsContainer}>
+                    <ScrollView
+                      scrollEnabled
+                      showsVerticalScrollIndicator={false}
+                      style={styles.participantsContainer}
+                      contentContainerStyle={styles.participantsContent}
+                    >
                       {eventDetailsData?.participants.map(
                         (participant: any) => (
                           <Participants
@@ -258,20 +273,29 @@ const DetailsEventModal = ({
                           />
                         )
                       )}
-                    </View>
+                    </ScrollView>
                   </View>
                   {description && (
-                    <View
-                      style={[
-                        helpers.flexRow,
-                        helpers.gap8,
-                        helpers.maxWidth80Percent,
-                      ]}
-                    >
-                      <Icon name="info" />
-                      <Text style={[styles.text, { color: colors.midGrey }]}>
-                        {description}
-                      </Text>
+                    <View style={{ maxHeight: moderateScale(120) }}>
+                      <ScrollView
+                        nestedScrollEnabled={true}
+                        showsVerticalScrollIndicator={false}
+                      >
+                        <View
+                          style={[
+                            helpers.flexRow,
+                            helpers.gap8,
+                            helpers.maxWidth80Percent,
+                          ]}
+                        >
+                          <Icon name="info" />
+                          <Text
+                            style={[styles.text, { color: colors.midGrey }]}
+                          >
+                            {description}
+                          </Text>
+                        </View>
+                      </ScrollView>
                     </View>
                   )}
                   {isOwner && !!srtFiles?.length && (
@@ -350,31 +374,86 @@ const DetailsEventModal = ({
                   },
                 ]}
               >
-                {!isDeclined && (
-                  <CustomButton
-                    isLoading={isDeleteEventLoading || isDeclineEventLoading}
-                    onPress={() => {
-                      if (isOwner) {
-                        handleDeleteEvent()
-                      } else {
-                        handleTogglerEvent({ status: "decline" })
-                      }
-                    }}
-                    text={isOwner ? t("DeleteMeeting") : t("Decline")}
-                    textStyle={{ color: colors.alertRed }}
-                    style={[
-                      {
-                        backgroundColor: colors.errorLight,
-                      },
-                    ]}
-                  />
-                )}
-                {!isAccepted && (
-                  <CustomButton
-                    isLoading={isAcceptEventLoading}
-                    text={isOwner ? t("EditDetails") : t("Accept")}
-                    onPress={handleAcceptEvent}
-                  />
+                {isOwner ? (
+                  <>
+                    {isDeclined ? (
+                      <CustomButton
+                        isLoading={isDeleteEventLoading}
+                        onPress={handleDeleteEvent}
+                        text={t("DeleteMeeting")}
+                        textStyle={{ color: colors.alertRed }}
+                        style={[
+                          {
+                            backgroundColor: colors.errorLight,
+                          },
+                        ]}
+                      />
+                    ) : (
+                      <CustomButton
+                        isLoading={isDeclineEventLoading}
+                        text={t("Decline")}
+                        textStyle={{ color: colors.alertRed }}
+                        style={[
+                          {
+                            backgroundColor: colors.errorLight,
+                          },
+                        ]}
+                        onPress={handleDeclineEvent}
+                      />
+                    )}
+                    {isDeclined && (
+                      <CustomButton
+                        isLoading={isDeclineEventLoading}
+                        text={t("Accept")}
+                        onPress={handleAcceptEvent}
+                      />
+                    )}
+                    <CustomButton
+                      text={t("EditDetails")}
+                      onPress={handleEditEvent}
+                    />
+                  </>
+                ) : (
+                  <>
+                    {isPending ? (
+                      <>
+                        <CustomButton
+                          isLoading={isAcceptEventLoading}
+                          text={t("Accept")}
+                          onPress={handleAcceptEvent}
+                        />
+                        <CustomButton
+                          isLoading={isDeclineEventLoading}
+                          text={t("Decline")}
+                          textStyle={{ color: colors.alertRed }}
+                          style={[
+                            {
+                              backgroundColor: colors.errorLight,
+                            },
+                          ]}
+                          onPress={handleDeclineEvent}
+                        />
+                      </>
+                    ) : isAccepted ? (
+                      <CustomButton
+                        isLoading={isDeclineEventLoading}
+                        text={t("Decline")}
+                        textStyle={{ color: colors.alertRed }}
+                        style={[
+                          {
+                            backgroundColor: colors.errorLight,
+                          },
+                        ]}
+                        onPress={handleDeclineEvent}
+                      />
+                    ) : (
+                      <CustomButton
+                        isLoading={isAcceptEventLoading}
+                        text={t("Accept")}
+                        onPress={handleAcceptEvent}
+                      />
+                    )}
+                  </>
                 )}
               </View>
             </>
