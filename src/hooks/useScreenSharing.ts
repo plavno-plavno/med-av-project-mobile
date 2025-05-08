@@ -3,7 +3,7 @@ import {
 } from 'react';
 import { Socket } from 'socket.io-client';
 
-import { getSocket } from './webRtcSocketInstance';
+import { useWebRtcSocketConnection } from './webRtcSocketInstance';
 import { useAuthMeQuery } from 'src/api/userApi/userApi';
 import { MediaStreamTrack, RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
 import { createCandidatesManager } from '@utils/candidatesManager';
@@ -18,7 +18,7 @@ export const useScreenSharing = (roomId: string | null) => {
   userRefId.current = authMeData?.id;
 
   const socketRef = useRef<Socket | null>(null);
-  socketRef.current = getSocket();
+  const {socket} = useWebRtcSocketConnection(roomId!);
 
   const peerConnection = useRef<RTCPeerConnection | null>(null);
   const candidatesManager = useRef(
@@ -36,9 +36,10 @@ export const useScreenSharing = (roomId: string | null) => {
 
   useEffect(() => {
     roomIdRef.current = roomId;
+    socketRef.current = socket;
+    mySocketId.current = socket?.id;
     screenSharingRef.current = isScreenSharing;
-    mySocketId.current = socketRef.current?.id;
-  }, [roomId, isScreenSharing, socketRef.current?.id]);
+  }, [roomId, isScreenSharing, socket]);
 
   useEffect(() => {
     if (!socketRef.current) {

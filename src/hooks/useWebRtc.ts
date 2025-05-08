@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { Socket } from "socket.io-client"
-import { getSocket, initializeSocket } from "./webRtcSocketInstance"
+import { useWebRtcSocketConnection } from "./webRtcSocketInstance"
 import {
   mediaDevices,
   MediaStreamTrack,
@@ -14,7 +14,6 @@ import { useAuthMeQuery, useGetUsersByIdMutation } from "src/api/userApi/userApi
 import inCallManager from "react-native-incall-manager"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 import AudioRecord from "react-native-audio-record"
-import Config from "react-native-config"
 import {
   base64ToFloat32Array,
   float32ArrayToBase64,
@@ -28,10 +27,7 @@ import {
 import RTCDataChannel from "react-native-webrtc/lib/typescript/RTCDataChannel"
 import { screenHeight, screenWidth } from "@utils/screenResponsive"
 import { isIOS } from "@utils/platformChecker"
-import {
-  useScalerFindFreeMachineMutation,
-  useScalerFindFreeMachinePairSTTMutation,
-} from "src/api/scalerApi/scalerApi"
+import { useScalerFindFreeMachinePairSTTMutation } from "src/api/scalerApi/scalerApi"
 import moment from "moment"
 import { PeerConnectionType, UserInMeeting } from "@utils/meeting"
 import { createPeerConnection } from "@utils/peerConnections"
@@ -39,6 +35,7 @@ import { useAudioRecorder } from "./useAudioRecorder"
 import { Platform } from "react-native"
 import { useScreenRecorder } from "./useScreenRecorder"
 import { prepareParticipants } from "./settingUpParticipants"
+import DeviceInfo from 'react-native-device-info';
 
 export type Photo = {
   id: string
@@ -178,35 +175,6 @@ type ParamList = {
 
 const getFullName = (user: User) => user.firstName + ' ' + user.lastName;
 
-// const config = {
-//   iceServers: [
-//     { urls: "stun:stun.l.google.com:19302" },
-//     { urls: "stun:stun1.l.google.com:19302" },
-//     { urls: "stun:stun2.l.google.com:19302" },
-//     { urls: "stun:stun3.l.google.com:19302" },
-//     { urls: "stun:stun4.l.google.com:19302" },
-//   ],
-// }
-
-const config = {
-  iceServers: [
-    { urls: 'stun:51.21.247.138:3478' },
-    { 
-      urls: 'turn:51.21.247.138:3478',
-      username: 'turnuser',
-      credential: 'turnpassword'
-    },
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'stun:stun2.l.google.com:19302' },
-    { urls: 'stun:stun3.l.google.com:19302' },
-    { urls: 'stun:stun4.l.google.com:19302' },
-  ],
-};
-
-
-const sttUrl = Config.STT_URL
-
 const SUBTITLES_QUEUE_LIMIT = 3
 const TRIES_LIMIT = 7
 let RETRY_ATTEMPT: number = 0
@@ -232,7 +200,6 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
   const [remoteAudioStreams, setRemoteAudioStreams] = useState<AudioStream[]>(
     []
   )
-
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const startTimeRef = useRef<number | null>(null)
   const elapsedTimeRef = useRef<number>(0)
@@ -250,7 +217,8 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
   const roomId = route?.params?.meetId
   const meetId = route.params?.meetId
 
-  const [scalerFindFreeMachine] = useScalerFindFreeMachineMutation()
+  const {socket, scalerMachineUrl} = useWebRtcSocketConnection(roomId!);
+  
   const [scalerFindFreeMachinePairSTT] =
     useScalerFindFreeMachinePairSTTMutation()
 
@@ -264,7 +232,7 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
 
   const invitedParticipantsRef = useRef<User[]>(invitedParticipants ||[])
 
-  const socketRef = useRef<Socket | null>(null)
+  const socketRef = useRef<Socket | null>(socket)
 
   const sttUrlRef = useRef<string | null>(null)
 
@@ -299,6 +267,12 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
 
   const recordingNameRef = useRef<any>()
   const recordingUrl = useRef('');
+
+  useEffect(() => {
+    if(socket){
+      socketRef.current = socket
+    }
+  }, [socket])
 
   const sendChunkToServer = async (base64Chunk: any, type: string) => {
     try {
@@ -364,20 +338,16 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
   useEffect(() => {
     const setupSocket = async () => {
       if (!socketRef.current && roomId) {
-        try {
-          const scalerFindFreeMachineData = await scalerFindFreeMachine({
-            id: roomId,
-          }).unwrap()
+        try{
           await scalerFindFreeMachinePairSTT({ id: roomId! })
           await new Promise((resolve) => setTimeout(resolve, 2000))
-          const rtcUrl = `https://${scalerFindFreeMachineData?.ip}${
-            scalerFindFreeMachineData?.port
-              ? ":" + scalerFindFreeMachineData?.port
-              : ":5000"
-          }`
-          await initializeSocket(rtcUrl)
-          recordingUrl.current = `https://${scalerFindFreeMachineData?.ip}:8080`;
-          socketRef.current = getSocket()
+        } catch (error) {
+          console.log(error, 'error scalerFindFreeMachinePairSTT');
+        }
+        try {
+         if(scalerMachineUrl){
+           recordingUrl.current = `https://${scalerMachineUrl}:8080`;
+          }
           peerConnection.current = createPeerConnection({
             socketRef,
             roomId,
@@ -683,10 +653,22 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
       if (isSpeakerOn) {
         if (isIOS()) {
           setTimeout(() => {
-            inCallManager.setSpeakerphoneOn(true)
+            DeviceInfo.isHeadphonesConnected().then((enabled) => {
+              if(!enabled){
+                inCallManager.setSpeakerphoneOn(true)
+              } else {
+                setIsSpeakerOn(false);
+              }
+            });
           }, 1000)
         } else {
-          inCallManager.setSpeakerphoneOn(true)
+          DeviceInfo.isHeadphonesConnected().then((enabled) => {
+            if(!enabled){
+              inCallManager.setSpeakerphoneOn(true)
+            } else {
+              setIsSpeakerOn(false);
+            }
+          });
         }
       }
       if (!timerRef.current) {
@@ -875,10 +857,15 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
     participantsInfo: ParticipantsInfo[]
   }) => {
     try {
-      // const sttRes = await scalerFindFreeMachinePairSTT({
-      //   id: String(meetId),
-      // }).unwrap()
-      // sttUrlRef.current = `wss://${sttRes?.stt}`
+      const sttRes = await scalerFindFreeMachinePairSTT({
+        id: String(meetId),
+      }).unwrap()
+      sttUrlRef.current = `wss://${sttRes?.stt}`
+    } catch (error) {
+      console.log(error, 'error scalerFindFreeMachinePairSTT');
+    }
+      
+    try {
       const usersAudioVideoMap: Record<
         string,
         { isAudioOn: boolean; isVideoOn: boolean; socketId: string }
@@ -890,33 +877,6 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
           socketId: participant.socketId,
         }
       })
-console.log(invitedParticipantsRef, 'invitedParticipantsRefinvitedParticipantsRef');
-console.log(participantsInfo, 'participantsInfoparticipantsInfoparticipantsInfo');
-
-      // setParticipants((_prev: any): any => {
-      //   const newUsers = participantsInfo.map(({ userId, socketId }) => {
-      //     const {
-      //       firstName = "Guest",
-      //       lastName = "",
-      //       photo = null,
-      //     } = invitedParticipantsRef?.current?.find?.(
-      //       (invitedParticipants) => Number(userId) === Number(invitedParticipants?.id)
-      //     ) || {}
-      //     return {
-      //       userId,
-      //       socketId,
-      //       firstName,
-      //       lastName,
-      //       photo,
-      //       isAudioOn: usersAudioVideoMap[socketId].isAudioOn,
-      //       isVideoOn: usersAudioVideoMap[socketId].isVideoOn,
-      //     }
-      //   })
-      //   return [
-      //     // ...prev,
-      //     ...newUsers,
-      //   ]
-      // })
 
       await prepareParticipants({
         participantsInfo,
@@ -970,7 +930,8 @@ console.log(participantsInfo, 'participantsInfoparticipantsInfoparticipantsInfo'
       if (offerStatusCheckRef.current) {
         clearInterval(offerStatusCheckRef.current)
       }
-      checkPeerConnection(handleOfferCheck)
+      handleOfferCheck()
+      // checkPeerConnection()
     } catch (error) {
       console.error("Error handling user join:", error)
     }

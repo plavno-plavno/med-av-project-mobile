@@ -1956,6 +1956,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNDeviceInfo (14.0.4):
+    - React-Core
   - RNFBApp (21.7.1):
     - Firebase/CoreOnly (= 11.7.0)
     - React-Core
@@ -2307,6 +2309,7 @@ DEPENDENCIES:
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNCPushNotificationIOS (from `../node_modules/@react-native-community/push-notification-ios`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
+  - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - RNFS (from `../node_modules/react-native-fs`)
@@ -2503,6 +2506,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/push-notification-ios"
   RNDateTimePicker:
     :path: "../node_modules/@react-native-community/datetimepicker"
+  RNDeviceInfo:
+    :path: "../node_modules/react-native-device-info"
   RNFBApp:
     :path: "../node_modules/@react-native-firebase/app"
   RNFBMessaging:
@@ -2624,6 +2629,7 @@ SPEC CHECKSUMS:
   RNCClipboard: c1dd9a853d56764a04ba278f61cd2cb58a138396
   RNCPushNotificationIOS: 64218f3c776c03d7408284a819b2abfda1834bc8
   RNDateTimePicker: 741869049cc6847df9c598c9d40bddd15ce61d8d
+  RNDeviceInfo: feea80a690d2bde1fe51461cf548039258bd03f2
   RNFBApp: 67229e8085ab427c935defad2a6c3fc57c7f656d
   RNFBMessaging: e485940b19e3cff5eeb0f7f095d480576cbab505
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
@@ -2641,4 +2647,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: d65ef309ca336b1aada86bcec24642e7edb39d3b
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2
