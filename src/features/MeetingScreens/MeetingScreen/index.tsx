@@ -85,11 +85,9 @@ const MeetingScreen = () => {
     isScreenRecording,
     recordingNameRef,
   } = useWebRtc(instanceMeetingOwner!, invitedParticipants)
-
   const [meInvited, setMeInvited] = useState<boolean | null>(null)
-
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
   const startTimeRef = useRef<any>()
-
   const {
     joinEvent,
     requestJoinEvent,
@@ -140,6 +138,7 @@ const MeetingScreen = () => {
   const sheetParticipantsRef = useRef<BottomSheetMethods>(null)
 
   const handleChatOpen = () => {
+    setUnreadMessagesCount(0)
     sheetChatRef.current?.open()
   }
   const handleCaptionsOpen = () => {
@@ -338,7 +337,11 @@ const MeetingScreen = () => {
       active: false,
     },
   ]
-
+  useEffect(() => {
+    if (messages.length > 0) {
+      setUnreadMessagesCount((prev) => prev + 1)
+    }
+  }, [messages])
   useEffect(() => {
     if (!!participants.length && socketInstance && eventId) {
       joinEvent({ eventId: String(eventId) })
@@ -411,6 +414,13 @@ const MeetingScreen = () => {
                       </Text>
                     </View>
                   )}
+                {unreadMessagesCount > 0 && item.name === "meetingChat" && (
+                  <View style={styles.participansCountContainer}>
+                    <Text style={styles.participantsCount}>
+                      {unreadMessagesCount}
+                    </Text>
+                  </View>
+                )}
                 <Icon name={item.name as IconName} onPress={item.onPress} />
               </View>
             )}
@@ -435,6 +445,7 @@ const MeetingScreen = () => {
           sheetRef={sheetChatRef}
           messages={messages}
           sendMessage={sendMessage}
+          setUnreadMessagesCount={setUnreadMessagesCount}
         />
       </Portal>
     </>

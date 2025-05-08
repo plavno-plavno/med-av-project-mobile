@@ -1,46 +1,49 @@
-import { AudioStream, IUsersAudioTrackToIdMap, IUsersVideoTrackToIdMap, ParticipantsInfo, RemoteStream, User, UserInMeeting, VideoStream } from "@utils/meeting";
-import { useGetUsersByIdMutation } from "src/api/userApi/userApi";
+import {
+  AudioStream,
+  IUsersAudioTrackToIdMap,
+  IUsersVideoTrackToIdMap,
+  ParticipantsInfo,
+  RemoteStream,
+  User,
+  VideoStream,
+} from "@utils/meeting"
 
 type PrepareParticipantsParams = {
-  participantsInfo: ParticipantsInfo[];
-  invitedParticipantsRef: any;
-  setParticipants: (data: any) => void;
-  getUsersById: (userId: any) => any;
-};
-
+  participantsInfo: ParticipantsInfo[]
+  invitedParticipantsRef: any
+  setParticipants: (data: any) => void
+  getUsersById: (userId: any) => any
+}
 
 export const fetchMissingUsers = async (
   participantsInfo: { userId: number }[],
   existingUsers: User[],
-  getUsersById: (userId: any) => any,
+  getUsersById: (userId: any) => any
 ) => {
-
   const existingUserIds = new Set(
-    existingUsers.filter(Boolean).map(({ id }) => id),
-  );
+    existingUsers.filter(Boolean).map(({ id }) => id)
+  )
 
   const missingUserIds = participantsInfo
     .map(({ userId }) => userId)
-    .filter((userId) => !existingUserIds.has(userId));
+    .filter((userId) => !existingUserIds.has(userId))
 
   if (missingUserIds.length === 0) {
-    return [];
+    return []
   }
 
-  const userFetchPromises = missingUserIds.map((userId) => getUsersById({
-    id: userId
-  }).unwrap()
-  );
+  const userFetchPromises = missingUserIds.map((userId) =>
+    getUsersById({
+      id: userId,
+    }).unwrap()
+  )
 
-  const results = await Promise.allSettled(userFetchPromises);
+  const results = await Promise.allSettled(userFetchPromises)
 
   return results
-    .filter(
-      (r) => r.status === 'fulfilled' && r.value,
-    )
-    .map((r: any) => r?.value);
-};
-
+    .filter((r) => r.status === "fulfilled" && r.value)
+    .map((r: any) => r?.value)
+}
 
 export const prepareParticipants = async ({
   participantsInfo,
@@ -49,31 +52,34 @@ export const prepareParticipants = async ({
   getUsersById,
 }: PrepareParticipantsParams) => {
   const usersAudioVideoMap: Record<
-  string,
-  { isAudioOn: boolean; isVideoOn: boolean; socketId: string }
-  > = {};
+    string,
+    { isAudioOn: boolean; isVideoOn: boolean; socketId: string }
+  > = {}
 
   participantsInfo.forEach((participant) => {
     usersAudioVideoMap[participant.socketId] = {
       isAudioOn: participant.status.isAudioOn,
       isVideoOn: participant.status.isVideoOn,
       socketId: participant.socketId,
-    };
-  });
+    }
+  })
 
-  const fetchedUsers = await fetchMissingUsers(
+  const fetchedUsersWrapped = await fetchMissingUsers(
     participantsInfo,
     invitedParticipantsRef.current,
-    getUsersById,
-  );
-  invitedParticipantsRef.current.push(...fetchedUsers);
+    getUsersById
+  )
+  const fetchedUsers = fetchedUsersWrapped.map((item) => item.user)
+  invitedParticipantsRef.current.push(...fetchedUsers)
 
   const newUsers = participantsInfo.map(({ userId, socketId }) => {
     const {
-      firstName = 'Guest',
-      lastName = '',
+      firstName = "Guest",
+      lastName = "",
       photo = null,
-    } = invitedParticipantsRef.current.find(({ id }: {id: any}) => Number(userId) === Number(id)) || {};
+    } = invitedParticipantsRef.current.find(
+      ({ id }: { id: any }) => Number(userId) === Number(id)
+    ) || {}
 
     return {
       userId,
@@ -83,21 +89,18 @@ export const prepareParticipants = async ({
       photo,
       isAudioOn: usersAudioVideoMap[socketId].isAudioOn,
       isVideoOn: usersAudioVideoMap[socketId].isVideoOn,
-    };
-  });
-
-  setParticipants(newUsers);
-};
+    }
+  })
+  setParticipants(newUsers)
+}
 
 type AdaptParticipantsParams = {
-  remoteAudioStreams: AudioStream[];
-  usersAudioTrackToIdMap: IUsersAudioTrackToIdMap;
-  remoteVideoStreams: VideoStream[];
-  usersVideoTrackToIdMap: IUsersVideoTrackToIdMap;
-  localStream: RemoteStream | null;
-};
-
-
+  remoteAudioStreams: AudioStream[]
+  usersAudioTrackToIdMap: IUsersAudioTrackToIdMap
+  remoteVideoStreams: VideoStream[]
+  usersVideoTrackToIdMap: IUsersVideoTrackToIdMap
+  localStream: RemoteStream | null
+}
 
 export const adaptParticipantsToShow = ({
   remoteAudioStreams,
@@ -106,11 +109,11 @@ export const adaptParticipantsToShow = ({
   usersVideoTrackToIdMap,
   localStream,
 }: AdaptParticipantsParams): RemoteStream[] => {
-  const remoteStreams: Record<string | number, RemoteStream> = {};
+  const remoteStreams: Record<string | number, RemoteStream> = {}
 
   remoteAudioStreams.forEach((audioStream) => {
-    const midId = Number(audioStream.midId);
-    const socketId = usersAudioTrackToIdMap[midId];
+    const midId = Number(audioStream.midId)
+    const socketId = usersAudioTrackToIdMap[midId]
 
     if (socketId) {
       if (!remoteStreams[socketId]) {
@@ -118,16 +121,16 @@ export const adaptParticipantsToShow = ({
           socketId: socketId,
           audioTrack: null,
           videoTrack: null,
-        };
+        }
       }
 
-      remoteStreams[socketId].audioTrack = audioStream.audioTrack;
+      remoteStreams[socketId].audioTrack = audioStream.audioTrack
     }
-  });
+  })
 
   remoteVideoStreams.forEach((videoStream) => {
-    const midId = Number(videoStream.midId);
-    const socketId = usersVideoTrackToIdMap[midId];
+    const midId = Number(videoStream.midId)
+    const socketId = usersVideoTrackToIdMap[midId]
 
     if (socketId) {
       if (!remoteStreams[socketId]) {
@@ -135,18 +138,18 @@ export const adaptParticipantsToShow = ({
           socketId: socketId,
           audioTrack: null,
           videoTrack: null,
-        };
+        }
       }
 
-      remoteStreams[socketId].videoTrack = videoStream.videoTrack;
+      remoteStreams[socketId].videoTrack = videoStream.videoTrack
     }
-  });
+  })
 
-  const participants = Object.values(remoteStreams);
+  const participants = Object.values(remoteStreams)
 
   if (localStream) {
-    participants.unshift(localStream);
+    participants.unshift(localStream)
   }
 
-  return participants;
-};
+  return participants
+}

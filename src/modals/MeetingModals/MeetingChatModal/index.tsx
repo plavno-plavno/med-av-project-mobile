@@ -27,10 +27,12 @@ const MeetingChatModal = ({
   sheetRef,
   messages,
   sendMessage,
+  setUnreadMessagesCount,
 }: {
   sheetRef: React.RefObject<BottomSheetMethods>
   messages: IMessage[]
   sendMessage: (data: any) => void
+  setUnreadMessagesCount: (count: number) => void
 }) => {
   const { t } = useTranslation()
   const [message, setMessage] = useState("")
@@ -80,6 +82,11 @@ const MeetingChatModal = ({
     }
   }
 
+  const handleClose = () => {
+    setUnreadMessagesCount(0)
+    sheetRef.current?.close()
+  }
+
   return (
     <>
       <BottomSheet
@@ -94,7 +101,7 @@ const MeetingChatModal = ({
       >
         <View style={styles.container}>
           <View style={[helpers.ph20, helpers.flex1]}>
-            <ModalHeader title={t("Chat")} onClose={sheetRef.current?.close} />
+            <ModalHeader title={t("Chat")} onClose={handleClose} />
             <FlatList
               removeClippedSubviews={false}
               keyExtractor={(_item, index) => String(index)}
