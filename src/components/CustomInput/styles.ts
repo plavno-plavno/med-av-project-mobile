@@ -37,6 +37,9 @@ export const styles = StyleSheet.create({
     maxWidth: "90%",
     color: colors.midGrey,
   },
+  chipScrollWrapper: {
+    maxHeight: moderateScale(140),
+  },
   chipContainer: {
     flexWrap: "wrap",
     flexDirection: "row",

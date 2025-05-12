@@ -8,6 +8,7 @@ import {
   TextInputFocusEventData,
   ViewStyle,
   StyleProp,
+  ScrollView,
 } from "react-native"
 import { Icon } from "../Icon"
 import { Dropdown } from "react-native-element-dropdown"
@@ -162,7 +163,12 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
             }
           }
           return (
-            <>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              style={styles.chipScrollWrapper}
+              contentContainerStyle={styles.chipContainer}
+              keyboardShouldPersistTaps="always"
+            >
               <View style={styles.chipContainer}>
                 {Array.isArray(value) &&
                   value.map((chip, index) => (
@@ -190,7 +196,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
                 numberOfLines={numberOfLines}
                 {...rest}
               />
-            </>
+            </ScrollView>
           )
         }
         case "colorPicker": {

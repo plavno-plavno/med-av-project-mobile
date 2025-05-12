@@ -76,6 +76,7 @@ const MeetingDetailsScreen = () => {
         hash: hash,
         isMuted: isMuted,
         isVideoOff: isVideoOff,
+        ownerEmail: getCalendarEventByHashData?.createdBy?.email,
         isCreatorMode: isCreatorMode,
         title: getCalendarEventByHashData?.title,
         instanceMeetingOwner: isMeetingOwner,
@@ -137,30 +138,32 @@ const MeetingDetailsScreen = () => {
     }
   }, [getCalendarEventByHashData])
 
-  const checkToken = async() => {
+  const checkToken = async () => {
     const accessToken = await Keychain.getGenericPassword({
       service: "accessToken",
     })
-    if(!accessToken){
+    if (!accessToken) {
       setTimeout(() => {
         preview?.getTracks().forEach((t) => t.stop())
         preview?.getTracks().forEach((t) => t.release())
-        setPreview(undefined);
+        setPreview(undefined)
         reset({
           index: 0,
           routes: [{ name: ScreensEnum.ONBOARDING }],
         })
         Toast.show({
-          type: 'error',
-          text1: 'Unauthorized'
+          type: "error",
+          text1: "Unauthorized",
         })
       }, 1000)
     }
   }
 
-  useFocusEffect(useCallback(() => {
-    checkToken()
-  }, []))
+  useFocusEffect(
+    useCallback(() => {
+      checkToken()
+    }, [])
+  )
 
   return (
     <ScreenWrapper

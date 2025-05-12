@@ -18,13 +18,15 @@ interface IParticipantsModal {
   sheetRef: React.RefObject<BottomSheetMethods>
   hash?: string
   isCreatorMode?: boolean
+  ownerEmail?: string
 }
 
 const ParticipantsModal = ({
   participants,
+  ownerEmail,
   sheetRef,
   hash,
-  isCreatorMode,
+  isCreatorMode = false,
 }: IParticipantsModal) => {
   const { t } = useTranslation()
   return (
@@ -70,7 +72,7 @@ const ParticipantsModal = ({
                     {participant.firstName}{" "}
                     {formatLastName(participant.lastName)}
                   </Text>
-                  {isCreatorMode && (
+                  {ownerEmail === participant.email && (
                     <Text style={styles.participantRole}>
                       {t("MeetingOrganaiser")}
                     </Text>

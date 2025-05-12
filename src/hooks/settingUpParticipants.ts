@@ -77,6 +77,7 @@ export const prepareParticipants = async ({
       firstName = "Guest",
       lastName = "",
       photo = null,
+      email = "",
     } = invitedParticipantsRef.current.find(
       ({ id }: { id: any }) => Number(userId) === Number(id)
     ) || {}
@@ -89,6 +90,7 @@ export const prepareParticipants = async ({
       photo,
       isAudioOn: usersAudioVideoMap[socketId].isAudioOn,
       isVideoOn: usersAudioVideoMap[socketId].isVideoOn,
+      email,
     }
   })
   setParticipants(newUsers)

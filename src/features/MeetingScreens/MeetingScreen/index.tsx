@@ -35,14 +35,21 @@ type ParamList = {
     isVideoOff?: boolean
     isMuted?: boolean
     eventId?: string
+    ownerEmail?: string
   }
 }
 
 const MeetingScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<RouteProp<ParamList, "Detail">>()
-  const { isCreatorMode, title, hash, instanceMeetingOwner, eventId } =
-    route.params
+  const {
+    isCreatorMode,
+    title,
+    hash,
+    instanceMeetingOwner,
+    eventId,
+    ownerEmail,
+  } = route.params
   const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
 
   const {
@@ -438,6 +445,7 @@ const MeetingScreen = () => {
           speechLanguage={speechLanguage}
         />
         <ParticipantsModal
+          ownerEmail={ownerEmail}
           isCreatorMode={isCreatorMode}
           hash={hash}
           participants={participants}

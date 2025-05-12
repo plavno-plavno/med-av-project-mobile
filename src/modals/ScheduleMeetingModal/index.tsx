@@ -36,6 +36,7 @@ import { DateTimeFormatEnum } from "@utils/enums"
 import { timeRounder } from "@utils/utils"
 import { ITimezone } from "src/api/calendarApi/types"
 import { useTimezoneQuery } from "src/api/auth/authApi"
+import { moderateScale } from "react-native-size-matters"
 
 interface IFormValues {
   date: string
@@ -316,7 +317,7 @@ const ScheduleMeetingModal = ({
           }}
           enableAutomaticScroll
           showsVerticalScrollIndicator={false}
-          extraScrollHeight={screenHeight * 0.2}
+          extraScrollHeight={screenHeight * 0.3}
         >
           <View style={styles.container}>
             <View style={styles.header}>
@@ -466,7 +467,11 @@ const ScheduleMeetingModal = ({
                       />
                       {isMenuOpen && recentParticipants?.length && (
                         <View style={styles.menuContainer}>
-                          <ScrollView keyboardShouldPersistTaps="always">
+                          <ScrollView
+                            showsVerticalScrollIndicator={false}
+                            keyboardShouldPersistTaps="always"
+                            style={{ maxHeight: moderateScale(90) }}
+                          >
                             {recentParticipants &&
                               recentParticipants.map((email, idx) => {
                                 return (
