@@ -166,7 +166,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
             <ScrollView
               showsVerticalScrollIndicator={false}
               style={styles.chipScrollWrapper}
-              contentContainerStyle={styles.chipContainer}
+              nestedScrollEnabled={true}
               keyboardShouldPersistTaps="always"
             >
               <View style={styles.chipContainer}>

@@ -98,7 +98,6 @@ const ProfileSettingsScreen = () => {
           },
           prefix: "avatar",
           postfix: "avatar",
-          tag: "avatar",
         })
         setFieldValue(
           "photo",

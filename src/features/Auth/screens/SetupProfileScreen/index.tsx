@@ -80,7 +80,6 @@ const SetupProfileScreen = () => {
           },
           prefix: "avatar",
           postfix: "avatar",
-          tag: "avatar",
         })
         setFieldValue(
           "photo",

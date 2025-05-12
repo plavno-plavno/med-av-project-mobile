@@ -293,7 +293,6 @@ const ScheduleMeetingModal = ({
     formikRef.current?.resetForm()
     onClose()
   }
-
   return (
     <>
       <BottomSheet
@@ -317,7 +316,7 @@ const ScheduleMeetingModal = ({
           }}
           enableAutomaticScroll
           showsVerticalScrollIndicator={false}
-          extraScrollHeight={screenHeight * 0.3}
+          // extraScrollHeight={screenHeight * 0.05}
         >
           <View style={styles.container}>
             <View style={styles.header}>
@@ -468,6 +467,7 @@ const ScheduleMeetingModal = ({
                       {isMenuOpen && recentParticipants?.length && (
                         <View style={styles.menuContainer}>
                           <ScrollView
+                            nestedScrollEnabled={true}
                             showsVerticalScrollIndicator={false}
                             keyboardShouldPersistTaps="always"
                             style={{ maxHeight: moderateScale(90) }}
