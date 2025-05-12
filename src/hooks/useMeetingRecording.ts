@@ -4,7 +4,6 @@ import {
 } from 'react';
 import { Socket } from 'socket.io-client';
 import { useAuthMeQuery } from 'src/api/userApi/userApi';
-import { getSocket } from './webRtcSocketInstance';
 import {
   mediaDevices,
   MediaStream,
@@ -54,7 +53,6 @@ export const useMeetingRecording = (roomId: string | null) => {
   const roomIdRef = useRef<string | null>(roomId);
 
   const socketRef = useRef<Socket | null>(null);
-  socketRef.current = getSocket();
 
   const updatePeerConnections = (peerConnection: RTCPeerConnection) => {
     mainPeerConnectionRef.current = peerConnection;
@@ -248,7 +246,7 @@ export const useMeetingRecording = (roomId: string | null) => {
         console.error('Local description is null');
       }
     } catch (error) {
-      console.error('Error processing offer:', error);
+      console.error('Meeting recording Error processing offer:', error);
     }
   };
 

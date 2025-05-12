@@ -47,7 +47,9 @@ export const useWebRtcSocketConnection = (roomId: string) => {
         if (attempts > 0) {
           retryCount.current++;
           console.log(`Reconnecting attempt ${retryCount.current}/${MAX_RETRIES}...`);
-          setTimeout(() => connectSocket(url, token, attempts - 1), 2000);
+          if(retryCount.current <= MAX_RETRIES){
+            setTimeout(() => connectSocket(url, token, attempts - 1), 2000);
+          }
         } else {
           console.error('Max reconnect attempts reached. Not retrying.');
           navigationRef.current?.goBack();

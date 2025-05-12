@@ -1,24 +1,22 @@
 import {
-  useRef, useEffect, useState, 
+  useRef, useEffect, useState,
 } from 'react';
 import { Socket } from 'socket.io-client';
 
-import { useWebRtcSocketConnection } from './webRtcSocketInstance';
 import { useAuthMeQuery } from 'src/api/userApi/userApi';
-import { MediaStreamTrack, RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
+import { mediaDevices, MediaStream, MediaStreamTrack, RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
 import { createCandidatesManager } from '@utils/candidatesManager';
 import { subscribeToSocketEvents, unsubscribeFromSocketEvents } from '@utils/manageSocketListeners';
 import { ParticipantsInfo } from './useWebRtc';
-import { PeerConnectionType, RTCAnswerPayload, RTCCandidatePayload, RTCOfferPayload } from '@utils/meeting';
+import { PeerConnectionType, RTCAnswerPayload, RTCCandidatePayload, RTCOfferPayload, UserActions } from '@utils/meeting';
 import { createPeerConnection } from '@utils/peerConnections';
 
-export const useScreenSharing = (roomId: string | null) => {
-    const { data: authMeData } = useAuthMeQuery()
+export const useScreenSharing = (roomId: string | null, rtcSocket: Socket | null, mainPeerConnection: any) => {
+  const { data: authMeData } = useAuthMeQuery()
   const userRefId = useRef<string | number>();
   userRefId.current = authMeData?.id;
 
   const socketRef = useRef<Socket | null>(null);
-  const {socket} = useWebRtcSocketConnection(roomId!);
 
   const peerConnection = useRef<RTCPeerConnection | null>(null);
   const candidatesManager = useRef(
@@ -32,14 +30,33 @@ export const useScreenSharing = (roomId: string | null) => {
   const screenSharingRef = useRef<boolean>(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const sharingOwnerRef = useRef<string | null>(null);
-  const mySocketId = useRef(socketRef.current?.id);
+  const mySocketId = useRef<string | null>(null);
+
+  const isSharingStartedRef = useRef(false);
+  const screenStreamRef = useRef<MediaStream | null>(null);
+
 
   useEffect(() => {
-    roomIdRef.current = roomId;
-    socketRef.current = socket;
-    mySocketId.current = socket?.id;
-    screenSharingRef.current = isScreenSharing;
-  }, [roomId, isScreenSharing, socket]);
+    if(rtcSocket?.id && roomId && mainPeerConnection) {
+      roomIdRef.current = roomId;
+      screenSharingRef.current = isScreenSharing;
+      socketRef.current = rtcSocket;
+      mySocketId.current = rtcSocket?.id;
+    }
+  }, [roomId, isScreenSharing, rtcSocket?.id, mainPeerConnection]);
+
+// useEffect(() => {
+//   if (!peerConnection.current && mainPeerConnection) {
+//       peerConnection.current = createPeerConnection({
+//         setSharedScreen,
+//         setIsScreenSharing,
+//         type: PeerConnectionType.SHARING,
+//       });
+//       socketRef.current?.emit('sharing-peer', {
+//         roomId: roomIdRef.current,
+//       });
+//   }
+// }, [mainPeerConnection])
 
   useEffect(() => {
     if (!socketRef.current) {
@@ -69,10 +86,12 @@ export const useScreenSharing = (roomId: string | null) => {
       }
 
       setSharedScreen(null);
+      setIsScreenSharing(false);
     };
   }, [socketRef.current]);
 
   const handleDisconnect = () => {
+    stopScreenShare();
     peerConnection.current?.close();
     peerConnection.current = null;
   };
@@ -95,16 +114,18 @@ export const useScreenSharing = (roomId: string | null) => {
 
     if (socketId === mySocketId.current) {
       if (!peerConnection.current) {
-        console.info('Creating sharing peer connection');
         peerConnection.current = createPeerConnection({
           setSharedScreen,
+          setIsScreenSharing,
           type: PeerConnectionType.SHARING,
         });
       }
+
       socketRef.current?.emit('sharing-peer', {
         roomId: roomIdRef.current,
       });
     }
+
     setIsScreenSharing(anySharingOn);
   };
 
@@ -116,6 +137,88 @@ export const useScreenSharing = (roomId: string | null) => {
   const handleStopSharing = () => {
     setIsScreenSharing(false);
     sharingOwnerRef.current = null;
+  };
+
+  const startScreenShare = async () => {
+    try {
+      if (isSharingStartedRef.current) {
+        return;
+      }
+
+      const screenStream = await mediaDevices.getDisplayMedia();
+
+      const screenTrack = screenStream.getVideoTracks()[0];
+
+      if (!screenTrack) {
+        console.error('No video track available for screen sharing');
+
+        return;
+      }
+
+      if (peerConnection.current) {
+        peerConnection.current.addTrack(screenTrack, screenStream);
+
+        const offer = await peerConnection.current.createOffer({});
+        await peerConnection.current.setLocalDescription(offer);
+
+        socketRef.current?.emit('offer', {
+          sdp: peerConnection.current.localDescription,
+          roomId: roomIdRef.current,
+          type: PeerConnectionType.SHARING,
+        });
+
+        socketRef?.current?.emit('action', {
+          roomId: roomIdRef.current,
+          action: UserActions.StartShareScreen,
+          socketId: socketRef.current.id,
+        });
+
+        screenStreamRef.current = screenStream;
+
+        isSharingStartedRef.current = true;
+      }
+      screenTrack.addEventListener('ended', () => {
+        stopScreenShare();
+      })
+    } catch (error) {
+      console.error('Error starting screen sharing:', error);
+    }
+  };
+
+  const stopScreenShare = async () => {
+    if (!screenSharingRef || sharingOwnerRef.current !== mySocketId.current) {
+      return;
+    }
+
+    try {
+      socketRef.current?.emit('action', {
+        roomId: roomIdRef.current,
+        action: UserActions.StopShareScreen,
+        socketId: socketRef.current.id,
+      });
+
+      if (screenStreamRef.current) {
+        screenStreamRef.current.getTracks().forEach((track) => {
+          track.stop();
+          peerConnection.current?.getSenders().forEach((sender) => {
+            if (sender.track === track) {
+              peerConnection.current?.removeTrack(sender);
+            }
+          });
+        });
+
+        screenStreamRef.current = null;
+      }
+
+      setIsScreenSharing(false);
+
+      isSharingStartedRef.current = false;
+    } catch (error) {
+      console.error(
+        'Error while stopping screen share and switching to camera:',
+        error,
+      );
+    }
   };
 
   const handleOffer = async ({ sdp, peerType }: RTCOfferPayload) => {
@@ -147,11 +250,6 @@ export const useScreenSharing = (roomId: string | null) => {
         return;
       }
 
-      // eslint-disable-next-line no-console
-      console.log(
-        '📡 Signaling state before setRemoteDescription:',
-        peerConnection.current.signalingState,
-      );
       const offer = new RTCSessionDescription(sdp);
 
       await peerConnection.current.setRemoteDescription(offer);
@@ -173,6 +271,7 @@ export const useScreenSharing = (roomId: string | null) => {
       console.error('❌ Error processing offer:', error);
     }
   };
+  
 
   const handleAnswer = async ({ sdp, peerType }: RTCAnswerPayload) => {
     if (peerType !== PeerConnectionType.SHARING) {
@@ -190,8 +289,6 @@ export const useScreenSharing = (roomId: string | null) => {
         await peerConnection.current.setRemoteDescription(
           new RTCSessionDescription(sdp),
         );
-        // eslint-disable-next-line no-console
-        console.log('Answer successfully processed');
       }
     } catch (error) {
       console.error('Error setting remote description:', error);
@@ -205,6 +302,8 @@ export const useScreenSharing = (roomId: string | null) => {
   };
 
   return {
+    startScreenShare,
+    stopScreenShare,
     sharingOwner: sharingOwnerRef.current,
     isScreenSharing,
     sharedScreen,

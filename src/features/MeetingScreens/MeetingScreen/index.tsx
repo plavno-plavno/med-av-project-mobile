@@ -109,7 +109,9 @@ const MeetingScreen = () => {
   )}`
 
   const { isScreenSharing, sharingOwner, sharedScreen } = useScreenSharing(
-    roomId!
+    roomId!,
+    socketRef.current,
+    peerConnection
   )
 
   const handleResponse = async (accepted: boolean) => {
@@ -381,7 +383,7 @@ const MeetingScreen = () => {
             localStream={localStream}
             isVideoOff={isVideoOff}
             isMuted={isMuted}
-            isScreenShare={isScreenShare}
+            isScreenShare={isScreenSharing}
             remoteAudioStreams={remoteAudioStreams}
             usersAudioTrackToIdMap={usersAudioTrackToIdMap}
             remoteVideoStreams={remoteVideoStreams}

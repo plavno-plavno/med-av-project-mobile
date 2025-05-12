@@ -120,9 +120,8 @@ const VideoGrid = ({
   const activeSpeaker = useHighlightSpeaker(peerConnection, participantsToShow)
   const totalParticipants = participantsToShow.length
 
-  let sharedScreenStream;
+  let sharedScreenStream = new MediaStream();
   if (sharedScreen) {
-    sharedScreenStream = new MediaStream()
     sharedScreenStream.addTrack(sharedScreen)}
 
   const renderStream = (item: any, index: number) => {
@@ -225,7 +224,7 @@ const VideoGrid = ({
 
   return (
     <View style={styles.container}>
-      {isScreenShare && sharedScreenStream && (
+      {isScreenShare && (
         <View style={styles.sharingContainer}>
           <RTCView
             streamURL={sharedScreenStream.toURL()}

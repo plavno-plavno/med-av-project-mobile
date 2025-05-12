@@ -15,6 +15,7 @@ interface CreatePeerConnectionParams {
   socketRef?: MutableRefObject<Socket | null>;
   roomId?: string | null;
   setSharedScreen?: (track: MediaStreamTrack | null) => void;
+  setIsScreenSharing?: (arg: boolean) => void;
   setRemoteVideoStreams?: Dispatch<SetStateAction<VideoStream[]>>;
   setRemoteAudioStreams?: Dispatch<SetStateAction<AudioStream[]>>;
   participantsRef?: UserInMeeting[] | null;
@@ -30,6 +31,7 @@ export const createPeerConnection = ({
   socketRef,
   roomId,
   setSharedScreen,
+  setIsScreenSharing,
   setRemoteVideoStreams,
   setRemoteAudioStreams,
   participantsRef,
@@ -44,7 +46,6 @@ export const createPeerConnection = ({
     const pc = new RTCPeerConnection(iceServersConfig);
 
     pc.addEventListener("icecandidate", ({ candidate }) => {
-      console.log(candidate, "onIcecandidate")
       if (candidate && socketRef?.current) {
         socketRef.current.emit('candidate', {
           candidate,
@@ -52,7 +53,15 @@ export const createPeerConnection = ({
           type,
         });
       }
-    })
+    });
+
+    pc.addEventListener('iceconnectionstatechange', (event) => {
+      console.log('ICE Connection State Change:', event);
+    });
+    
+    pc.addEventListener('signalingstatechange', (event) => {
+      console.log('Signaling State Change:', event);
+    });
 
     pc.addEventListener("connectionstatechange", async () => {
       if (pc.connectionState === 'failed') {
@@ -95,28 +104,28 @@ export const createPeerConnection = ({
     pc.addEventListener("track", (event: any) => {
       const midId = event?.transceiver?.mid || '';
       const track = event?.track;
-
+    
       if (type === PeerConnectionType.SHARING) {
         setSharedScreen?.(track);
-
+        setIsScreenSharing?.(true);
         return;
       }
-
+    
       if (track.kind === 'video') {
         setRemoteVideoStreams?.((prevStreams) => {
           const exists = prevStreams.some(
             (stream) => stream.videoTrack.id === track.id,
           );
-
+    
           if (!exists) {
             const newVideoStream: VideoStream = {
               videoTrack: track,
               midId: midId,
             };
-
+    
             return [...prevStreams, newVideoStream];
           }
-
+    
           return prevStreams;
         });
       } else if (track.kind === 'audio') {
@@ -124,20 +133,21 @@ export const createPeerConnection = ({
           const exists = prevStreams.some(
             (stream) => stream.audioTrack.id === track.id,
           );
-
+    
           if (!exists) {
             const newAudioStream: AudioStream = {
               audioTrack: track,
               midId: midId,
             };
-
+    
             return [...prevStreams, newAudioStream];
           }
-
+    
           return prevStreams;
         });
       }
-    })
+    });
+    
     return pc;
   } catch (error) {
     console.error('[RTC] Failed to create PeerConnection:', error);
