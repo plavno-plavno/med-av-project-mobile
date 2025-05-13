@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import { FlatList, Platform, Text, View } from "react-native"
+import {
+  FlatList,
+  PermissionsAndroid,
+  Platform,
+  Text,
+  View,
+} from "react-native"
 import useWebRtc from "src/hooks/useWebRtc"
 import { styles } from "./styles"
 import { Icon } from "@components"
@@ -156,6 +162,16 @@ const MeetingScreen = () => {
   const handleParticipantsOpen = () => {
     sheetParticipantsRef.current?.open()
   }
+  const checkScreenRecordingPermission = async (): Promise<boolean> => {
+    if (Platform.OS === "android") {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO
+      )
+      return granted === PermissionsAndroid.RESULTS.GRANTED
+    }
+
+    return true
+  }
 
   const saveChunkToFile = async (chunk: any) => {
     console.log("saveChunkToFile")
@@ -248,16 +264,29 @@ const MeetingScreen = () => {
       return
     }
 
-    if (isScreenRecording) {
-      handleStopRecording()
-    } else {
-      removeFileIfExisted().finally(async () => {
-        recordingNameRef.current = `recording-${Date.now()}`
-        await startRecording()
-        onStartRecord()
-        startTimeRef.current = moment()
-      })
+    const handleAsync = async () => {
+      const granted = await checkScreenRecordingPermission()
+      if (!granted) {
+        Toast.show({
+          type: "error",
+          text1: t("ScreenRecordingPermissionDenied"),
+        })
+        return
+      }
+
+      if (isScreenRecording) {
+        handleStopRecording()
+      } else {
+        await removeFileIfExisted().finally(async () => {
+          recordingNameRef.current = `recording-${Date.now()}`
+          await startRecording()
+          onStartRecord()
+          startTimeRef.current = moment()
+        })
+      }
     }
+
+    handleAsync()
   }, [isScreenRecording, instanceMeetingOwner])
 
   const callTopActions = [
