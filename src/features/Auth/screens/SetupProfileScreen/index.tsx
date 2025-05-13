@@ -121,6 +121,12 @@ const SetupProfileScreen = () => {
     }
   }
 
+  const handleDeleteAvatar = () => {
+    setIsPhotoChanged(true)
+    formikRef.current?.setFieldValue("photo", null)
+    setSelectedFile(null)
+  }
+
   const timezoneOptions = timezones?.data?.map((item: ITimezone) => ({
     label: item.text,
     value: item.id.toString(),
@@ -196,7 +202,7 @@ const SetupProfileScreen = () => {
                         <CustomButton
                           text={t("Delete")}
                           style={helpers.width35Percent}
-                          onPress={() => setSelectedFile(null)}
+                          onPress={handleDeleteAvatar}
                         />
                       )}
                     </View>

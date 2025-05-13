@@ -139,6 +139,7 @@ const ProfileSettingsScreen = () => {
   }
 
   const handleDeleteAvatar = () => {
+    setIsPhotoChanged(true)
     formikRef.current?.setFieldValue("photo", null)
     setSelectedFile(null)
   }

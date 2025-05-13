@@ -140,7 +140,7 @@ const MeetingScreen = () => {
   useKeepAwake()
   useStatusBar("light-content", colors.dark)
   const [isCaptionOn, setIsCaptionOn] = React.useState(false)
-  const meetingTitle = title === "Instant meeting" ? title : hash
+  const meetingTitle = title === "Instant meeting" ? hash : title
 
   const sheetChatRef = useRef<BottomSheetMethods>(null)
   const sheetCatiptionsRef = useRef<BottomSheetMethods>(null)
@@ -360,6 +360,7 @@ const MeetingScreen = () => {
   if (!participants?.length) {
     return <Loading />
   }
+  console.log("\x1b[31m%s\x1b[0m", "meetingTitle", meetingTitle)
   return (
     <>
       <SafeAreaView edges={["top"]} style={styles.container}>
