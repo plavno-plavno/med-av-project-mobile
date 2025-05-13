@@ -43,7 +43,7 @@ export const styles = StyleSheet.create({
     color: colors.charcoal,
   },
   participantsContainer: {
-    maxHeight: moderateScale(160),
+    maxHeight: screenHeight * 0.15,
   },
 
   participantsContent: {

@@ -37,7 +37,7 @@ import { timeRounder } from "@utils/utils"
 import { ITimezone } from "src/api/calendarApi/types"
 import { useTimezoneQuery } from "src/api/auth/authApi"
 import { moderateScale } from "react-native-size-matters"
-
+import { UIManager, findNodeHandle } from "react-native"
 interface IFormValues {
   date: string
   title: string
@@ -84,7 +84,7 @@ const ScheduleMeetingModal = ({
   const { currentDate } = useAppSelector((state) => state.calendar)
   const formikRef = React.useRef<FormikProps<IFormValues>>(null as any)
   const isEditMode = !!eventId
-
+  const chipWrapperRef = React.useRef<View>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [createEvent, { isLoading: isCreateEventLoading }] =
     useCreateEventMutation()
@@ -316,7 +316,6 @@ const ScheduleMeetingModal = ({
           }}
           enableAutomaticScroll
           showsVerticalScrollIndicator={false}
-          // extraScrollHeight={screenHeight * 0.05}
         >
           <View style={styles.container}>
             <View style={styles.header}>
@@ -443,27 +442,58 @@ const ScheduleMeetingModal = ({
                           />
                         </View>
                       </TouchableOpacity>
-                      <CustomInput
-                        inputType="chip"
-                        label="Invite Participants"
-                        required
-                        placeholder="Invite participants"
-                        value={values.participants.filter(
-                          (email) => email !== authMe?.email
-                        )}
-                        onChangeText={(val) => {
-                          setFieldValue("participants", val)
-                        }}
-                        error={
-                          touched.participants && errors.participants
-                            ? Array.isArray(errors.participants)
-                              ? errors.participants.join("")
-                              : String(errors.participants)
-                            : undefined
-                        }
-                        onFocus={() => setIsMenuOpen(true)}
-                        onBlur={() => setIsMenuOpen(false)}
-                      />
+                      <View ref={chipWrapperRef} collapsable={false}>
+                        <CustomInput
+                          onFocus={() => {
+                            setIsMenuOpen(true)
+                            setTimeout(() => {
+                              const scrollNode =
+                                scrollRef.current?.getScrollResponder?.()
+                              const scrollNativeNode =
+                                scrollNode && findNodeHandle(scrollNode)
+                              const chipNode = findNodeHandle(
+                                chipWrapperRef.current
+                              )
+
+                              if (chipNode && scrollNativeNode) {
+                                UIManager.measureLayout(
+                                  chipNode,
+                                  scrollNativeNode,
+                                  () =>
+                                    console.warn(
+                                      "Failed to measure chip input layout"
+                                    ),
+                                  (x, y) => {
+                                    scrollRef?.current?.scrollToPosition(
+                                      0,
+                                      y - 5,
+                                      true
+                                    )
+                                  }
+                                )
+                              }
+                            }, 250)
+                          }}
+                          inputType="chip"
+                          label="Invite Participants"
+                          required
+                          placeholder="Invite participants"
+                          value={values.participants.filter(
+                            (email) => email !== authMe?.email
+                          )}
+                          onChangeText={(val) => {
+                            setFieldValue("participants", val)
+                          }}
+                          error={
+                            touched.participants && errors.participants
+                              ? Array.isArray(errors.participants)
+                                ? errors.participants.join("")
+                                : String(errors.participants)
+                              : undefined
+                          }
+                          onBlur={() => setIsMenuOpen(false)}
+                        />
+                      </View>
                       {isMenuOpen && recentParticipants?.length && (
                         <View style={styles.menuContainer}>
                           <ScrollView
