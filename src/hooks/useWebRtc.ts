@@ -11,7 +11,10 @@ import {
 } from "react-native-webrtc"
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { ROUTES } from "src/navigation/RoutesTypes"
-import { useAuthMeQuery, useGetUsersByIdMutation } from "src/api/userApi/userApi"
+import {
+  useAuthMeQuery,
+  useGetUsersByIdMutation,
+} from "src/api/userApi/userApi"
 import inCallManager from "react-native-incall-manager"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
 import AudioRecord from "react-native-audio-record"
@@ -30,13 +33,18 @@ import { screenHeight, screenWidth } from "@utils/screenResponsive"
 import { isIOS } from "@utils/platformChecker"
 import { useScalerFindFreeMachinePairSTTMutation } from "src/api/scalerApi/scalerApi"
 import moment from "moment"
-import { PeerConnectionType, RTCAnswerPayload, RTCCandidatePayload, UserInMeeting } from "@utils/meeting"
+import {
+  PeerConnectionType,
+  RTCAnswerPayload,
+  RTCCandidatePayload,
+  UserInMeeting,
+} from "@utils/meeting"
 import { createPeerConnection } from "@utils/peerConnections"
 import { useAudioRecorder } from "./useAudioRecorder"
 import { Platform } from "react-native"
 import { useScreenRecorder } from "./useScreenRecorder"
 import { prepareParticipants } from "./settingUpParticipants"
-import DeviceInfo from 'react-native-device-info';
+import DeviceInfo from "react-native-device-info"
 import { createCandidatesManager } from "@utils/candidatesManager"
 import { initLocalMediaStream } from "./initLocalMediaStream"
 
@@ -176,13 +184,16 @@ type ParamList = {
   }
 }
 
-const getFullName = (user: User) => user.firstName + ' ' + user.lastName;
+const getFullName = (user: User) => user.firstName + " " + user.lastName
 
 const SUBTITLES_QUEUE_LIMIT = 3
 const TRIES_LIMIT = 7
 let RETRY_ATTEMPT: number = 0
 
-const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) => {
+const useWebRtc = (
+  instanceMeetingOwner: boolean,
+  invitedParticipants: User[]
+) => {
   const [localStream, setLocalStream] = useState<LocalStream | null>(null)
   const peerConnection = useRef<RTCPeerConnection | null>(null)
   const [participants, setParticipants] = useState<User[]>([])
@@ -220,8 +231,8 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
   const roomId = route?.params?.meetId
   const meetId = route.params?.meetId
 
-  const {socket, scalerMachineUrl} = useWebRtcSocketConnection(roomId!);
-  
+  const { socket, scalerMachineUrl } = useWebRtcSocketConnection(roomId!)
+
   const [scalerFindFreeMachinePairSTT] =
     useScalerFindFreeMachinePairSTTMutation()
 
@@ -233,7 +244,7 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
     hash: String(route?.params?.hash),
   })
 
-  const invitedParticipantsRef = useRef<User[]>(invitedParticipants ||[])
+  const invitedParticipantsRef = useRef<User[]>(invitedParticipants || [])
 
   const socketRef = useRef<Socket | null>(socket)
 
@@ -252,7 +263,9 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
   const pendingCandidates: RTCIceCandidate[] = []
 
   let isRecording = false
-  const [translatedSubtitles, setTranslatedSubtitles] = useState<ISubtitle[]>([])
+  const [translatedSubtitles, setTranslatedSubtitles] = useState<ISubtitle[]>(
+    []
+  )
 
   let collectorAr: Float32Array[] = []
   const screenTrackMidIdRef = useRef<string>()
@@ -266,17 +279,17 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
   const [points, setPoints] = useState<Point[]>([])
   const [clearCanvas, setClearCanvas] = useState(false)
 
-  const participantsRef = useRef<UserInMeeting[] | null>(null);
+  const participantsRef = useRef<UserInMeeting[] | null>(null)
 
   const recordingNameRef = useRef<any>()
-  const recordingUrl = useRef('');
+  const recordingUrl = useRef("")
 
   const candidatesManager = useRef(
-    createCandidatesManager(peerConnection),
-  ).current;
+    createCandidatesManager(peerConnection)
+  ).current
 
   useEffect(() => {
-    if(socket){
+    if (socket) {
       socketRef.current = socket
     }
   }, [socket])
@@ -288,7 +301,7 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
         wsRef.current.send(
           JSON.stringify({
             fileName: recordingNameRef.current,
-            fileExtension: type === 'audio' ? 'raw' : "h264",
+            fileExtension: type === "audio" ? "raw" : "h264",
             chunks: base64Chunk,
             action: "stream",
             platform: Platform.OS,
@@ -296,7 +309,7 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
             streamGroup: recordingNameRef.current,
           })
         )
-        console.log(type, 'chunk sent', Platform.OS);
+        console.log(type, "chunk sent", Platform.OS)
       }
     } catch (error) {
       console.error("Failed to send chunk:", error)
@@ -304,7 +317,7 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
   }
 
   const sendSttAudio = (data: string) => {
-    if(!isMuted){
+    if (!isMuted) {
       addToBufferAndSend(
         data,
         sttLanguageRef.current?.toLowerCase?.() || "en",
@@ -312,15 +325,21 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
       )
     }
   }
-  const { onStartRecord, onStopRecord } = useAudioRecorder({ sendChunkToServer, sendSttAudio })
-  const { startRecording, stopRecording, isRecording: isScreenRecording } = useScreenRecorder({
+  const { onStartRecord, onStopRecord } = useAudioRecorder({
+    sendChunkToServer,
+    sendSttAudio,
+  })
+  const {
+    startRecording,
+    stopRecording,
+    isRecording: isScreenRecording,
+  } = useScreenRecorder({
     onChunkReceived: sendChunkToServer,
   })
 
   useEffect(() => {
-    participantsRef.current = participants as any;
-  }, [participants]);
-
+    participantsRef.current = participants as any
+  }, [participants])
 
   useEffect(() => {
     if (localStream) {
@@ -345,15 +364,15 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
   useEffect(() => {
     const setupSocket = async () => {
       if (!socketRef.current && roomId) {
-        try{
+        try {
           await scalerFindFreeMachinePairSTT({ id: roomId! })
           await new Promise((resolve) => setTimeout(resolve, 2000))
         } catch (error) {
-          console.log(error, 'error scalerFindFreeMachinePairSTT');
+          console.log(error, "error scalerFindFreeMachinePairSTT")
         }
         try {
-         if(scalerMachineUrl){
-           recordingUrl.current = `https://${scalerMachineUrl}:8080`;
+          if (scalerMachineUrl) {
+            recordingUrl.current = `https://${scalerMachineUrl}:8080`
           }
           peerConnection.current = createPeerConnection({
             socketRef,
@@ -367,12 +386,12 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
             endCall,
             startCall,
             type: PeerConnectionType.USER,
-          });
+          })
           setTimeout(() => {
             startCall()
           }, 2000)
         } catch (error) {
-          console.log(error, 'error startCall');
+          console.log(error, "error startCall")
           setError(true)
         }
       }
@@ -459,7 +478,7 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
     })
 
     channel.addEventListener("message", (event) => {
-      console.log(event, 'eventeventeventeventevent');
+      console.log(event, "eventeventeventeventevent")
       if (type === "Messages") {
         handlePeerDataChannelMessage(event?.data)
       } else if (type === "Draw") {
@@ -654,35 +673,37 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
           isRecordingOn: false,
         },
         isOwner: instanceMeetingOwner,
-        username: getFullName(authMeData as any)
+        username: getFullName(authMeData as any),
       })
       if (isSpeakerOn) {
         if (isIOS()) {
           setTimeout(() => {
             DeviceInfo.isHeadphonesConnected().then((enabled) => {
-              if(!enabled){
+              if (!enabled) {
                 inCallManager.setSpeakerphoneOn(true)
               } else {
-                setIsSpeakerOn(false);
+                setIsSpeakerOn(false)
               }
-            });
+            })
           }, 1000)
         } else {
           DeviceInfo.isHeadphonesConnected().then((enabled) => {
-            if(!enabled){
+            if (!enabled) {
               inCallManager.setSpeakerphoneOn(true)
             } else {
-              setIsSpeakerOn(false);
+              setIsSpeakerOn(false)
             }
-          });
+          })
         }
       }
+
       if (!timerRef.current) {
         startTimeRef.current = Date.now()
         timerRef.current = setInterval(() => {
           elapsedTimeRef.current = Date.now() - (startTimeRef.current || 0)
         }, 1000)
       }
+      eventStartedTimeRef.current = moment().unix()
     } catch (error) {
       console.error("Error starting call:", error)
     }
@@ -717,6 +738,11 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
         id: getCalendarEventByHashData?.id!,
       },
     })
+    console.log(
+      "\x1b[31m%s\x1b[0m",
+      "eventStartedTimeRef.current C===3",
+      moment().unix() - eventStartedTimeRef.current
+    )
     reset({
       index: 0,
       routes: [{ name: ScreensEnum.MAIN }],
@@ -786,7 +812,6 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
         sdp: peerConnection.current.localDescription,
         roomId,
       })
-      eventStartedTimeRef.current = moment().unix()
 
       clearInterval(offerStatusCheckRef.current)
       if (RETRY_ATTEMPT) RETRY_ATTEMPT = 0
@@ -797,9 +822,15 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
     }
   }
 
-  const handleOffer = async ({ sdp, peerType }: { sdp: RTCSessionDescription, peerType: string }) => {
+  const handleOffer = async ({
+    sdp,
+    peerType,
+  }: {
+    sdp: RTCSessionDescription
+    peerType: string
+  }) => {
     if (peerType !== PeerConnectionType.USER) {
-      return;
+      return
     }
     if (!peerConnection.current) {
       peerConnection.current = createPeerConnection({
@@ -814,19 +845,19 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
         endCall,
         startCall,
         type: PeerConnectionType.USER,
-      });
+      })
     }
     try {
-      const polite = true;
+      const polite = true
       const offerCollision =
-        peerConnection.current.signalingState === 'have-local-offer' ||
-        peerConnection.current.signalingState === 'have-remote-offer';
-      const ignoreOffer = !polite && offerCollision;
+        peerConnection.current.signalingState === "have-local-offer" ||
+        peerConnection.current.signalingState === "have-remote-offer"
+      const ignoreOffer = !polite && offerCollision
 
       if (ignoreOffer) {
-        return;
+        return
       }
-      
+
       RETRY_ATTEMPT++
       if (RETRY_ATTEMPT > TRIES_LIMIT)
         throw new Error("Something wrong with connection")
@@ -854,75 +885,73 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
 
   const handleAnswer = async ({ sdp, peerType }: RTCAnswerPayload) => {
     if (peerType !== PeerConnectionType.USER) {
-      return;
+      return
     }
 
     try {
       if (peerConnection.current) {
-        if (peerConnection.current.signalingState === 'stable') {
-          console.warn('Answer ignored: already stable');
+        if (peerConnection.current.signalingState === "stable") {
+          console.warn("Answer ignored: already stable")
 
-          return;
+          return
         }
 
         await peerConnection.current.setRemoteDescription(
-          new RTCSessionDescription(sdp),
-        );
+          new RTCSessionDescription(sdp)
+        )
       }
     } catch (error) {
-      console.error('Error setting remote description:', error);
+      console.error("Error setting remote description:", error)
     }
-  };
- 
+  }
+
   const [streamWithAllTracks, setStreamWithAllTracks] =
-    useState<MediaStream | null>(null);
+    useState<MediaStream | null>(null)
 
   const handleUserJoined = async ({
     participantsInfo,
     ownerAccess,
   }: {
-    participantsInfo: ParticipantsInfo[];
-    ownerAccess: boolean;
+    participantsInfo: ParticipantsInfo[]
+    ownerAccess: boolean
   }) => {
     try {
-          const sttRes = await scalerFindFreeMachinePairSTT({
-            id: String(meetId),
-          }).unwrap()
-          sttUrlRef.current = `wss://${sttRes?.stt}`
-        } catch (error) {
-          console.log(error, 'error scalerFindFreeMachinePairSTT');
-        }
+      const sttRes = await scalerFindFreeMachinePairSTT({
+        id: String(meetId),
+      }).unwrap()
+      sttUrlRef.current = `wss://${sttRes?.stt}`
+    } catch (error) {
+      console.log(error, "error scalerFindFreeMachinePairSTT")
+    }
 
     try {
-
       await prepareParticipants({
         participantsInfo,
         invitedParticipantsRef,
         setParticipants,
         getUsersById,
-      });
-      console.log(streamWithAllTracks, 'streamWithAllTracksstreamWithAllTracks');
-      
+      })
+      console.log(streamWithAllTracks, "streamWithAllTracksstreamWithAllTracks")
 
       if (streamWithAllTracks) {
         streamWithAllTracks.getAudioTracks().forEach((track) => {
-          track.enabled = false;
-          track.stop();
-          streamWithAllTracks.removeTrack(track);
-        });
+          track.enabled = false
+          track.stop()
+          streamWithAllTracks.removeTrack(track)
+        })
         streamWithAllTracks.getVideoTracks().forEach((track) => {
-          track.enabled = false;
-          track.stop();
-          streamWithAllTracks.removeTrack(track);
-        });
+          track.enabled = false
+          track.stop()
+          streamWithAllTracks.removeTrack(track)
+        })
       }
 
       const { mediaStream, localStream } = await initLocalMediaStream(
-        socketRef.current?.id ?? '',
-      );
+        socketRef.current?.id ?? ""
+      )
 
-      setStreamWithAllTracks(mediaStream);
-      setLocalStream(localStream);
+      setStreamWithAllTracks(mediaStream)
+      setLocalStream(localStream)
 
       if (!peerConnection.current) {
         peerConnection.current = createPeerConnection({
@@ -937,56 +966,56 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
           endCall,
           startCall,
           type: PeerConnectionType.USER,
-        });
+        })
       }
 
       mediaStream.getTracks().forEach((track) => {
         if (peerConnection.current) {
-          peerConnection.current.addTrack(track, mediaStream);
+          peerConnection.current.addTrack(track, mediaStream)
         }
-      });
+      })
 
       if (offerStatusCheckRef.current) {
-        clearInterval(offerStatusCheckRef.current);
+        clearInterval(offerStatusCheckRef.current)
       }
 
-      offerStatusCheckRef.current = setInterval(handleOfferCheck, 1000);
+      offerStatusCheckRef.current = setInterval(handleOfferCheck, 1000)
     } catch (error) {
-      console.error('Error handling user join:', error);
+      console.error("Error handling user join:", error)
     }
-  };
+  }
 
   useEffect(() => {
     if (!drawChannelRef.current) {
-      return;
+      return
     }
 
     const handleDrawMessage = (event: any) => {
       try {
-        console.log(event, 'eventeventeventeventevent');
-        
-        const data = JSON.parse(event.data);
+        console.log(event, "eventeventeventeventevent")
 
-        if (data.type === 'start') {
+        const data = JSON.parse(event.data)
+
+        if (data.type === "start") {
           handleDrawingData(event.data)
           // receivedStart(data.xRatio, data.yRatio);
-        } else if (data.type === 'draw') {
+        } else if (data.type === "draw") {
           // receivedDraw(data.xRatio, data.yRatio);
           handleDrawingData(event.data)
-        } else if (data.type === 'end') {
-          receivedFinish();
+        } else if (data.type === "end") {
+          receivedFinish()
         }
       } catch (e) {
-        console.error('Error parsing draw event:', e);
+        console.error("Error parsing draw event:", e)
       }
-    };
-    drawChannelRef.current.addEventListener('message', handleDrawMessage);
+    }
+    drawChannelRef.current.addEventListener("message", handleDrawMessage)
 
     return () => {
-      drawChannelRef.current?.removeEventListener('message', handleDrawMessage);
-    };
-  }, [drawChannelRef.current]);
-  
+      drawChannelRef.current?.removeEventListener("message", handleDrawMessage)
+    }
+  }, [drawChannelRef.current])
+
   // const handleUserJoined = async ({
   //   userId,
   //   participantsInfo,
@@ -1002,7 +1031,7 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
   //   } catch (error) {
   //     console.log(error, 'error scalerFindFreeMachinePairSTT');
   //   }
-      
+
   //   try {
   //     const usersAudioVideoMap: Record<
   //       string,
@@ -1097,9 +1126,9 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
 
   const handleCandidate = ({ candidate, peerType }: RTCCandidatePayload) => {
     if (peerType === PeerConnectionType.USER) {
-      candidatesManager.addCandidate(candidate);
+      candidatesManager.addCandidate(candidate)
     }
-  };
+  }
 
   // const handleCandidate = async ({
   //   candidate,
@@ -1299,7 +1328,7 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
       } else {
         console.warn("WebSocket is not open. Saving audio locally.")
         // AudioRecord.stop().then((_res: string) => {
-          isRecording = false
+        isRecording = false
         // })
       }
     } catch (error) {
@@ -1487,30 +1516,26 @@ const useWebRtc = (instanceMeetingOwner: boolean, invitedParticipants: User[]) =
       invitedParticipantsRef,
       setParticipants,
       getUsersById,
-    });
+    })
   }
 
-useEffect(() => {
-  if (getCalendarEventByHashData) {
-    invitedParticipantsRef.current = [
-      ...new Set(
-        getCalendarEventByHashData?.participants.map(
-          ({ user }: { user: any }) => user
-        )
-      ),
-    ];
-  }
+  useEffect(() => {
+    if (getCalendarEventByHashData) {
+      invitedParticipantsRef.current = [
+        ...new Set(
+          getCalendarEventByHashData?.participants.map(
+            ({ user }: { user: any }) => user
+          )
+        ),
+      ]
+    }
 
-  if (invitedParticipants?.length) {
-    invitedParticipantsRef.current = [
-      ...new Set([
-        ...invitedParticipantsRef.current,
-        ...invitedParticipants,
-      ]),
-    ];
-  }
-}, [getCalendarEventByHashData, invitedParticipants?.length]);
-
+    if (invitedParticipants?.length) {
+      invitedParticipantsRef.current = [
+        ...new Set([...invitedParticipantsRef.current, ...invitedParticipants]),
+      ]
+    }
+  }, [getCalendarEventByHashData, invitedParticipants?.length])
 
   return {
     socketRef,
