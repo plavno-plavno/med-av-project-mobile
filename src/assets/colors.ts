@@ -31,6 +31,7 @@ const colors = {
   backgroundGrey: "#F3FAFA",
   softPeach: "#ECEEF0",
   alertRed: "#E44E58",
+  red: "#FF4D4F",
   errorLight: "#FCEDEE",
   alertWarning: "#DFAA21",
   successGreen: "#5EC18E",

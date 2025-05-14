@@ -3,6 +3,7 @@ import {
   FlatList,
   PermissionsAndroid,
   Platform,
+  StyleSheet,
   Text,
   View,
 } from "react-native"
@@ -11,7 +12,7 @@ import { styles } from "./styles"
 import { Icon } from "@components"
 import { useStatusBar } from "src/hooks/useStatusBar"
 import colors from "src/assets/colors"
-import { SafeAreaView } from "react-native-safe-area-context"
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { Portal } from "react-native-portalize"
 import MeetingChatModal from "src/modals/MeetingModals/MeetingChatModal"
 import { BottomSheetMethods } from "@devvie/bottom-sheet"
@@ -31,6 +32,7 @@ import { Buffer } from "buffer"
 import moment from "moment"
 import { useScreenSharing } from "src/hooks/useScreenSharing"
 import { formatLastName } from "@utils/utils"
+import { moderateScale } from "react-native-size-matters"
 
 type ParamList = {
   Detail: {
@@ -57,7 +59,9 @@ const MeetingScreen = () => {
     ownerEmail,
   } = route.params
   const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
+  const insets = useSafeAreaInsets()
 
+  const hasNotch = insets.top > 20 // in iphone X and newest top ~44
   const {
     socketRef,
     localStream,
@@ -391,7 +395,19 @@ const MeetingScreen = () => {
   }
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
+      {isScreenRecording && (
+        <View
+          pointerEvents="none"
+          style={{
+            ...StyleSheet.absoluteFillObject,
+            borderWidth: moderateScale(2.5),
+            borderColor: colors.red,
+            zIndex: 9999,
+            borderRadius: hasNotch ? moderateScale(58) : 0,
+          }}
+        />
+      )}
       <SafeAreaView edges={["top"]} style={styles.container}>
         <View style={styles.mainWrapper}>
           {isRequestModalOpen && (
@@ -466,6 +482,7 @@ const MeetingScreen = () => {
           />
         </View>
       </SafeAreaView>
+
       <Portal>
         <SubtitlesModal
           sheetRef={sheetCatiptionsRef}
@@ -488,7 +505,7 @@ const MeetingScreen = () => {
           setUnreadMessagesCount={setUnreadMessagesCount}
         />
       </Portal>
-    </>
+    </View>
   )
 }
 

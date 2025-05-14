@@ -444,6 +444,10 @@ const ScheduleMeetingModal = ({
                       </TouchableOpacity>
                       <View ref={chipWrapperRef} collapsable={false}>
                         <CustomInput
+                          onBlur={() => {
+                            Keyboard.dismiss()
+                            setIsMenuOpen(false)
+                          }}
                           onFocus={() => {
                             setIsMenuOpen(true)
                             setTimeout(() => {
@@ -491,7 +495,6 @@ const ScheduleMeetingModal = ({
                                 : String(errors.participants)
                               : undefined
                           }
-                          onBlur={() => setIsMenuOpen(false)}
                         />
                       </View>
                       {isMenuOpen && recentParticipants?.length && (

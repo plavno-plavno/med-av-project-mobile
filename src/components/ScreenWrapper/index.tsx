@@ -5,9 +5,9 @@ import {
   Text,
   StatusBar,
   KeyboardAvoidingView,
-  TouchableWithoutFeedback,
-  Keyboard,
+  ScrollView,
   StatusBarProps,
+  RefreshControl,
 } from "react-native"
 import { styles } from "./styles"
 import BackButton from "../BackButton"
@@ -29,6 +29,7 @@ interface Props {
   statusBarColor?: StatusBarProps["barStyle"]
   isCalendarScreen?: boolean
   keyboardVerticalOffset?: number
+  refreshControl?: React.ReactElement // ⬅️ Додаємо проп
 }
 
 const ScreenWrapper: React.FC<Props> = memo(
@@ -43,6 +44,7 @@ const ScreenWrapper: React.FC<Props> = memo(
     childrenStyle,
     isCalendarScreen,
     keyboardVerticalOffset,
+    refreshControl, // ⬅️ Приймаємо проп
   }: Props) => {
     const { t } = useTranslation()
     const backgroundColor = onboardingScreen
@@ -50,42 +52,44 @@ const ScreenWrapper: React.FC<Props> = memo(
       : colors.darkCyan
 
     return (
-      <>
-        <KeyboardAvoidingView
-          behavior="padding"
-          style={helpers.flex1}
-          keyboardVerticalOffset={keyboardVerticalOffset}
-        >
-          <SafeAreaView style={{ backgroundColor }} edges={["top"]} />
-          <View style={[styles.container, { backgroundColor }]}>
-            <StatusBar barStyle={statusBarColor} />
+      <KeyboardAvoidingView
+        behavior="padding"
+        style={helpers.flex1}
+        keyboardVerticalOffset={keyboardVerticalOffset}
+      >
+        <SafeAreaView style={{ backgroundColor }} edges={["top"]} />
+        <View style={[styles.container, { backgroundColor }]}>
+          <StatusBar barStyle={statusBarColor} />
 
-            {onboardingScreen && (
-              <View style={styles.onboarding_container}>
-                <Icon name="onboardingLogo" />
-              </View>
-            )}
-
-            {title && (
-              <View style={[styles.navigation_container, { backgroundColor }]}>
-                {isBackButton ? (
-                  <BackButton handleBackButtonPress={handleBackButtonPress} />
-                ) : (
-                  <View style={styles.empty_view} />
-                )}
-                <Text style={styles.title}>{title}</Text>
-                {isCenterTitle && <View style={styles.empty_view} />}
-              </View>
-            )}
-
-            {isCalendarScreen && <MonthsToggler />}
-
-            <View style={[styles.childrenContainer, childrenStyle]}>
-              {children}
+          {onboardingScreen && (
+            <View style={styles.onboarding_container}>
+              <Icon name="onboardingLogo" />
             </View>
-          </View>
-        </KeyboardAvoidingView>
-      </>
+          )}
+
+          {title && (
+            <View style={[styles.navigation_container, { backgroundColor }]}>
+              {isBackButton ? (
+                <BackButton handleBackButtonPress={handleBackButtonPress} />
+              ) : (
+                <View style={styles.empty_view} />
+              )}
+              <Text style={styles.title}>{title}</Text>
+              {isCenterTitle && <View style={styles.empty_view} />}
+            </View>
+          )}
+
+          {isCalendarScreen && <MonthsToggler />}
+
+          {/* ⬇️ ScrollView для підтримки refreshControl */}
+          <ScrollView
+            contentContainerStyle={[styles.childrenContainer, childrenStyle]}
+            refreshControl={refreshControl}
+          >
+            {children}
+          </ScrollView>
+        </View>
+      </KeyboardAvoidingView>
     )
   }
 )

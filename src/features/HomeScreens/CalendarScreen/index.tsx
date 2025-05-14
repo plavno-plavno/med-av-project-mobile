@@ -29,7 +29,6 @@ import DetailsEventModal from "src/modals/DetailsEventModal"
 import moment from "moment"
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 import { useTimezoneQuery } from "src/api/auth/authApi"
-import { moderateScale } from "react-native-size-matters"
 
 const { height: screenHeight } = Dimensions.get("window")
 const today = moment().format("YYYY-MM-DD")
@@ -220,55 +219,52 @@ const CalendarScreen = () => {
 
   return (
     <>
-      <ScreenWrapper childrenStyle={styles.container} isCalendarScreen>
+      <ScreenWrapper
+        childrenStyle={styles.container}
+        isCalendarScreen
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+        }
+      >
         <WeekDays />
-        <ScrollView
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-            />
-          }
-          contentContainerStyle={{ flexGrow: 1 }}
-        >
-          <Calendar
-            events={transformedEvents}
-            height={screenHeight}
-            mode="day"
-            ampm
-            swipeEnabled={false} // Важливо!
-            overlapOffset={screenWidth * 0.1}
-            date={new Date(selectedDay)}
-            scrollOffsetMinutes={scrollOffsetMinutes}
-            renderEvent={renderEvent}
-            headerContainerStyle={{ display: "none" }}
-            // renderHeader={() => <WeekDays />}
-            hourStyle={styles.hourStyle}
-            eventCellTextColor={colors.ghostWhite}
-            eventCellStyle={(event) => {
-              const participantStatus = findParticipantStatusByEmail(
-                String(authMeData?.email),
-                event
-              )
-              return [
-                styles.cellStyle,
-                {
-                  backgroundColor:
-                    participantStatus === "accept" ? event.color : colors.white,
-                  borderWidth: 1,
-                  borderColor:
-                    participantStatus === "accept"
-                      ? event.color
-                      : participantStatus === "decline"
-                      ? colors.placeholder
-                      : event.color,
-                },
-              ]
-            }}
-            onPressCell={(e) => handleCreateEvent(e as any)}
-            onPressEvent={onPressEvent}
-          />
-        </ScrollView>
+
+        <Calendar
+          events={transformedEvents}
+          height={screenHeight}
+          mode="day"
+          ampm
+          swipeEnabled={false} // Важливо!
+          overlapOffset={screenWidth * 0.1}
+          date={new Date(selectedDay)}
+          scrollOffsetMinutes={scrollOffsetMinutes}
+          renderEvent={renderEvent}
+          headerContainerStyle={{ display: "none" }}
+          // renderHeader={() => <WeekDays />}
+          hourStyle={styles.hourStyle}
+          eventCellTextColor={colors.ghostWhite}
+          eventCellStyle={(event) => {
+            const participantStatus = findParticipantStatusByEmail(
+              String(authMeData?.email),
+              event
+            )
+            return [
+              styles.cellStyle,
+              {
+                backgroundColor:
+                  participantStatus === "accept" ? event.color : colors.white,
+                borderWidth: 1,
+                borderColor:
+                  participantStatus === "accept"
+                    ? event.color
+                    : participantStatus === "decline"
+                    ? colors.placeholder
+                    : event.color,
+              },
+            ]
+          }}
+          onPressCell={(e) => handleCreateEvent(e as any)}
+          onPressEvent={onPressEvent}
+        />
       </ScreenWrapper>
 
       <Portal>

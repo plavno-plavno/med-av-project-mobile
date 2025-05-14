@@ -738,11 +738,7 @@ const useWebRtc = (
         id: getCalendarEventByHashData?.id!,
       },
     })
-    console.log(
-      "\x1b[31m%s\x1b[0m",
-      "eventStartedTimeRef.current C===3",
-      moment().unix() - eventStartedTimeRef.current
-    )
+
     reset({
       index: 0,
       routes: [{ name: ScreensEnum.MAIN }],
