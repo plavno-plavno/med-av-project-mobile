@@ -57,7 +57,7 @@ const VideoGrid = ({
         remoteStreams[socketId].audioTrack = audioStream.audioTrack
       }
     })
-
+    
     remoteVideoStreams.forEach((videoStream: any) => {
       const midId = Number(videoStream.midId)
       const socketId = usersVideoTrackToIdMap[midId]

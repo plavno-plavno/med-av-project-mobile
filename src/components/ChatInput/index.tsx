@@ -36,9 +36,9 @@ const ChatInput = ({
     <KeyboardAvoidingView
       behavior="padding"
       keyboardVerticalOffset={
-        keyboardVerticalOffset || isIOS()
+        keyboardVerticalOffset || (isIOS()
           ? moderateScale(120)
-          : moderateScale(50)
+          : moderateScale(50))
       }
     >
       <View style={styles.messageInputContainer}>

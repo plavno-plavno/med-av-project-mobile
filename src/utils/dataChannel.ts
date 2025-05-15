@@ -13,6 +13,17 @@ const getShortUserName = (
 
   return `${firstName} ${initial}.`;
 };
+const SUBTITLES_QUEUE_LIMIT = 3
+
+const handleSubtitles = (newEl: any) => (prev: any[]) => {
+  let newAr = [...prev, newEl]
+
+  if (newAr.length > SUBTITLES_QUEUE_LIMIT) {
+    newAr.shift()
+  }
+  return newAr
+}
+
 
 export const setupDataChannel = (
   channel: RTCDataChannel | null,
@@ -55,7 +66,8 @@ export const setupDataChannel = (
           time: currentTime,
         };
 
-        setTranslatedSubtitles((prev) => [...prev, subtitleEntry]);
+        setTranslatedSubtitles(handleSubtitles(text))
+        // setTranslatedSubtitles((prev) => [...prev, subtitleEntry]);
       } catch (e) {
         console.error('Error processing data channel message:', e);
       }

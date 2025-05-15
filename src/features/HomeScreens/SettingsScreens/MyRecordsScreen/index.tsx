@@ -83,7 +83,7 @@ const MyRecordsScreen = () => {
                 onDeleted={refreshListAfterDelete}
                 refetch={refetch}
                 srt={item?.srt}
-              />
+                />
             )}
             keyExtractor={(item) => String(item?.id)}
           />

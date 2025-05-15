@@ -136,7 +136,7 @@ const RecordingCard = ({
         useDownloadManager: true,
         notification: true,
         mediaScannable: true,
-        title: `${title}.mp4`,
+        title: `${title}-${date}.mp4`,
         path: `${dirToSave}/${title}.mp4`,
       }
 

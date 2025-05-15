@@ -43,8 +43,9 @@ export const useMeetingAccessSocket = () => {
           )
           if(!attemptsLeft){
             socketRef.current?.close();
+          } else {
+            setTimeout(attemptReconnect, 2000)
           }
-          setTimeout(attemptReconnect, 2000)
         } else {
           reject(
             new Error("Unable to reconnect to the socket after 3 attempts")

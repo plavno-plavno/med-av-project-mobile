@@ -10,6 +10,8 @@ import { useGetUsersByIdMutation } from "src/api/userApi/userApi"
 import { formatLastName } from "@utils/utils"
 import { styles } from "./styles"
 import ChatInput from "src/components/ChatInput"
+import { isAndroid } from "@utils/platformChecker"
+import { moderateScale } from "react-native-size-matters"
 
 interface IMessage {
   userId: number
@@ -132,6 +134,7 @@ const MeetingChatModal = ({
             message={message}
             setMessage={setMessage}
             handleSendMessage={handleSendMessage}
+            keyboardVerticalOffset={isAndroid() ? moderateScale(-150) : undefined}
           />
         </View>
       </BottomSheet>

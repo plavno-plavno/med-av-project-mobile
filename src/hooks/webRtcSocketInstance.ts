@@ -20,7 +20,7 @@ const getToken = async () => {
 
 export const useWebRtcSocketConnection = (roomId: string) => {
   const [socketInstance, setSocketInstance] = useState<Socket | null>(null);
-  const [scalerMachineUrl, setScalerMachineUrl] = useState('');
+  const scalerMachineUrl = useRef('');
   const [error, setError] = useState<string | null>(null);
   const retryCount = useRef(0);
   const [scalerFindFreeMachine] = useScalerFindFreeMachineMutation();
@@ -30,10 +30,10 @@ export const useWebRtcSocketConnection = (roomId: string) => {
       const socket = io(url, {
         transports: ['websocket'],
         auth: { token },
-        reconnectionAttempts: 5,  // Limit reconnection attempts
-        reconnectionDelay: 2000,  // Wait 2 seconds before reconnecting
-        reconnectionDelayMax: 5000, // Max delay between reconnections
-        timeout: 10000,  // 10-second connection timeout
+        reconnectionAttempts: 5,
+        reconnectionDelay: 2000,
+        reconnectionDelayMax: 5000,
+        timeout: 10000, 
       });
 
       socket.on('connect', () => {
@@ -45,9 +45,9 @@ export const useWebRtcSocketConnection = (roomId: string) => {
         console.error('WebRTC Socket connection error:', error.message, error.stack);
         setError(error.message);
         if (attempts > 0) {
+          if(retryCount.current <= MAX_RETRIES){
           retryCount.current++;
           console.log(`Reconnecting attempt ${retryCount.current}/${MAX_RETRIES}...`);
-          if(retryCount.current <= MAX_RETRIES){
             setTimeout(() => connectSocket(url, token, attempts - 1), 2000);
           }
         } else {
@@ -57,6 +57,8 @@ export const useWebRtcSocketConnection = (roomId: string) => {
             type: 'error',
             text1: 'Connection to media servers cannot be established, please consider rejoining',
           });
+          socket.close();
+          socket.disconnect();
           reject(new Error('Unable to reconnect to socket after 3 attempts.'));
         }
       });
@@ -82,7 +84,7 @@ export const useWebRtcSocketConnection = (roomId: string) => {
           const scalerFindFreeMachineData = await scalerFindFreeMachine({
             id: roomId,
           }).unwrap();
-          setScalerMachineUrl(scalerFindFreeMachineData?.ip)
+          scalerMachineUrl.current = scalerFindFreeMachineData?.ip
           const rtcUrl = `https://${scalerFindFreeMachineData?.ip}${scalerFindFreeMachineData?.port ? `:${scalerFindFreeMachineData?.port}` : ':5000'
             }`;
 
@@ -108,6 +110,6 @@ export const useWebRtcSocketConnection = (roomId: string) => {
   return {
     error,
     socket: socketInstance,
-    scalerMachineUrl,
+    scalerMachineUrl: scalerMachineUrl.current,
   };
 };

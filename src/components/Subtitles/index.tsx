@@ -6,7 +6,7 @@ import { ISubtitle } from "src/hooks/useWebRtc"
 
 interface Props {
   isActive: boolean
-  subtitlesQueue: ISubtitle[];
+  subtitlesQueue: string[];
 }
 
 const Subtitles = ({ isActive, subtitlesQueue }: Props) => {
@@ -14,7 +14,7 @@ const Subtitles = ({ isActive, subtitlesQueue }: Props) => {
   return (
     <View style={styles.container} removeClippedSubviews={false}>
       {subtitlesQueue.map(subtitle => (
-        <Text style={styles.text}>{subtitle.text}</Text>
+        <Text style={styles.text}>{subtitle}</Text>
       ))}
     </View>
   )

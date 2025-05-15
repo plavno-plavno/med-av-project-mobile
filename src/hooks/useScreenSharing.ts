@@ -56,10 +56,10 @@ export const useScreenSharing = (roomId: string | null, rtcSocket: Socket | null
 //         roomId: roomIdRef.current,
 //       });
 //   }
-// }, [mainPeerConnection])
+// }, [mainPeerConnection, peerConnection.current])
 
   useEffect(() => {
-    if (!socketRef.current) {
+    if (!socketRef.current || !mainPeerConnection) {
       return;
     }
 
@@ -88,7 +88,7 @@ export const useScreenSharing = (roomId: string | null, rtcSocket: Socket | null
       setSharedScreen(null);
       setIsScreenSharing(false);
     };
-  }, [socketRef.current]);
+  }, [socketRef.current, mainPeerConnection]);
 
   const handleDisconnect = () => {
     stopScreenShare();
@@ -111,12 +111,10 @@ export const useScreenSharing = (roomId: string | null, rtcSocket: Socket | null
       );
       sharingOwnerRef.current = sharingOwner?.socketId || '';
     }
-
     if (socketId === mySocketId.current) {
       if (!peerConnection.current) {
         peerConnection.current = createPeerConnection({
           setSharedScreen,
-          setIsScreenSharing,
           type: PeerConnectionType.SHARING,
         });
       }

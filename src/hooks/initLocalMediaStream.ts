@@ -10,8 +10,7 @@ export const initLocalMediaStream = async (socketId: string) => {
 
   try {
     const devices: any = await mediaDevices.enumerateDevices();
-    console.log(devices, 'devicesdevicesdevicesdevicesdevicesdevicesdevices');
-    
+
     const hasAudioInput = devices?.some?.(
       (device: any) => device.kind === 'audioinput',
     );
@@ -21,7 +20,6 @@ export const initLocalMediaStream = async (socketId: string) => {
 
     if (!hasAudioInput && !hasVideoInput) {
       console.warn('No audio or video devices found.');
-
       return {
         hasAudioPermission,
         hasVideoPermission,

@@ -31,7 +31,6 @@ export const createPeerConnection = ({
   socketRef,
   roomId,
   setSharedScreen,
-  setIsScreenSharing,
   setRemoteVideoStreams,
   setRemoteAudioStreams,
   participantsRef,
@@ -56,30 +55,33 @@ export const createPeerConnection = ({
     });
 
     pc.addEventListener('iceconnectionstatechange', (event) => {
-      console.log('ICE Connection State Change:', event);
+      console.log('[RTC] ICE Connection State Change:', event);
     });
     
     pc.addEventListener('signalingstatechange', (event) => {
-      console.log('Signaling State Change:', event);
+      console.log('[RTC] Signaling State Change:', event);
     });
 
     pc.addEventListener("connectionstatechange", async () => {
+      console.log('[RTC] Connection State Change:', pc.connectionState);
       if (pc.connectionState === 'failed') {
         console.error(
           '[RTC] Connection failed. Consider renegotiating or restarting the connection.',
         );
 
         if (typeof endCall === 'function') {
+          console.log('[RTC] Ending call due to failed connection...');
           await endCall(isManualLeaving);
         }
 
         if (typeof startCall === 'function') {
+          console.log('[RTC] Restarting call...');
           setTimeout(() => {
             startCall();
           }, 2000);
         }
       }
-    })
+    });
 
     pc.addEventListener("datachannel", (event) => {
       const { channel } = event;
@@ -99,7 +101,7 @@ export const createPeerConnection = ({
         drawChannelRef.current = channel;
         setupDataChannel(channel, 'Draw');
       }
-    })
+    });
 
     pc.addEventListener("track", (event: any) => {
       const midId = event?.transceiver?.mid || '';
@@ -107,7 +109,6 @@ export const createPeerConnection = ({
     
       if (type === PeerConnectionType.SHARING) {
         setSharedScreen?.(track);
-        setIsScreenSharing?.(true);
         return;
       }
     
@@ -122,7 +123,7 @@ export const createPeerConnection = ({
               videoTrack: track,
               midId: midId,
             };
-    
+            console.log('[RTC] Adding new video stream:', newVideoStream);
             return [...prevStreams, newVideoStream];
           }
     
@@ -139,7 +140,7 @@ export const createPeerConnection = ({
               audioTrack: track,
               midId: midId,
             };
-    
+            console.log('[RTC] Adding new audio stream:', newAudioStream);
             return [...prevStreams, newAudioStream];
           }
     
