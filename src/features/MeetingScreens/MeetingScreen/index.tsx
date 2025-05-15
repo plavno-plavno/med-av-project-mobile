@@ -95,7 +95,7 @@ const MeetingScreen = () => {
     meetId,
 
     recordingUrl,
-    onStartRecord,
+    // onStartRecord,
     onStopRecord,
     startRecording,
     stopRecording,
@@ -284,7 +284,7 @@ const MeetingScreen = () => {
         await removeFileIfExisted().finally(async () => {
           recordingNameRef.current = `recording-${Date.now()}`
           await startRecording()
-          onStartRecord()
+          // onStartRecord()
           startTimeRef.current = moment()
         })
       }
