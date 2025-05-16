@@ -10,7 +10,7 @@ export const useAudioRecorder = ({sendChunkToServer, sendSttAudio}: {sendChunkTo
     const [timerStart, setTimerStart] = useState<number | null>(null);
 
     // Refs for mutable state
-    // const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const audioRecorderRef = useRef<IAudioRecord | null>(null); // Store the AudioRecord instance
     const isRecordingRef = useRef(false); // To track whether recording is ongoing
     const pcmChunks = useRef<Buffer[]>([]);
@@ -30,7 +30,7 @@ export const useAudioRecorder = ({sendChunkToServer, sendSttAudio}: {sendChunkTo
         return () => {
             // Clean up by stopping recording and clearing timers on unmount
             audioRecorderRef.current?.stop();
-            // clearInterval(recordingTimerRef.current!);
+            clearInterval(recordingTimerRef.current!);
             audioRecorderRef.current = null; // Clear reference to avoid memory leaks
         };
     }, []);
@@ -49,8 +49,10 @@ export const useAudioRecorder = ({sendChunkToServer, sendSttAudio}: {sendChunkTo
         audioRecorderRef.current?.start();
         // Subscribe to PCM "data" events for speech detection
         audioRecorderRef.current?.on("data", data => {
-            const pcmData = Buffer.from(data, "base64");
-            sendChunkToServer(pcmData, 'audio')
+            if(isRecordingRef.current){
+                const pcmData = Buffer.from(data, "base64");
+                sendChunkToServer(pcmData, 'audio')
+            }
             sendSttAudio(data);
             // pcmChunks.current.push(pcmData);
 
@@ -92,7 +94,7 @@ export const useAudioRecorder = ({sendChunkToServer, sendSttAudio}: {sendChunkTo
     const onStopRecord = async () => {
         if (!isRecordingRef.current) return;
 
-        // clearInterval(recordingTimerRef.current!);
+        clearInterval(recordingTimerRef.current!);
 
         // const filePath = await audioRecorderRef.current?.stop()!;
         // console.log("Stopping recording...", filePath);

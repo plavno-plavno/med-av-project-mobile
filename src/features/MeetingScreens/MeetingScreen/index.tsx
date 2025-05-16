@@ -33,6 +33,9 @@ import moment from "moment"
 import { useScreenSharing } from "src/hooks/useScreenSharing"
 import { formatLastName } from "@utils/utils"
 import { moderateScale } from "react-native-size-matters"
+import DeviceInfo from "react-native-device-info"
+import { isIOS } from "@utils/platformChecker"
+import inCallManager from "react-native-incall-manager"
 
 type ParamList = {
   Detail: {
@@ -101,6 +104,8 @@ const MeetingScreen = () => {
     stopRecording,
     isScreenRecording,
     recordingNameRef,
+    isRecordingStarted,
+    setIsSpeakerOn,
   } = useWebRtc(instanceMeetingOwner!, invitedParticipants)
   const [meInvited, setMeInvited] = useState<boolean | null>(null)
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
@@ -213,6 +218,7 @@ const MeetingScreen = () => {
         // const recordingUrl = socketRecordingUrl!
 
         wsRef.current = new WebSocket(recordingUrl.current)
+        // wsRef.current = new WebSocket('http://192.168.0.105:8080')
 
         wsRef.current.onopen = () => {
           console.log("recording connected")
@@ -280,11 +286,13 @@ const MeetingScreen = () => {
 
       if (isScreenRecording) {
         handleStopRecording()
+            isRecordingStarted.current = false;
       } else {
         await removeFileIfExisted().finally(async () => {
           recordingNameRef.current = `recording-${Date.now()}`
           await startRecording()
           // onStartRecord()
+          isRecordingStarted.current = true;
           startTimeRef.current = moment()
         })
       }
@@ -390,10 +398,35 @@ const MeetingScreen = () => {
     }
   }, [participants?.length, socketInstance, eventId])
 
+  useEffect(() => {
+    if(participants?.length){
+      if (isSpeakerOn) {
+        if (isIOS()) {
+          setTimeout(() => {
+            DeviceInfo.isHeadphonesConnected().then((enabled) => {
+              if (!enabled) {
+                inCallManager.setForceSpeakerphoneOn(true)
+              } else {
+                setIsSpeakerOn(false)
+              }
+            })
+          }, 5000)
+        } else {
+          DeviceInfo.isHeadphonesConnected().then((enabled) => {
+            if (!enabled) {
+              inCallManager.setForceSpeakerphoneOn(true)
+            } else {
+              setIsSpeakerOn(false)
+            }
+          })
+        }
+      }
+    }
+  }, [participants])
+
   if (!participants?.length) {
     return <Loading />
   }
-
   return (
     <View style={{ flex: 1 }}>
       {isScreenRecording && (

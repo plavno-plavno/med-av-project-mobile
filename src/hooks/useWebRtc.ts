@@ -289,7 +289,7 @@ const useWebRtc = (
     createCandidatesManager(peerConnection)
   ).current
 
-  const [isRecordingStarted, setIsRecordingStarted] = useState(false)
+  const isRecordingStarted = useRef(false);
 
   const [sharedScreen, setSharedScreen] = useState<MediaStreamTrack | null>(
     null,
@@ -314,16 +314,9 @@ const useWebRtc = (
   
   const sendChunkToServer = useCallback(async (base64Chunk: any, type: string) => {
     try {
-      // await saveChunkToFile(base64Chunk
-      if(type === 'audio'){
-      console.log(wsRef.current?.readyState === WebSocket.OPEN, 'wsRef.current?.readyState === WebSocket.OPEN');
-      console.log(isRecordingStarted, 'isRecordingStarted');
-      }
-      if (wsRef.current?.readyState === WebSocket.OPEN && isRecordingStarted) {
-        console.log(wsRef.current?.readyState === WebSocket.OPEN, 'wsRef.current?.readyState === WebSocket.OPEN');
-        console.log(isRecordingStarted, 'isRecordingStartedisRecordingStarted');
-        console.log(type, 'typetypetypetypetypetypetypetypetype');
-
+      // await saveChunkToFile(base64Chunk)
+      if(!isRecordingStarted.current) return 
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
         wsRef.current.send(
           JSON.stringify({
             fileName: recordingNameRef.current,
@@ -340,7 +333,7 @@ const useWebRtc = (
     } catch (error) {
       console.error("Failed to send chunk:", error)
     }
-  }, [isRecordingStarted, wsRef.current?.readyState])
+  }, [isRecordingStarted.current, wsRef.current?.readyState])
 
   const sendSttAudio = useCallback((data: string) => {
     if (!isMuted) {
@@ -477,7 +470,6 @@ const useWebRtc = (
     socketId: string;
     status: ActionStatus;
   }) => {
-    setIsRecordingStarted(true);
     Toast.show({
       type: "success",
       text1: t("RecordingStarted"),
@@ -485,7 +477,6 @@ const useWebRtc = (
   };
 
   const handleStopRecording = () => {
-    setIsRecordingStarted(false);
     Toast.show({
       type: "success",
       text1: t("RecordingStopped"),
@@ -731,29 +722,6 @@ const useWebRtc = (
         isOwner: instanceMeetingOwner,
         username: getFullName(authMeData as any),
       })
-      if (isSpeakerOn) {
-        if (isIOS()) {
-          setTimeout(() => {
-            DeviceInfo.isHeadphonesConnected().then((enabled) => {
-              if (!enabled) {
-                inCallManager.setSpeakerphoneOn(true)
-              } else {
-                setIsSpeakerOn(false)
-              }
-            })
-          }, 1000)
-
-        } else {
-          DeviceInfo.isHeadphonesConnected().then((enabled) => {
-            if (!enabled) {
-              inCallManager.setSpeakerphoneOn(true)
-            } else {
-              setIsSpeakerOn(false)
-            }
-          })
-        }
-      }
-
       if (!timerRef.current) {
         startTimeRef.current = Date.now()
         timerRef.current = setInterval(() => {
@@ -788,7 +756,7 @@ const useWebRtc = (
       STTSocket.current.close()
       STTSocket.current = null
     }
-  
+
     disconnectSocketEvents()
   
     drawChannelRef.current?.removeEventListener("message", handleDrawMessage)
@@ -1461,15 +1429,15 @@ const useWebRtc = (
     // console.log(`!!!!! Incoming event: ${eventName} !!!!`, args);
   }
 
-  const toggleSpeaker = useCallback(() => {
+  const toggleSpeaker = () => {
     if (isSpeakerOn) {
-      inCallManager.setSpeakerphoneOn(false)
+      inCallManager.setForceSpeakerphoneOn(false)
       setIsSpeakerOn(false)
     } else {
-      inCallManager.setSpeakerphoneOn(true)
+      inCallManager.setForceSpeakerphoneOn(true)
       setIsSpeakerOn(true)
     }
-  }, [isSpeakerOn])
+  };
 
   const switchCamera = () => {
     if (localStream) {
@@ -1783,6 +1751,7 @@ const useWebRtc = (
 
     isScreenSharing,
     isRecordingStarted,
+    setIsSpeakerOn,
   }
 }
 
