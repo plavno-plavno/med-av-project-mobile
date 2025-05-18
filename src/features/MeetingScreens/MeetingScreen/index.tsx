@@ -155,7 +155,7 @@ const MeetingScreen = () => {
   useKeepAwake()
   useStatusBar("light-content", colors.dark)
   const [isCaptionOn, setIsCaptionOn] = React.useState(false)
-  const meetingTitle = title === "Instant meeting" ? hash : title
+  const meetingTitle = title === "Instant meeting" ? "Instant meeting" : title
 
   const sheetChatRef = useRef<BottomSheetMethods>(null)
   const sheetCatiptionsRef = useRef<BottomSheetMethods>(null)
@@ -286,13 +286,13 @@ const MeetingScreen = () => {
 
       if (isScreenRecording) {
         handleStopRecording()
-            isRecordingStarted.current = false;
+        isRecordingStarted.current = false
       } else {
         await removeFileIfExisted().finally(async () => {
           recordingNameRef.current = `recording-${Date.now()}`
           await startRecording()
           // onStartRecord()
-          isRecordingStarted.current = true;
+          isRecordingStarted.current = true
           startTimeRef.current = moment()
         })
       }
@@ -399,7 +399,7 @@ const MeetingScreen = () => {
   }, [participants?.length, socketInstance, eventId])
 
   useEffect(() => {
-    if(participants?.length){
+    if (participants?.length) {
       if (isSpeakerOn) {
         if (isIOS()) {
           setTimeout(() => {
