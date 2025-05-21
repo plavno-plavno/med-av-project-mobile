@@ -6,16 +6,22 @@ import { moderateScale } from "react-native-size-matters"
 import colors from "src/assets/colors"
 import { Icon } from "../Icon"
 import { useAuthMeQuery } from "src/api/userApi/userApi"
+import { useFocusEffect } from "@react-navigation/native"
+import { useCallback } from "react"
 
 interface IProfileWrapper {
   children: React.ReactNode
 }
 
 const ProfileWrapper = ({ children }: IProfileWrapper) => {
-  const { data: authMe } = useAuthMeQuery()
+  const { data: authMe, refetch } = useAuthMeQuery()
 
   const photo = authMe?.photo?.link
   const fullName = `${authMe?.firstName} ${authMe?.lastName}`
+
+  useFocusEffect(useCallback(() => {
+    refetch()
+  }, []));
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.saveAreaView} edges={["top"]}>

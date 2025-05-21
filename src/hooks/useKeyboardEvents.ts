@@ -7,6 +7,7 @@ const useKeyboardEvents = () => {
 
   useEffect(() => {
     const onKeyboardWillShow = (e: KeyboardEvent) => {
+      if (!e?.endCoordinates?.height) return;
       setKeyboardVisible(true);
       setKeyboardHeight(e.endCoordinates.height);
     };

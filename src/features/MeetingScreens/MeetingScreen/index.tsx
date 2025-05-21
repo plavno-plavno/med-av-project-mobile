@@ -66,7 +66,7 @@ const MeetingScreen = () => {
 
   const hasNotch = insets.top > 20 // in iphone X and newest top ~44
   const {
-    socketRef,
+    socket,
     localStream,
     isMuted,
     isVideoOff,
@@ -106,6 +106,9 @@ const MeetingScreen = () => {
     recordingNameRef,
     isRecordingStarted,
     setIsSpeakerOn,
+    sharedScreen,
+    sharingOwner,
+    isScreenSharing,
   } = useWebRtc(instanceMeetingOwner!, invitedParticipants)
   const [meInvited, setMeInvited] = useState<boolean | null>(null)
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
@@ -129,12 +132,6 @@ const MeetingScreen = () => {
   const newUserFullName = `${newUser?.firstName} ${formatLastName(
     newUser?.lastName
   )}`
-
-  const { isScreenSharing, sharingOwner, sharedScreen } = useScreenSharing(
-    roomId!,
-    socketRef.current,
-    peerConnection
-  )
 
   const handleResponse = async (accepted: boolean) => {
     if (!newUser?.socketId || !eventId) {
@@ -206,49 +203,52 @@ const MeetingScreen = () => {
     }
   }
 
-  useEffect(() => {
-    if (recordingUrl.current) {
-      let reconnectTimeout: NodeJS.Timeout | null = null
+useEffect(() => {
+  if (recordingUrl.current) {
+    let reconnectTimeout: NodeJS.Timeout | null = null
+    let retryCount = 0
+    const MAX_RETRIES = 3
 
-      const connectWebSocket = () => {
-        if (wsRef.current) {
-          wsRef.current.close()
-        }
-        // const recordingUrl = 'http://192.168.0.105:8080'
-        // const recordingUrl = socketRecordingUrl!
+    const connectWebSocket = () => {
+      if (wsRef.current) {
+        wsRef.current.close()
+      }
 
-        wsRef.current = new WebSocket(recordingUrl.current)
-        // wsRef.current = new WebSocket('http://192.168.0.105:8080')
+      wsRef.current = new WebSocket(recordingUrl.current)
 
-        wsRef.current.onopen = () => {
-          console.log("recording connected")
-          if (reconnectTimeout) {
-            clearTimeout(reconnectTimeout)
-            reconnectTimeout = null
-          }
-        }
-
-        wsRef.current.onerror = (error) => {
-          console.error("recording error:", error)
-          console.log("recording connection error. Reconnecting...")
-          if (!reconnectTimeout) {
-            reconnectTimeout = setTimeout(connectWebSocket, 3000)
-          }
-        }
-
-        wsRef.current.onclose = () => {
-          console.warn("recording connection closed")
+      wsRef.current.onopen = () => {
+        console.log("recording connected")
+        retryCount = 0
+        if (reconnectTimeout) {
+          clearTimeout(reconnectTimeout)
+          reconnectTimeout = null
         }
       }
 
-      connectWebSocket()
+      wsRef.current.onerror = (error) => {
+        console.error("recording error:", error)
+        if (retryCount < MAX_RETRIES) {
+          console.log(`Reconnect attempt #${retryCount + 1}`)
+          retryCount += 1
+          reconnectTimeout = setTimeout(connectWebSocket, 3000)
+        } else {
+          console.warn("Max retries reached. Giving up.")
+        }
+      }
 
-      return () => {
-        if (reconnectTimeout) clearTimeout(reconnectTimeout)
-        wsRef.current?.close()
+      wsRef.current.onclose = () => {
+        console.warn("recording connection closed")
       }
     }
-  }, [recordingUrl.current])
+
+    connectWebSocket()
+
+    return () => {
+      if (reconnectTimeout) clearTimeout(reconnectTimeout)
+      wsRef.current?.close()
+    }
+  }
+}, [recordingUrl.current])
 
   const removeFileIfExisted = async () => {
     const filePath = `${RNFS.DocumentDirectoryPath}/recording-${roomId}.h264`
@@ -288,13 +288,13 @@ const MeetingScreen = () => {
         handleStopRecording()
         isRecordingStarted.current = false
       } else {
-        await removeFileIfExisted().finally(async () => {
+        // await removeFileIfExisted().finally(async () => {
           recordingNameRef.current = `recording-${Date.now()}`
           await startRecording()
           // onStartRecord()
           isRecordingStarted.current = true
           startTimeRef.current = moment()
-        })
+        // })
       }
     }
 

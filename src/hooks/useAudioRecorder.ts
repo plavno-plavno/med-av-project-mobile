@@ -32,6 +32,8 @@ export const useAudioRecorder = ({sendChunkToServer, sendSttAudio}: {sendChunkTo
             audioRecorderRef.current?.stop();
             clearInterval(recordingTimerRef.current!);
             audioRecorderRef.current = null; // Clear reference to avoid memory leaks
+            isRecordingRef.current = false;
+            setTimerStart(null);
         };
     }, []);
 

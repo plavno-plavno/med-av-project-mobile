@@ -12,6 +12,7 @@ import { styles } from "./styles"
 import ChatInput from "src/components/ChatInput"
 import { isAndroid } from "@utils/platformChecker"
 import { moderateScale } from "react-native-size-matters"
+import useKeyboardEvents from "src/hooks/useKeyboardEvents"
 
 interface IMessage {
   userId: number
@@ -43,6 +44,7 @@ const MeetingChatModal = ({
   )
   const scrollViewRef = useRef<FlatList>(null)
   const [getUsersById] = useGetUsersByIdMutation()
+  const { isKeyboardVisible } = useKeyboardEvents()
 
   useEffect(() => {
     const fetchMessageData = async () => {
@@ -93,7 +95,13 @@ const MeetingChatModal = ({
     <>
       <BottomSheet
         ref={sheetRef}
-        height={screenHeight * 0.9}
+        height={
+          isAndroid()
+            ? isKeyboardVisible
+              ? screenHeight * 0.7
+              : screenHeight * 0.9
+            : screenHeight * 0.9
+        }
         backdropMaskColor={colors.blackOpacity08}
         style={styles.bottomSheet}
         disableBodyPanning
@@ -134,7 +142,6 @@ const MeetingChatModal = ({
             message={message}
             setMessage={setMessage}
             handleSendMessage={handleSendMessage}
-            keyboardVerticalOffset={isAndroid() ? moderateScale(-150) : undefined}
           />
         </View>
       </BottomSheet>

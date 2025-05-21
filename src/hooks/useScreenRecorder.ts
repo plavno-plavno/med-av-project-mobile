@@ -36,6 +36,7 @@ export const useScreenRecorder = ({
 
     return () => {
       subscription.remove()
+      eventEmitterRef.current?.removeAllListeners('onVideoChunk')
     }
   }, [onChunkReceived]) // Re-run effect if callback changes
 

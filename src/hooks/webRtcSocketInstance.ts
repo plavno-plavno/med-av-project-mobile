@@ -18,7 +18,7 @@ const getToken = async () => {
   return credentials ? credentials.password : '';
 };
 
-export const useWebRtcSocketConnection = (roomId: string) => {
+export const useWebRtcSocketConnection = (roomId: string, isSttSocketConnected: boolean) => {
   const [socketInstance, setSocketInstance] = useState<Socket | null>(null);
   const scalerMachineUrl = useRef('');
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +33,7 @@ export const useWebRtcSocketConnection = (roomId: string) => {
         reconnectionAttempts: 5,
         reconnectionDelay: 2000,
         reconnectionDelayMax: 5000,
-        timeout: 10000, 
+        timeout: 10000,
       });
 
       socket.on('connect', () => {
@@ -45,9 +45,9 @@ export const useWebRtcSocketConnection = (roomId: string) => {
         console.error('WebRTC Socket connection error:', error.message, error.stack);
         setError(error.message);
         if (attempts > 0) {
-          if(retryCount.current <= MAX_RETRIES){
-          retryCount.current++;
-          console.log(`Reconnecting attempt ${retryCount.current}/${MAX_RETRIES}...`);
+          if (retryCount.current <= MAX_RETRIES) {
+            retryCount.current++;
+            console.log(`Reconnecting attempt ${retryCount.current}/${MAX_RETRIES}...`);
             setTimeout(() => connectSocket(url, token, attempts - 1), 2000);
           }
         } else {
@@ -64,7 +64,12 @@ export const useWebRtcSocketConnection = (roomId: string) => {
       });
 
       socket.on('error', (error) => {
-        console.error('WebRTC Socket error:', error.message, error.stack);
+        navigationRef.current?.goBack();
+        Toast.show({
+          type: 'error',
+          text1: 'Connection to media servers cannot be established, please consider rejoining',
+        });
+        console.error('WebRTC Socket error:', error.message);
         setError(error.message);
       });
 
@@ -95,17 +100,19 @@ export const useWebRtcSocketConnection = (roomId: string) => {
         }
       }
     };
-    if (roomId) {
-      initializeSocket();
+    
+    if (roomId && isSttSocketConnected) {
+        initializeSocket();
     }
 
     return () => {
       if (socketInstance) {
         socketInstance.disconnect();
+        socketInstance.close();
         setSocketInstance(null);
       }
     };
-  }, [roomId]);
+  }, [roomId, isSttSocketConnected]);
 
   return {
     error,

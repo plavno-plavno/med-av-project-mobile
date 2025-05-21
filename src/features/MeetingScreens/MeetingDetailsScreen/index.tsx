@@ -69,8 +69,12 @@ const MeetingDetailsScreen = () => {
       })
     }
     if (meInvited) {
-      if (isMuted) {
-        preview?.getTracks().forEach((t) => t.stop())
+      if (preview) {
+        preview.getTracks().forEach(track => {
+          track.stop();
+          track.release();
+        });
+        setPreview(undefined)
       }
       navigate(ScreensEnum.MEETING, {
         hash: hash,
@@ -119,8 +123,13 @@ const MeetingDetailsScreen = () => {
       }
       initialize()
       return () => {
-        preview?.getTracks().forEach((t) => t.stop())
-        preview?.getTracks().forEach((t) => t.release())
+        if (preview) {
+          preview.getTracks().forEach(track => {
+            track.stop();
+            track.release();
+          });
+          setPreview(undefined)
+        }
       }
     }, [])
   )
@@ -144,8 +153,12 @@ const MeetingDetailsScreen = () => {
     })
     if (!accessToken) {
       setTimeout(() => {
-        preview?.getTracks().forEach((t) => t.stop())
-        preview?.getTracks().forEach((t) => t.release())
+        if (preview) {
+          preview.getTracks().forEach(track => {
+            track.stop();
+            track.release();
+          });
+        }
         setPreview(undefined)
         reset({
           index: 0,

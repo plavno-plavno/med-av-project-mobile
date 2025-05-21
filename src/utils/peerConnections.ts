@@ -12,7 +12,7 @@ import { AudioStream, DataChannelNames, ISubtitle, PeerConnectionType, UserInMee
 const isManualLeaving = false;
 
 interface CreatePeerConnectionParams {
-  socketRef?: MutableRefObject<Socket | null>;
+  socket?: Socket | null;
   roomId?: string | null;
   setSharedScreen?: (track: MediaStreamTrack | null) => void;
   setIsScreenSharing?: (arg: boolean) => void;
@@ -28,7 +28,7 @@ interface CreatePeerConnectionParams {
 }
 
 export const createPeerConnection = ({
-  socketRef,
+  socket,
   roomId,
   setSharedScreen,
   setRemoteVideoStreams,
@@ -45,8 +45,8 @@ export const createPeerConnection = ({
     const pc = new RTCPeerConnection(iceServersConfig);
 
     pc.addEventListener("icecandidate", ({ candidate }) => {
-      if (candidate && socketRef?.current) {
-        socketRef.current.emit('candidate', {
+      if (candidate && socket) {
+        socket.emit('candidate', {
           candidate,
           roomId,
           type,
