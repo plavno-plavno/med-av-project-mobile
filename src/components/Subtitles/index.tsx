@@ -1,21 +1,47 @@
-import { fontFamilies, fontWeights } from "@utils/theme"
 import { View, Text, StyleSheet } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import colors from "src/assets/colors"
-import { ISubtitle } from "src/hooks/useWebRtc"
+import { fontFamilies, fontWeights } from "@utils/theme"
 
 interface Props {
   isActive: boolean
-  subtitlesQueue: string[];
+  subtitlesQueue: string[]
+}
+
+const isRtlText = (text: string = "") => {
+  const rtlCharRegex = /[\u0600-\u06FF\u0750-\u077F\u0590-\u05FF\u08A0-\u08FF]/
+  return rtlCharRegex.test(text)
 }
 
 const Subtitles = ({ isActive, subtitlesQueue }: Props) => {
   if (!isActive) return null
+
   return (
     <View style={styles.container} removeClippedSubviews={false}>
-      {subtitlesQueue.map(subtitle => (
-        <Text style={styles.text}>{subtitle}</Text>
-      ))}
+      {subtitlesQueue.map((subtitle, index) => {
+        const isRtl = isRtlText(subtitle)
+        return (
+          <View
+            key={`${subtitle}-${index}`}
+            style={{
+              alignSelf: isRtl ? "flex-end" : "flex-start",
+              width: "100%",
+            }}
+          >
+            <Text
+              style={[
+                styles.text,
+                {
+                  writingDirection: isRtl ? "rtl" : "ltr",
+                  textAlign: isRtl ? "right" : "left",
+                },
+              ]}
+            >
+              {subtitle}
+            </Text>
+          </View>
+        )
+      })}
     </View>
   )
 }
@@ -37,5 +63,6 @@ const styles = StyleSheet.create({
     ...fontFamilies.interManropeBold14,
     ...fontWeights.fontWeight500,
     color: colors.white,
+    marginBottom: moderateScale(4),
   },
 })
