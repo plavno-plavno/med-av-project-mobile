@@ -292,6 +292,7 @@ const useWebRtc = (
   ).current;
 
   const isSttConnected = useRef(false);
+  const isShouldSttConnectionClose = useRef(false)
 
   const retryLimit = 3;
   const attemptCounter = useRef(0);
@@ -628,6 +629,7 @@ const useWebRtc = (
     }
 
     if (STTSocket.current) {
+      isShouldSttConnectionClose.current = true;
       STTSocket.current.close()
       STTSocket.current = null
     }
@@ -1209,6 +1211,7 @@ const useWebRtc = (
     }
   }, [sttUrlRef.current, isSttConnected]);
 
+
   const handleSetSTTSocket = ({ sttUrl }: { sttUrl: string }) => {
     STTSocket.current = new WebSocket(sttUrl);
 
@@ -1217,7 +1220,7 @@ const useWebRtc = (
 
     STTSocket.current.onerror = (error) => {
       console.log("STTError: ", error);
-
+      if(isShouldSttConnectionClose.current) return
       if (attemptCounter.current < retryLimit) {
         console.log(`Retry attempt ${attemptCounter.current} failed. Retrying...`);
         handleSetSTTSocket({ sttUrl }); // Retry connecting
@@ -1231,6 +1234,7 @@ const useWebRtc = (
 
     STTSocket.current.onclose = (event) => {
       console.log("STTOnclose: ", event);
+      if(isShouldSttConnectionClose.current) return
       if (attemptCounter.current < retryLimit) {
         handleSetSTTSocket({ sttUrl });
         attemptCounter.current += 1;

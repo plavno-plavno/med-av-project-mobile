@@ -66,7 +66,11 @@ export const setupDataChannel = (
           time: currentTime,
         };
 
-        setTranslatedSubtitles(handleSubtitles(text))
+        const subtitleText = `${user
+            ? getShortUserName(user?.firstName, user?.lastName)
+            : 'Guest'} : ${text}`
+
+        setTranslatedSubtitles(handleSubtitles(subtitleText))
         // setTranslatedSubtitles((prev) => [...prev, subtitleEntry]);
       } catch (e) {
         console.error('Error processing data channel message:', e);
