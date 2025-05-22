@@ -62,6 +62,10 @@ const MyRecordsScreen = () => {
         title={t("MyRecordings")}
         isCenterTitle
         keyboardVerticalOffset={isIOS() ? moderateScale(-100) : undefined}
+        childrenStyle={{
+          paddingHorizontal: moderateScale(0),
+          paddingVertical: moderateScale(0),
+        }}
       >
         {recordingsFetching ? (
           <Loading />
@@ -72,7 +76,11 @@ const MyRecordsScreen = () => {
             onEndReached={onRecordsLoad}
             onEndReachedThreshold={0.5}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ gap: moderateScale(8) }}
+            contentContainerStyle={{
+              gap: moderateScale(8),
+              paddingHorizontal: moderateScale(16),
+              paddingVertical: moderateScale(8),
+            }}
             data={recordings}
             renderItem={({ item }) => (
               <RecordingCard
@@ -83,7 +91,7 @@ const MyRecordsScreen = () => {
                 onDeleted={refreshListAfterDelete}
                 refetch={refetch}
                 srt={item?.srt}
-                />
+              />
             )}
             keyExtractor={(item) => String(item?.id)}
           />

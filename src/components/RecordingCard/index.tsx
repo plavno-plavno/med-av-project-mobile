@@ -213,7 +213,16 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: moderateScale(16),
     padding: moderateScale(16),
-    boxShadow: "0px 0px 24px 0px rgba(46, 57, 70, 0.08)",
+
+    shadowColor: colors.charcoal,
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 24,
+
+    elevation: 10,
   },
   infoContainer: {
     flex: 1,

@@ -81,13 +81,18 @@ const ScreenWrapper: React.FC<Props> = memo(
 
           {isCalendarScreen && <MonthsToggler />}
 
-          {/* ⬇️ ScrollView для підтримки refreshControl */}
-          <ScrollView
-            contentContainerStyle={[styles.childrenContainer, childrenStyle]}
-            refreshControl={refreshControl}
-          >
-            {children}
-          </ScrollView>
+          {isCalendarScreen ? (
+            <ScrollView
+              contentContainerStyle={[styles.childrenContainer, childrenStyle]}
+              refreshControl={refreshControl}
+            >
+              {children}
+            </ScrollView>
+          ) : (
+            <View style={[styles.childrenContainer, childrenStyle]}>
+              {children}
+            </View>
+          )}
         </View>
       </KeyboardAvoidingView>
     )

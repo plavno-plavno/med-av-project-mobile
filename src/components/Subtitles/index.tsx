@@ -15,19 +15,19 @@ const isRtlText = (text: string = "") => {
 
 const Subtitles = ({ isActive, subtitlesQueue }: Props) => {
   if (!isActive) return null
-
   return (
     <View style={styles.container} removeClippedSubviews={false}>
       {subtitlesQueue.map((subtitle, index) => {
         const isRtl = isRtlText(subtitle)
+
+        const rtlPrefix = "\u200F"
+        const ltrPrefix = "\u200E"
+
+        const subtitlesWithDirection =
+          (isRtl ? rtlPrefix : ltrPrefix) + subtitle
+
         return (
-          <View
-            key={`${subtitle}-${index}`}
-            style={{
-              alignSelf: isRtl ? "flex-end" : "flex-start",
-              width: "100%",
-            }}
-          >
+          <View key={`${subtitle}-${index}`}>
             <Text
               style={[
                 styles.text,
@@ -37,7 +37,7 @@ const Subtitles = ({ isActive, subtitlesQueue }: Props) => {
                 },
               ]}
             >
-              {subtitle}
+              {subtitlesWithDirection}
             </Text>
           </View>
         )
