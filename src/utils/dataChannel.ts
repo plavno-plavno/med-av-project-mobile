@@ -1,6 +1,6 @@
-import RTCDataChannel from 'react-native-webrtc/lib/typescript/RTCDataChannel';
-import { ISubtitle, UserInMeeting } from './meeting';
-import { isRtlText } from './isRtlText';
+import RTCDataChannel from "react-native-webrtc/lib/typescript/RTCDataChannel"
+import { ISubtitle, UserInMeeting } from "./meeting"
+import { isRtlText } from "./isRtlText"
 
 const getShortUserName = (
   firstName?: string,
@@ -8,13 +8,13 @@ const getShortUserName = (
   isRtl?: boolean
 ): string => {
   if (!firstName) {
-    return 'Guest';
+    return "Guest"
   }
 
-  const initial = lastName?.charAt(0) ?? '';
+  const initial = isRtl ? lastName?.charAt(0) : lastName?.charAt(0) ?? ""
 
-  return isRtl ? `${initial} ${firstName}.` : `${firstName} ${initial}.`;
-};
+  return isRtl ? `${initial} ${firstName}.` : `${firstName} ${initial}.`
+}
 const SUBTITLES_QUEUE_LIMIT = 3
 
 const handleSubtitles = (newEl: any) => (prev: any[]) => {
@@ -26,57 +26,60 @@ const handleSubtitles = (newEl: any) => (prev: any[]) => {
   return newAr
 }
 
-
 export const setupDataChannel = (
   channel: RTCDataChannel | null,
-  type: 'Messages' | 'Draw',
+  type: "Messages" | "Draw",
   participantsRef?: React.MutableRefObject<UserInMeeting[] | null>,
-  setTranslatedSubtitles?: React.Dispatch<React.SetStateAction<ISubtitle[]>>,
+  setTranslatedSubtitles?: React.Dispatch<React.SetStateAction<ISubtitle[]>>
 ) => {
   if (!channel) {
-    return;
+    return
   }
 
-  channel.addEventListener('error', (error: any) => console.error(`Data channel [${type}] error`, error))
+  channel.addEventListener("error", (error: any) =>
+    console.error(`Data channel [${type}] error`, error)
+  )
 
   channel.addEventListener("message", (event: any) => {
     if (
-      type === 'Messages' &&
+      type === "Messages" &&
       participantsRef?.current &&
       setTranslatedSubtitles
     ) {
       try {
-        const { socketId: speakerSocketId, text } = JSON.parse(event.data);
+        const { socketId: speakerSocketId, text } = JSON.parse(event.data)
 
         const user = Array.isArray(participantsRef.current)
           ? participantsRef.current.find(
-            ({ socketId }) => speakerSocketId === socketId,
-          )
-          : null;
+              ({ socketId }) => speakerSocketId === socketId
+            )
+          : null
 
-        const currentTime = new Date().toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
+        const currentTime = new Date().toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
           hour12: false,
-        });
+        })
 
         const subtitleEntry: ISubtitle = {
           userName: user
             ? getShortUserName(user?.firstName, user?.lastName)
-            : 'Guest',
+            : "Guest",
           message: text,
           time: currentTime,
-        };
+        }
         const isRtl = isRtlText(text)
-        const subtitleText = `${user
-            ? getShortUserName(user?.lastName, user?.firstName, isRtl )
-            : 'Guest'} : ${text}`
+        const subtitleText = `${
+          user
+            ? getShortUserName(user?.firstName, user?.lastName, isRtl)
+            : "Guest"
+        } : ${text}`
 
         setTranslatedSubtitles(handleSubtitles(subtitleText))
         // setTranslatedSubtitles((prev) => [...prev, subtitleEntry]);
       } catch (e) {
-        console.error('Error processing data channel message:', e);
+        console.error("Error processing data channel message:", e)
       }
     }
   })
-};
+}
