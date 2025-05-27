@@ -1,7 +1,7 @@
 import { Icon } from "@components"
 import { fontFamilies, fontWeights, helpers } from "@utils/theme"
 import moment from "moment"
-import { StyleSheet, Text, View } from "react-native"
+import { Alert, StyleSheet, Text, View } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import RNFetchBlob from "react-native-blob-util"
 import { useRemoveRecordingsMutation } from "src/api/helpCenterApi/helpCenterApi"
@@ -10,6 +10,7 @@ import Share from "react-native-share"
 import { isAndroid, isIOS } from "@utils/platformChecker"
 import * as Keychain from "react-native-keychain"
 import Config from "react-native-config"
+import { useTranslation } from "react-i18next"
 
 const baseURL = Config.BASE_API_URL
 
@@ -21,6 +22,7 @@ const RecordingCard = ({
   srt,
   refetch,
   onDeleted,
+  setIsShouldRecordingsUpdate,
 }: {
   id: number
   title: string
@@ -29,8 +31,10 @@ const RecordingCard = ({
   srt?: any
   refetch: () => void
   onDeleted?: () => void | undefined
+  setIsShouldRecordingsUpdate: (arg: boolean) => void;
 }) => {
   const [removeRecordings] = useRemoveRecordingsMutation()
+  const {t} = useTranslation();
   const formatDuration = (totalSeconds: number) => {
     const hours = Math.floor(totalSeconds / 3600)
     const minutes = Math.floor((totalSeconds % 3600) / 60)
@@ -48,10 +52,24 @@ const RecordingCard = ({
     return moment(isoString).format("DD.MM.YYYY")
   }
 
+    const handleDeleteAccount = () => {
+      Alert.alert(t("DeleteRecording"), t("AreYouSureYouWantToDeleteThisRecording"), [
+        {
+          text: t('Delete'),
+          onPress: async () => {
+            onDeleteRecordingPress();
+          },
+          style: 'destructive'
+        },
+        { text: t('Cancel') },
+      ])
+    }
+
   const onDeleteRecordingPress = async () => {
     try {
       const res = await removeRecordings({ id }).unwrap()
       onDeleted?.()
+      setIsShouldRecordingsUpdate(true);
       refetch()
     } catch (error) {
       console.log(error, "error onDeleteRecordingPress")
@@ -195,7 +213,7 @@ const RecordingCard = ({
         <Text style={styles.timeText}>{formatDate(date || "")}</Text>
       </View>
       <View style={[helpers.flexRow, helpers.gap12]}>
-        <Icon name="deleteAccount" onPress={onDeleteRecordingPress} />
+        <Icon name="deleteAccount" onPress={handleDeleteAccount} />
         <Icon name="download" onPress={handleDownloadRecord} />
         {srt && <Icon name="subtitles" onPress={handleSrtDownload} />}
       </View>

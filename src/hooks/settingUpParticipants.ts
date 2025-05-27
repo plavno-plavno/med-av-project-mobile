@@ -21,7 +21,7 @@ export const fetchMissingUsers = async (
   getUsersById: (userId: any) => any
 ) => {
   const existingUserIds = new Set(
-    existingUsers.filter(Boolean).map(({ id }) => id)
+    existingUsers.filter(Boolean).map((user) => user?.id)
   )
 
   const missingUserIds = participantsInfo
@@ -79,7 +79,8 @@ export const prepareParticipants = async ({
       photo = null,
       email = "",
     } = invitedParticipantsRef.current.find(
-      ({ id }: { id: any }) => Number(userId) === Number(id)
+      (participant: any) => Number(userId) === Number(participant?.id)
+      // ({ id }: { id: any }) => Number(userId) === Number(id)
     ) || {}
 
     return {
@@ -125,8 +126,9 @@ export const adaptParticipantsToShow = ({
           videoTrack: null,
         }
       }
-
-      remoteStreams[socketId].audioTrack = audioStream.audioTrack
+      if(audioStream.audioTrack){
+        remoteStreams[socketId].audioTrack = audioStream.audioTrack
+      }
     }
   })
 
@@ -142,8 +144,12 @@ export const adaptParticipantsToShow = ({
           videoTrack: null,
         }
       }
-
-      remoteStreams[socketId].videoTrack = videoStream.videoTrack
+      if(videoStream.videoTrack){
+        remoteStreams[socketId].videoTrack = videoStream.videoTrack
+      } else {
+        console.log('videoStream.videoTrack videoStream.videoTrack');
+        
+      }
     }
   })
 

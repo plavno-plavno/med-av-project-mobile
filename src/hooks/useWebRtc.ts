@@ -217,6 +217,7 @@ const useWebRtc = (
   const { reset, goBack } = useNavigation<ROUTES>()
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const [isMuted, setIsMuted] = useState(!!route.params?.isMuted)
+  const isAudioOff = useRef(!!route.params?.isMuted);
   const [isVideoOff, setIsVideoOff] = useState(route.params?.isVideoOff)
   const [isScreenShare, setIsScreenShare] = useState(false)
   const [isSpeakerOn, setIsSpeakerOn] = useState(true)
@@ -329,14 +330,14 @@ const useWebRtc = (
   }, [isRecordingStarted.current, wsRef.current?.readyState])
 
   const sendSttAudio = useCallback((data: string) => {
-    if (!isMuted) {
+    if (!isAudioOff.current) {
       addToBufferAndSend(
         data,
         sttLanguageRef.current?.toLowerCase?.() || "en",
         allLanguagesRef.current
       )
     }
-  }, [isMuted])
+  }, [isAudioOff.current])
 
   const {
     startRecording,
@@ -356,7 +357,7 @@ const useWebRtc = (
   }, [participants])
 
   useEffect(() => {
-    if (localStream) {
+    if (localStream && peerConnection.current?.connectionState === 'connected') {
       const { audioTrack, videoTrack } = localStream
 
       if (audioTrack) {
@@ -373,18 +374,23 @@ const useWebRtc = (
     } else {
       console.warn("localStream is not defined")
     }
-  }, [localStream, isMuted, isVideoOff])
+  }, [localStream, isMuted, isVideoOff, peerConnection.current?.connectionState])
 
   const handleFreeMachinePairSTT = async () => {
     try {
       const sttRes = await scalerFindFreeMachinePairSTT({
         id: String(meetId),
       }).unwrap()
-      console.log(sttRes, 'sttRessttRessttRessttRessttRes');
-      
-      sttUrlRef.current = `wss://${sttRes.stt}`
-    } catch (error) {
+        sttUrlRef.current = `wss://${sttRes.stt}`
+        // sttUrlRef.current = 'wss://avmed-20256695.plavno.app:45154';
+
+    } catch (error: any) {
       console.log(error, 'scalerFindFreeMachinePairSTT');
+      goBack()
+      Toast.show({
+        type: 'error',
+        text1: JSON.stringify(error?.response?.message)
+      })
     }
   }
 
@@ -392,7 +398,6 @@ const useWebRtc = (
     if (!socket && roomId && scalerMachineUrl) {
       recordingUrl.current = `https://${scalerMachineUrl}:8080`;
       try {
-        // peerConnection.current = createPeerConnection()
         peerConnection.current = createPeerConnection({
           socket,
           roomId,
@@ -442,7 +447,7 @@ const useWebRtc = (
 
       setTimeout(() => {
         startCall()
-      }, 2000)
+      }, 1000)
     }
   }, [socket, roomId, scalerMachineUrl])
 
@@ -482,10 +487,8 @@ const useWebRtc = (
     }, 2000)
   }
 
-  const handleStartRecording = ({ socketId }: {
-    socketId: string;
-    status: ActionStatus;
-  }) => {
+  const handleStartRecording = (data: any) => {
+    console.log(data, 'data handleStartRecording');
     Toast.show({
       type: "success",
       text1: t("RecordingStarted"),
@@ -536,7 +539,7 @@ const useWebRtc = (
 
 
   const onSTTSocketMessage = (event: WebSocketMessageEvent) => {
-    console.log("onSTTSocketMessage: ", JSON.parse(event.data))
+    // console.log("onSTTSocketMessage: ", JSON.parse(event.data))
   }
 
   const disconnectSocketEvents = () => {
@@ -792,9 +795,7 @@ const useWebRtc = (
           throw new Error("Something wrong with connection")
         if (peerConnection.current?.signalingState !== "stable") return
         const offer = new RTCSessionDescription(sdp)
-        await peerConnection.current.setRemoteDescription(
-          new RTCSessionDescription(offer)
-        )
+        await peerConnection.current.setRemoteDescription(offer)
         await flushCandidates()
         const answer = await peerConnection.current.createAnswer()
         await peerConnection.current.setLocalDescription(answer)
@@ -879,7 +880,6 @@ const useWebRtc = (
         });
         setIsScreenSharing(anySharingOn);
       }
-      onStartRecord()
     } catch (error) {
       console.log(error, 'error createSharePeerConnection');
     }
@@ -896,29 +896,11 @@ const useWebRtc = (
         }
       })
 
-      setParticipants((_prev: any): any => {
-        const newUsers = participantsInfo.map(({ userId, socketId }) => {
-          const {
-            firstName = "Guest",
-            lastName = "",
-            photo = null,
-          } = invitedParticipantsRef?.current?.find?.(
-            (invitedParticipants) => userId === invitedParticipants?.id
-          ) || {}
-          return {
-            userId,
-            socketId,
-            firstName,
-            lastName,
-            photo,
-            isAudioOn: usersAudioVideoMap[socketId].isAudioOn,
-            isVideoOn: usersAudioVideoMap[socketId].isVideoOn,
-          }
-        })
-        return [
-          // ...prev,
-          ...newUsers,
-        ]
+      await prepareParticipants({
+        participantsInfo,
+        invitedParticipantsRef,
+        setParticipants,
+        getUsersById,
       })
 
       const anySharingOn = participantsInfo.some((p) => p.status.isSharingOn)
@@ -938,7 +920,6 @@ const useWebRtc = (
       }
 
       if (!peerConnection.current) {
-        // peerConnection.current = createPeerConnection()
         peerConnection.current = createPeerConnection({
           socket,
           roomId,
@@ -972,6 +953,8 @@ const useWebRtc = (
       // checkPeerConnection(handleOfferCheck)
     } catch (error) {
       console.error("Error handling user join:", error)
+    } finally {
+      onStartRecord()
     }
   }
 
@@ -1172,6 +1155,17 @@ const useWebRtc = (
     }
   }, [authMeData, sttLanguageRef.current])
 
+  const detectSpeech = (audioData: Float32Array): boolean => {
+    let sum = 0;
+
+    for (let i = 0; i < audioData.length; i++) {
+      sum += audioData[i] * audioData[i];
+    }
+
+    const rms = Math.sqrt(sum / audioData.length);
+    return rms > 0.001;
+  };
+
   let collectorAr: Float32Array[] = []
 
   const addToBufferAndSend = async (
@@ -1183,7 +1177,11 @@ const useWebRtc = (
       if (STTSocket.current?.readyState === WebSocket.OPEN) {
         const arrayBuffer = base64ToFloat32Array(data)
 
-        collectorAr.push(resampleTo16kHZ(arrayBuffer))
+        const hasSpeech = detectSpeech(arrayBuffer);
+
+        if (hasSpeech) {
+          collectorAr.push(resampleTo16kHZ(arrayBuffer))
+        }
         if (collectorAr?.length !== 4) return
         const audio = Float32ConcatAll(collectorAr)
         const packet = {
@@ -1220,7 +1218,7 @@ const useWebRtc = (
 
     STTSocket.current.onerror = (error) => {
       console.log("STTError: ", error);
-      if(isShouldSttConnectionClose.current) return
+      if (isShouldSttConnectionClose.current) return
       if (attemptCounter.current < retryLimit) {
         console.log(`Retry attempt ${attemptCounter.current} failed. Retrying...`);
         handleSetSTTSocket({ sttUrl }); // Retry connecting
@@ -1234,7 +1232,7 @@ const useWebRtc = (
 
     STTSocket.current.onclose = (event) => {
       console.log("STTOnclose: ", event);
-      if(isShouldSttConnectionClose.current) return
+      if (isShouldSttConnectionClose.current) return
       if (attemptCounter.current < retryLimit) {
         handleSetSTTSocket({ sttUrl });
         attemptCounter.current += 1;
@@ -1273,6 +1271,7 @@ const useWebRtc = (
 
     if (isAudio) {
       setIsMuted((prev) => !prev)
+      isAudioOff.current = !isAudioOff.current
     } else {
       setIsVideoOff((prev) => !prev)
     }
@@ -1341,7 +1340,6 @@ const useWebRtc = (
         ),
       ]
     }
-
     if (invitedParticipants?.length) {
       invitedParticipantsRef.current = [
         ...new Set([...invitedParticipantsRef.current, ...invitedParticipants]),

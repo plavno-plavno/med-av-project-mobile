@@ -38,13 +38,13 @@ export const useMeetingAccess = ({
     if (!socketInstance) return
 
     const handleConnect = () => {
-      console.log("[Socket] Connected")
+      console.log("[Meeting Access] Connected")
       setIsSocketConnected(true)
       if (eventId) joinEvent({ eventId })
     }
 
     const handleDisconnect = () => {
-      console.log("[Socket] Disconnected")
+      console.log("[Meeting Access] Disconnected")
       setIsSocketConnected(false)
     }
 
@@ -55,17 +55,17 @@ export const useMeetingAccess = ({
       userId: string
       socketId: string
     }) => {
-      console.log("[Socket] joinRequest", { userId, socketId })
+      console.log("[Meeting Access] joinRequest", { userId, socketId })
       await handleNewJoinRequest(userId, socketId)
     }
 
     const handleRequestResponded = () => {
-      console.log("[Socket] requestResponded")
+      console.log("[Meeting Access] requestResponded")
       closeRequestModalAndProceed()
     }
 
     const handleJoinResponse = async ({ accepted }: { accepted: boolean }) => {
-      console.log("[Socket] joinResponse", accepted)
+      console.log("[Meeting Access] joinResponse", accepted)
       if (accepted) {
         const user = await getUsersById({
           id: Number(userRefId.current),
@@ -77,7 +77,7 @@ export const useMeetingAccess = ({
     }
 
     const handleOnAny = (eventName: string) => {
-      console.log(`[Socket] Incoming event: ${eventName}`)
+      console.log(`[Meeting Access] Incoming event: ${eventName}`)
     }
 
     socketInstance.on("connect", handleConnect)
@@ -107,13 +107,13 @@ export const useMeetingAccess = ({
     try {
       const requests = await getRequestsByEventId({ eventId }).unwrap()
       if (requests.length) {
-        console.log("[MeetingAccess] Pending requests:", requests)
+        console.log("[Meeting Access] Pending requests:", requests)
         for (const req of requests) {
           await handleNewJoinRequest(String(req.createdBy.id), req.socketId)
         }
       }
     } catch (error) {
-      console.error("[MeetingAccess] Error fetching pending requests:", error)
+      console.error("[Meeting Access] Error fetching pending requests:", error)
     }
   }
 
@@ -173,18 +173,18 @@ export const useMeetingAccess = ({
 
   // 🔌 Public API methods
   const joinEvent = (payload: any) => {
-    console.log("[MeetingAccess] joinEvent", payload)
+    console.log("[Meeting Access] joinEvent", payload)
     socketInstance?.emit("joinEvent", payload)
   }
 
   const requestJoinEvent = (payload: any) => {
-    console.log("[MeetingAccess] requestJoinEvent", payload)
+    console.log("[Meeting Access] requestJoinEvent", payload)
     socketInstance?.emit("requestJoinEvent", payload)
     setIsRequestingJoin(true)
   }
 
   const respondJoinRequest = (payload: any) => {
-    console.log("[MeetingAccess] respondJoinRequest", payload)
+    console.log("[Meeting Access] respondJoinRequest", payload)
     socketInstance?.emit("respondJoinRequest", payload)
   }
 

@@ -2,15 +2,11 @@ import { View, Text, StyleSheet } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import colors from "src/assets/colors"
 import { fontFamilies, fontWeights } from "@utils/theme"
+import { isRtlText } from "@utils/isRtlText"
 
 interface Props {
   isActive: boolean
   subtitlesQueue: string[]
-}
-
-const isRtlText = (text: string = "") => {
-  const rtlCharRegex = /[\u0600-\u06FF\u0750-\u077F\u0590-\u05FF\u08A0-\u08FF]/
-  return rtlCharRegex.test(text)
 }
 
 const Subtitles = ({ isActive, subtitlesQueue }: Props) => {

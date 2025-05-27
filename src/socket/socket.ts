@@ -40,6 +40,14 @@ const useWebSocket = (refetch: () => void) => {
       console.log("WebSocket disconnected")
     })
 
+     socket.on("error", () => {
+      console.log("WebSocket error")
+    })
+
+         socket.on("connect_error", () => {
+      console.log("WebSocket connect_error")
+    })
+
     socket.on("newMessage", () => {
       console.log("NEW MESSAGE")
       refetch()

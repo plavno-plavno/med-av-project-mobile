@@ -33,7 +33,7 @@ type ParamList = {
 
 const MeetingDetailsScreen = () => {
   const { t } = useTranslation()
-  const { navigate, reset } = useNavigation<ROUTES>()
+  const { navigate, reset, goBack } = useNavigation<ROUTES>()
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const { hash, ownerEmail } = route.params
   const { data: authMe } = useAuthMeQuery()
@@ -46,6 +46,7 @@ const MeetingDetailsScreen = () => {
     hash: String(hash),
   })
   const roomId = getCalendarEventByHashData?.meetId
+console.log(roomId, 'roomIdroomIdroomIdroomId');
 
   const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
   const [meInvited, setMeInvited] = useState<boolean | null>(null)
@@ -183,6 +184,16 @@ const MeetingDetailsScreen = () => {
       title={getCalendarEventByHashData?.title || hash}
       isBackButton
       isCenterTitle
+      handleBackButtonPress={() => {
+        if(preview){
+           preview.getTracks().forEach(track => {
+          track.stop();
+          track.release();
+        });
+        setPreview(undefined)
+        }
+        goBack();
+      }}
     >
       <View style={styles.container}>
         <View style={styles.videoContainer}>

@@ -147,5 +147,8 @@
   "YouLeftTheMeeting": "You left the meeting. Use meeting link to join again.",
   "OpenSrtFilesList": "Download Subtitles",
   "SRTFiles": "SRT Files",
-  "Unauthorized": "Unauthorized"
+  "Unauthorized": "Unauthorized",
+  "DeleteRecording": "Delete Recording",
+  "AreYouSureYouWantToDeleteThisRecording": "Are you sure you want to delete this recording?",
+  "Delete": "Delete"
 }

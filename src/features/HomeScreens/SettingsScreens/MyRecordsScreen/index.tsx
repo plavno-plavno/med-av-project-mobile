@@ -1,6 +1,6 @@
 import { FlatList, StyleSheet } from "react-native"
 import { isIOS } from "@utils/platformChecker"
-import React, { useCallback, useEffect } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { moderateScale } from "react-native-size-matters"
 import ScreenWrapper from "src/components/ScreenWrapper"
@@ -26,6 +26,8 @@ const MyRecordsScreen = () => {
   })
 
   const [recordings, setRecordings] = React.useState<IRecordingsEntity[]>([])
+  const [isShouldRecordingsUpdate, setIsShouldRecordingsUpdate] = useState(false);
+
   const isRecordingsLoadingMore =
     recordingsData && recordings.length < recordingsData?.total
 
@@ -50,11 +52,13 @@ const MyRecordsScreen = () => {
   useEffect(() => {
     if (recordingsData?.data) {
       setRecordings((prev: IRecordingsEntity[]) => {
+        if(isShouldRecordingsUpdate) return recordingsData.data
         if (page === 1) return recordingsData.data
         return [...prev, ...recordingsData.data]
       })
+      setIsShouldRecordingsUpdate(false);
     }
-  }, [recordingsData])
+  }, [recordingsData, isShouldRecordingsUpdate])
   return (
     <>
       <ScreenWrapper
@@ -65,6 +69,7 @@ const MyRecordsScreen = () => {
         childrenStyle={{
           paddingHorizontal: moderateScale(0),
           paddingVertical: moderateScale(0),
+          paddingTop: moderateScale(10),
         }}
       >
         {recordingsFetching ? (
@@ -80,6 +85,7 @@ const MyRecordsScreen = () => {
               gap: moderateScale(8),
               paddingHorizontal: moderateScale(16),
               paddingVertical: moderateScale(8),
+              marginTop: moderateScale(10),
             }}
             data={recordings}
             renderItem={({ item }) => (
@@ -91,6 +97,7 @@ const MyRecordsScreen = () => {
                 onDeleted={refreshListAfterDelete}
                 refetch={refetch}
                 srt={item?.srt}
+                setIsShouldRecordingsUpdate={setIsShouldRecordingsUpdate}
               />
             )}
             keyExtractor={(item) => String(item?.id)}

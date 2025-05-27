@@ -16,6 +16,7 @@ export const useMeetingAccessSocket = () => {
   const socketRef = useRef<Socket | null>(null)
   const [socketInstance, setSocketInstance] = useState<Socket | null>(null)
   const [token, setToken] = useState<string | null>(null)
+  const isShouldSocketConnect = useRef(true);
 
   const getAndSetToken = useCallback(async () => {
     const newToken = await getToken()
@@ -33,6 +34,7 @@ export const useMeetingAccessSocket = () => {
       let attemptsLeft = attempts
   
       const attemptReconnect = () => {
+        if(!isShouldSocketConnect.current) return
         if (socketRef.current?.connected) {
           console.log("Meeting Access Socket connected:", socketRef.current?.id)
           resolve(socketRef.current)
@@ -66,6 +68,7 @@ export const useMeetingAccessSocket = () => {
     const connectSocket = async () => {
       if (token) {
         try {
+          isShouldSocketConnect.current = true
           const newSocket = await connectWithRetry(token, 3)
           if (newSocket) {
             setSocketInstance(newSocket)
@@ -83,6 +86,7 @@ export const useMeetingAccessSocket = () => {
       if (socketInstance) {
         socketInstance.disconnect()
         setSocketInstance(null)
+        isShouldSocketConnect.current = false
       }
     }
   }, [token, getAndSetToken, connectWithRetry])

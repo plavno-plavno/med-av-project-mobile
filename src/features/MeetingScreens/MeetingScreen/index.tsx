@@ -203,52 +203,81 @@ const MeetingScreen = () => {
     }
   }
 
-useEffect(() => {
-  if (recordingUrl.current) {
-    let reconnectTimeout: NodeJS.Timeout | null = null
-    let retryCount = 0
-    const MAX_RETRIES = 3
+  useEffect(() => {
+    if (recordingUrl.current) {
+      let reconnectTimeout: NodeJS.Timeout | null = null
+      let retryCount = 0
+      const MAX_RETRIES = 3
 
-    const connectWebSocket = () => {
-      if (wsRef.current) {
-        wsRef.current.close()
-      }
+      const connectWebSocket = () => {
+        if (wsRef.current) {
+          wsRef.current.close()
+        }
 
-      wsRef.current = new WebSocket(recordingUrl.current)
+        // wsRef.current = new WebSocket('http://192.168.0.105:8080')
+        wsRef.current = new WebSocket(recordingUrl.current)
 
-      wsRef.current.onopen = () => {
-        console.log("recording connected")
-        retryCount = 0
-        if (reconnectTimeout) {
-          clearTimeout(reconnectTimeout)
-          reconnectTimeout = null
+        wsRef.current.onopen = () => {
+          console.log("recording connected")
+          retryCount = 0
+          if (reconnectTimeout) {
+            clearTimeout(reconnectTimeout)
+            reconnectTimeout = null
+          }
+        }
+
+        wsRef.current!.onmessage = async (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            console.log(message, 'message start rec');
+
+            if (message.type === 'error') {
+              Toast.show({
+                type: 'error',
+                text1: JSON.stringify(message.error)
+              })
+              handleStopRecording()
+              wsRef.current?.close();
+              isRecordingStarted.current = false
+            }
+
+            if (message.type === 'start_allowed') {
+              isRecordingStarted.current = true
+              startTimeRef.current = moment()
+              await startRecording()
+            }
+          } catch (err) {
+            console.warn(
+              '[RecorderManager] Failed to parse WebSocket message:',
+              event.data,
+            );
+          }
+        };
+
+        wsRef.current.onerror = (error) => {
+          console.error("recording error:", error)
+          if (retryCount < MAX_RETRIES) {
+            console.log(`Reconnect attempt #${retryCount + 1}`)
+            retryCount += 1
+            reconnectTimeout = setTimeout(connectWebSocket, 3000)
+          } else {
+            console.warn("Max retries reached. Giving up.")
+          }
+        }
+
+        wsRef.current.onclose = () => {
+          console.warn("recording connection closed")
         }
       }
 
-      wsRef.current.onerror = (error) => {
-        console.error("recording error:", error)
-        if (retryCount < MAX_RETRIES) {
-          console.log(`Reconnect attempt #${retryCount + 1}`)
-          retryCount += 1
-          reconnectTimeout = setTimeout(connectWebSocket, 3000)
-        } else {
-          console.warn("Max retries reached. Giving up.")
-        }
-      }
+      connectWebSocket()
 
-      wsRef.current.onclose = () => {
-        console.warn("recording connection closed")
+      return () => {
+        if (reconnectTimeout) clearTimeout(reconnectTimeout)
+        wsRef.current?.close()
       }
     }
-
-    connectWebSocket()
-
-    return () => {
-      if (reconnectTimeout) clearTimeout(reconnectTimeout)
-      wsRef.current?.close()
-    }
-  }
-}, [recordingUrl.current])
+  }, [recordingUrl.current, isRecordingStarted.current])
 
   const removeFileIfExisted = async () => {
     const filePath = `${RNFS.DocumentDirectoryPath}/recording-${roomId}.h264`
@@ -284,17 +313,22 @@ useEffect(() => {
         return
       }
 
-      if (isScreenRecording) {
+      if (isRecordingStarted.current) {
         handleStopRecording()
         isRecordingStarted.current = false
       } else {
-        // await removeFileIfExisted().finally(async () => {
-          recordingNameRef.current = `recording-${Date.now()}`
-          await startRecording()
-          // onStartRecord()
-          isRecordingStarted.current = true
-          startTimeRef.current = moment()
-        // })
+        const recName = `recording-${Date.now()}`
+        recordingNameRef.current = recName
+
+        const startPayload = {
+          action: 'start',
+          fileName: recName,
+          fileExtension: "raw",
+          meetId,
+          userId: localUserId,
+        };
+
+        wsRef.current?.send(JSON.stringify(startPayload))
       }
     }
 

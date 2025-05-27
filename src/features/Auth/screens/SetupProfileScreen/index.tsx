@@ -56,7 +56,7 @@ const SetupProfileScreen = () => {
   })
   const { data: languageOptions } = useLanguageOptionsQuery()
 
-  const languagesDropdown = languageOptions?.map((item) => ({
+  const languagesDropdown = [...languageOptions]?.reverse()?.map((item) => ({
     label: item.name,
     value: String(item.id),
   }))

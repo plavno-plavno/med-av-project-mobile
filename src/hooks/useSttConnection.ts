@@ -139,7 +139,6 @@ const useSttConnection = ({ sttUrl, isAudioOn }: IUseSttConnectionProps) => {
             message: segment.text,
             time: currentTime,
           }))
-        console.log(subtitles, "subtitlessubtitlessubtitlessubtitles")
 
         console.log("STT messages", subtitles)
         setSubtitles(subtitles)

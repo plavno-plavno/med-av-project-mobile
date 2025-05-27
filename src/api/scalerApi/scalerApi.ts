@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 import Config from "react-native-config"
 import { IScalerFindFreeMachinePairSTTResponse, IScalerFindFreeMachineResponse } from "./types"
+import { GROUP_NAME } from "src/hooks/constants"
 
 const scalerUrl = Config.SCALER_URL
 
@@ -22,7 +23,7 @@ export const scalerApi = createApi({
       }),
       scalerFindFreeMachinePairSTT: builder.mutation<IScalerFindFreeMachinePairSTTResponse, {id: string}>({
         query: ({id}) => ({
-          url: `scaler/find-free-machine-pair-stt/${id}`,
+          url: `scaler/find-free-machine-pair-stt/${GROUP_NAME}/${id}`,
           method: "GET",
         }),
       }),

@@ -1,9 +1,11 @@
 import RTCDataChannel from 'react-native-webrtc/lib/typescript/RTCDataChannel';
 import { ISubtitle, UserInMeeting } from './meeting';
+import { isRtlText } from './isRtlText';
 
 const getShortUserName = (
   firstName?: string,
   lastName?: string,
+  isRtl?: boolean
 ): string => {
   if (!firstName) {
     return 'Guest';
@@ -11,7 +13,7 @@ const getShortUserName = (
 
   const initial = lastName?.charAt(0) ?? '';
 
-  return `${firstName} ${initial}.`;
+  return isRtl ? `${initial} ${firstName}.` : `${firstName} ${initial}.`;
 };
 const SUBTITLES_QUEUE_LIMIT = 3
 
@@ -65,9 +67,9 @@ export const setupDataChannel = (
           message: text,
           time: currentTime,
         };
-
+        const isRtl = isRtlText(text)
         const subtitleText = `${user
-            ? getShortUserName(user?.firstName, user?.lastName)
+            ? getShortUserName(user?.lastName, user?.firstName, isRtl )
             : 'Guest'} : ${text}`
 
         setTranslatedSubtitles(handleSubtitles(subtitleText))

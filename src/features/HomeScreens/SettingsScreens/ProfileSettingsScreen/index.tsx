@@ -68,10 +68,18 @@ const ProfileSettingsScreen = () => {
 
   const { data: languageOptions } = useLanguageOptionsQuery()
 
-  const languagesDropdown = languageOptions?.map((item) => ({
-    label: item.name,
-    value: String(item.id),
-  }))
+  const languagesDropdown = useMemo(() => {
+    if(languageOptions){
+      return  [...languageOptions]?.reverse()?.map((item) => ({
+        label: item.name,
+        value: String(item.id),
+      }))
+    }
+    return [{
+      label: '',
+      value: '0',
+    }]
+  }, [languageOptions])
 
   const timezoneOptions = useMemo(() => {
     return (
