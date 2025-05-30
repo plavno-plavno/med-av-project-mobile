@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useMemo, useState } from "react"
 import { View, StyleSheet } from "react-native"
 import { moderateScale } from "react-native-size-matters"
 import { MediaStream, RTCView } from "react-native-webrtc"
@@ -26,7 +26,6 @@ const VideoGrid = ({
   usersVideoTrackToIdMap,
   participants,
   peerConnection,
-  localUserId,
   localUserSocketId,
   isMuted,
   sharedScreen,
@@ -35,108 +34,90 @@ const VideoGrid = ({
   clearCanvas,
   setClearCanvas,
 }: any) => {
-  const [activeHostSpeaker, setActiveHostSpeaker] = React.useState(false)
+  const [activeHostSpeaker, setActiveHostSpeaker] = useState(false)
   const canvasRef = useRef<Canvas | null>(null)
 
-  const adaptParticipantsToShow = (): RemoteStream[] => {
-    const remoteStreams: Record<string | number, RemoteStream> = {}
+  const remoteStreamsCombined = useMemo(() => {
+    const result: Record<string, RemoteStream> = {}
 
     remoteAudioStreams.forEach((audioStream: any) => {
       const midId = Number(audioStream.midId)
       const socketId = usersAudioTrackToIdMap[midId]
-      if (socketId) {
-        if (!remoteStreams[socketId]) {
-          remoteStreams[socketId] = {
-            socketId: socketId,
-            audioTrack: null,
-            videoTrack: null,
-            mid: String(midId),
-          }
-        }
+      if (!socketId) return
 
-        remoteStreams[socketId].audioTrack = audioStream.audioTrack
+      result[socketId] ||= {
+        socketId,
+        audioTrack: null,
+        videoTrack: null,
+        mid: String(midId),
       }
+      result[socketId].audioTrack = audioStream.audioTrack
     })
-    
+
     remoteVideoStreams.forEach((videoStream: any) => {
       const midId = Number(videoStream.midId)
       const socketId = usersVideoTrackToIdMap[midId]
+      if (!socketId) return
 
-      if (socketId) {
-        if (!remoteStreams[socketId]) {
-          remoteStreams[socketId] = {
-            socketId: socketId,
-            audioTrack: null,
-            videoTrack: null,
-            mid: String(midId),
-          }
-        }
-
-        remoteStreams[socketId].videoTrack = videoStream.videoTrack
+      result[socketId] ||= {
+        socketId,
+        audioTrack: null,
+        videoTrack: null,
+        mid: String(midId),
       }
+      result[socketId].videoTrack = videoStream.videoTrack
     })
 
-    const participantsSteams = Object.values(remoteStreams)
+    return Object.values(result)
+  }, [
+    remoteAudioStreams,
+    remoteVideoStreams,
+    usersAudioTrackToIdMap,
+    usersVideoTrackToIdMap,
+  ])
+
+  const activeSpeaker = useHighlightSpeaker(
+    peerConnection,
+    remoteStreamsCombined
+  )
+
+  const participantsToShow = useMemo(() => {
+    let streams = [...remoteStreamsCombined]
+
     if (localStream) {
-      participantsSteams.unshift(localStream)
+      streams.unshift(localStream)
     }
 
-    // Sort the participants to ensure the active speaker comes first
-    if (isScreenShare && totalParticipants >= 3) {
-      const activeSpeakerStream = participantsSteams.find(
-        (stream) => stream.socketId === activeSpeaker
-      )
-      // Remove the active speaker from the array if it exists
-      const otherParticipants = participantsSteams.filter(
-        (stream) => stream.socketId !== activeSpeaker
-      )
+    const totalParticipants = streams.length
 
-      // Put the active speaker at the start
-      if (activeSpeakerStream) {
-        participantsSteams.length = 0 // Clear the array
-        participantsSteams.push(activeSpeakerStream, ...otherParticipants)
-      }
-    } else if (totalParticipants >= 7) {
-      const activeSpeakerStream = participantsSteams.find(
-        (stream) => stream.socketId === activeSpeaker
-      )
-      // Remove the active speaker from the array if it exists
-      const otherParticipants = participantsSteams.filter(
-        (stream) => stream.socketId !== activeSpeaker
-      )
+    const shouldReorder =
+      (isScreenShare && totalParticipants >= 3) || totalParticipants >= 7
 
-      // Put the active speaker at the start
-      if (activeSpeakerStream) {
-        participantsSteams.length = 1 // Clear the array
-        participantsSteams.push(activeSpeakerStream, ...otherParticipants)
+    if (shouldReorder && activeSpeaker) {
+      const activeStream = streams.find((s) => s.socketId === activeSpeaker)
+      if (activeStream) {
+        const rest = streams.filter((s) => s.socketId !== activeSpeaker)
+        return [activeStream, ...rest]
       }
     }
 
-    return participantsSteams
-  }
+    return streams
+  }, [remoteStreamsCombined, localStream, isScreenShare, activeSpeaker])
 
-  const participantsToShow = adaptParticipantsToShow()
-
-  const activeSpeaker = useHighlightSpeaker(peerConnection, participantsToShow)
   const totalParticipants = participantsToShow.length
-
-  let sharedScreenStream = new MediaStream();
-  if (sharedScreen) {
-    sharedScreenStream.addTrack(sharedScreen)}
 
   const renderStream = (item: any, index: number) => {
     const mediaStream = new MediaStream()
-
-    if (item?.videoTrack) mediaStream.addTrack(item?.videoTrack)
-    if (item?.audioTrack) mediaStream.addTrack(item?.audioTrack)
+    if (item?.videoTrack) mediaStream.addTrack(item.videoTrack)
+    if (item?.audioTrack) mediaStream.addTrack(item.audioTrack)
 
     const isActiveHighlighter =
       item?.socketId === localUserSocketId
         ? activeHostSpeaker && !isMuted
-        : activeSpeaker !== null && activeSpeaker === item?.socketId
+        : activeSpeaker === item?.socketId
 
     const user = participants?.find(
-      (user: User) => user.socketId === item.socketId
+      (u: User) => u.socketId === item.socketId
     ) as UserInMeeting
 
     const isMicMuted =
@@ -166,11 +147,8 @@ const VideoGrid = ({
     } else {
       RNSoundLevel.start(250)
       RNSoundLevel.onNewFrame = (data) => {
-        if (data?.value > (isIOS() ? -40 : -130)) {
-          setActiveHostSpeaker(true)
-        } else {
-          setActiveHostSpeaker(false)
-        }
+        const threshold = isIOS() ? -40 : -130
+        setActiveHostSpeaker(data?.value > threshold)
       }
     }
 
@@ -180,64 +158,52 @@ const VideoGrid = ({
   }, [isMuted])
 
   useEffect(() => {
-    if (isScreenShare) {
-      totalParticipants >= 3 && adaptParticipantsToShow()
-    } else if (totalParticipants >= 7) {
-      adaptParticipantsToShow()
-    }
-  }, [activeSpeaker])
+    const canvas = canvasRef.current
+    if (!canvas) return
 
-  const drawOnCanvas = (canvas: Canvas, color: string) => {
+    canvas.width = screenWidth * 0.9
+    canvas.height = screenHeight * 0.5
+
     const ctx = canvas.getContext("2d")
-    if (ctx) {
-      ctx.strokeStyle = color
+    if (!ctx) return
 
+    if (clearCanvas) {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
+      setClearCanvas(false)
+    } else {
+      ctx.strokeStyle = colors.alertRed
       ctx.beginPath()
       points.forEach((point: { x: number; y: number }, index: number) => {
-        if (index === 0) {
-          ctx.moveTo(point.x, point.y)
-        } else {
-          ctx.lineTo(point.x, point.y)
-        }
+        index === 0
+          ? ctx.moveTo(point.x, point.y)
+          : ctx.lineTo(point.x, point.y)
       })
       ctx.stroke()
     }
-  }
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (canvas) {
-      canvas.width = screenWidth * 0.9
-      canvas.height = screenHeight * 0.5
-      if (clearCanvas) {
-        const ctx = canvas.getContext("2d")
-        if (ctx) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height)
-        }
-        setClearCanvas(false)
-      } else {
-        drawOnCanvas(canvas, colors.alertRed)
-      }
-    }
   }, [clearCanvas, points])
+
+  const sharedScreenStream = useMemo(() => {
+    if (!sharedScreen) return null
+    const stream = new MediaStream()
+    stream.addTrack(sharedScreen)
+    return stream
+  }, [sharedScreen])
 
   return (
     <View style={styles.container}>
-      {isScreenShare && (
+      {isScreenShare && sharedScreenStream && (
         <View style={styles.sharingContainer}>
           <RTCView
             streamURL={sharedScreenStream.toURL()}
             style={[helpers.width100Percent, helpers.height100Percent]}
-            objectFit='contain'
+            objectFit="contain"
             zOrder={0}
           />
           <Canvas ref={canvasRef} style={styles.canvas} />
         </View>
       )}
-      {participantsToShow.map((item, index) =>
-        renderStream(item, index)
-      )}
+
+      {participantsToShow.map(renderStream)}
     </View>
   )
 }
@@ -256,16 +222,9 @@ const styles = StyleSheet.create({
   },
   sharingContainer: {
     width: "100%",
-    height: "48.5%",
+    height: "49.5%",
     borderRadius: moderateScale(12),
     overflow: "hidden",
-  },
-  video: {
-    borderRadius: moderateScale(12),
-    overflow: "hidden",
-    backgroundColor: colors.charcoal,
-    width: "100%",
-    height: "100%",
   },
   canvas: {
     position: "absolute",
