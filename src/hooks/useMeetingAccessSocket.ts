@@ -44,7 +44,9 @@ export const useMeetingAccessSocket = () => {
             `Reconnection attempt failed. Retrying in 2 seconds... (${attemptsLeft} attempts left)`
           )
           if(!attemptsLeft){
+            socketRef.current?.off();
             socketRef.current?.close();
+            socketRef.current?.disconnect();
           } else {
             setTimeout(attemptReconnect, 2000)
           }
@@ -84,6 +86,8 @@ export const useMeetingAccessSocket = () => {
 
     return () => {
       if (socketInstance) {
+        socketInstance.off()
+        socketInstance.close()
         socketInstance.disconnect()
         setSocketInstance(null)
         isShouldSocketConnect.current = false

@@ -23,6 +23,8 @@ const useWebSocket = (refetch: () => void) => {
     if (!token) return
 
     if (socketRef.current) {
+      socketRef.current.off()
+      socketRef.current.close();
       socketRef.current.disconnect()
     }
 

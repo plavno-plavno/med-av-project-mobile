@@ -64,7 +64,9 @@ const MeetingScreen = () => {
   const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
   const insets = useSafeAreaInsets()
 
-  const hasNotch = insets.top > 20 // in iphone X and newest top ~44
+  const hasRoundedCorners =
+  Platform.OS === 'ios' &&
+  (insets.top > 20 || insets.bottom > 0 || insets.left > 0 || insets.right > 0)
   const {
     socket,
     localStream,
@@ -203,6 +205,16 @@ const MeetingScreen = () => {
     }
   }
 
+
+  const sendActionToMainSocket = useCallback(() => {
+    if(!socket?.id) return
+        socket?.emit('action', {
+        roomId: roomId,
+        action: 'start-recording',
+        socketId: socket?.id,
+      });
+  }, [socket?.id])
+  
   useEffect(() => {
     if (recordingUrl.current) {
       let reconnectTimeout: NodeJS.Timeout | null = null
@@ -229,7 +241,6 @@ const MeetingScreen = () => {
         wsRef.current!.onmessage = async (event) => {
           try {
             const message = JSON.parse(event.data);
-            console.log(message, 'message start rec');
 
             if (message.type === 'error') {
               Toast.show({
@@ -244,6 +255,7 @@ const MeetingScreen = () => {
             if (message.type === 'start_allowed') {
               isRecordingStarted.current = true
               startTimeRef.current = moment()
+              sendActionToMainSocket();
               await startRecording()
             }
           } catch (err) {
@@ -294,16 +306,7 @@ const MeetingScreen = () => {
     }
   }
 
-  const handleRecordingButton = useCallback(() => {
-    if (!instanceMeetingOwner) {
-      Toast.show({
-        type: "error",
-        text1: t("OnlyCreatorCanStartScreenRecording"),
-      })
-      return
-    }
-
-    const handleAsync = async () => {
+  const handleAsync = useCallback(async () => {
       const granted = await checkScreenRecordingPermission()
       if (!granted) {
         Toast.show({
@@ -312,7 +315,6 @@ const MeetingScreen = () => {
         })
         return
       }
-
       if (isRecordingStarted.current) {
         handleStopRecording()
         isRecordingStarted.current = false
@@ -327,13 +329,25 @@ const MeetingScreen = () => {
           meetId,
           userId: localUserId,
         };
-
+      try{
         wsRef.current?.send(JSON.stringify(startPayload))
+      } catch (error) {
+        console.log(error, 'error handleAsync');
       }
+      }
+    }, [isRecordingStarted.current, recordingNameRef.current, wsRef.current, localUserId])
+
+  const handleRecordingButton = useCallback(() => {
+    if (!instanceMeetingOwner) {
+      Toast.show({
+        type: "error",
+        text1: t("OnlyCreatorCanStartScreenRecording"),
+      })
+      return
     }
 
     handleAsync()
-  }, [isScreenRecording, instanceMeetingOwner])
+  }, [isScreenRecording, instanceMeetingOwner, wsRef.current])
 
   const callTopActions = [
     {
@@ -352,7 +366,7 @@ const MeetingScreen = () => {
     },
   ]
 
-  const handleStopRecording = () => {
+  const handleStopRecording = useCallback(() => {
     const endPayload = {
       fileName: recordingNameRef.current,
       action: "end",
@@ -365,21 +379,14 @@ const MeetingScreen = () => {
     }
 
     wsRef.current?.send(JSON.stringify(endPayload))
+    socket?.emit('action', {
+      roomId: roomId,
+      action: 'stop-recording',
+      socketId: socket.id,
+    });
     onStopRecord()
     stopRecording()
-    // const endVideoPayload = {
-    //   fileName: `recording-${roomId}`,
-    //   action: 'end',
-    //   meetId,
-    //   userId: localUserId,
-    //   fileExtension: 'h256',
-    //   platform: Platform.OS,
-    //   duration,
-    //   streamGroup: 'mobile'
-    // };
-
-    // wsRef.current?.send(JSON.stringify(endVideoPayload));
-  }
+  }, [socket, recordingNameRef.current, localUserId, roomId])
 
   const callBottomActions = [
     {
@@ -439,6 +446,7 @@ const MeetingScreen = () => {
           setTimeout(() => {
             DeviceInfo.isHeadphonesConnected().then((enabled) => {
               if (!enabled) {
+                inCallManager.start({ media: 'audio' });
                 inCallManager.setForceSpeakerphoneOn(true)
               } else {
                 setIsSpeakerOn(false)
@@ -469,9 +477,9 @@ const MeetingScreen = () => {
           style={{
             ...StyleSheet.absoluteFillObject,
             borderWidth: moderateScale(2.5),
-            borderColor: colors.red,
+            borderColor: colors.lightAqua,
             zIndex: 9999,
-            borderRadius: hasNotch ? moderateScale(58) : 0,
+            borderRadius: hasRoundedCorners ? moderateScale(58) : 0,
           }}
         />
       )}

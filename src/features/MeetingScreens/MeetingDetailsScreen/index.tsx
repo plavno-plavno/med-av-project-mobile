@@ -36,7 +36,7 @@ const MeetingDetailsScreen = () => {
   const { navigate, reset, goBack } = useNavigation<ROUTES>()
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const { hash, ownerEmail } = route.params
-  const { data: authMe } = useAuthMeQuery()
+  const { data: authMe, refetch: authMeRefetch } = useAuthMeQuery()
   const isCreatorMode = authMe?.email === ownerEmail
 
   const [isVideoOff, setIsVideoOff] = useState(false)
@@ -46,7 +46,6 @@ const MeetingDetailsScreen = () => {
     hash: String(hash),
   })
   const roomId = getCalendarEventByHashData?.meetId
-console.log(roomId, 'roomIdroomIdroomIdroomId');
 
   const [invitedParticipants, setInvitedParticipants] = useState<any[]>([])
   const [meInvited, setMeInvited] = useState<boolean | null>(null)
@@ -111,6 +110,7 @@ console.log(roomId, 'roomIdroomIdroomIdroomId');
 
   useFocusEffect(
     useCallback(() => {
+      authMeRefetch();
       const initialize = async () => {
         let mediaConstraints = {
           audio: true,

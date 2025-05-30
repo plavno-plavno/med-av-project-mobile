@@ -38,6 +38,8 @@ import { ITimezone } from "src/api/calendarApi/types"
 import { useTimezoneQuery } from "src/api/auth/authApi"
 import { moderateScale } from "react-native-size-matters"
 import { UIManager, findNodeHandle } from "react-native"
+import { isIOS } from "@utils/platformChecker"
+
 interface IFormValues {
   date: string
   title: string
@@ -470,7 +472,7 @@ const ScheduleMeetingModal = ({
                                   (x, y) => {
                                     scrollRef?.current?.scrollToPosition(
                                       0,
-                                      y - 5,
+                                      y - (isIOS() ? 5: 150),
                                       true
                                     )
                                   }

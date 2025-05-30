@@ -7,8 +7,6 @@ import { requestRecordingPermissions } from "@utils/androidPermissions"
 
 
 export const useAudioRecorder = ({sendChunkToServer, sendSttAudio}: {sendChunkToServer: (args: any, type: string) => void; sendSttAudio: (data: string) => void;}) => {
-    const [timerStart, setTimerStart] = useState<number | null>(null);
-
     // Refs for mutable state
     const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const audioRecorderRef = useRef<IAudioRecord | null>(null); // Store the AudioRecord instance
@@ -33,7 +31,6 @@ export const useAudioRecorder = ({sendChunkToServer, sendSttAudio}: {sendChunkTo
             clearInterval(recordingTimerRef.current!);
             audioRecorderRef.current = null; // Clear reference to avoid memory leaks
             isRecordingRef.current = false;
-            setTimerStart(null);
         };
     }, []);
 
@@ -46,7 +43,6 @@ export const useAudioRecorder = ({sendChunkToServer, sendSttAudio}: {sendChunkTo
 
         console.log("Starting recording...");
         isRecordingRef.current = true;
-        setTimerStart(new Date().getTime());
 
         audioRecorderRef.current?.start();
         // Subscribe to PCM "data" events for speech detection

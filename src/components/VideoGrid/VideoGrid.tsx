@@ -235,7 +235,7 @@ const VideoGrid = ({
           <Canvas ref={canvasRef} style={styles.canvas} />
         </View>
       )}
-      {adaptParticipantsToShow().map((item, index) =>
+      {participantsToShow.map((item, index) =>
         renderStream(item, index)
       )}
     </View>

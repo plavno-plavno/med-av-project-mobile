@@ -58,7 +58,8 @@ const MyRecordsScreen = () => {
       })
       setIsShouldRecordingsUpdate(false);
     }
-  }, [recordingsData, isShouldRecordingsUpdate])
+  }, [recordingsData?.data, isShouldRecordingsUpdate, page])
+
   return (
     <>
       <ScreenWrapper
@@ -74,7 +75,7 @@ const MyRecordsScreen = () => {
       >
         {recordingsFetching ? (
           <Loading />
-        ) : !recordingsData?.data?.length ? (
+        ) : !recordings?.length ? (
           <NoData />
         ) : (
           <FlatList

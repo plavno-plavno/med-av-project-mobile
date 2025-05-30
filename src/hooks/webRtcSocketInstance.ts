@@ -107,6 +107,7 @@ export const useWebRtcSocketConnection = (roomId: string, isSttSocketConnected: 
 
     return () => {
       if (socketInstance) {
+        socketInstance.off();
         socketInstance.disconnect();
         socketInstance.close();
         setSocketInstance(null);

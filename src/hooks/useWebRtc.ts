@@ -245,9 +245,8 @@ const useWebRtc = (
 
   const sttUrlRef = useRef<string | null>(null)
 
-  const offerStatusCheckRef = useRef<ReturnType<typeof setInterval>>()
-
-  const STTSocket = useRef<WebSocket | null>(null)
+  const offerStatusCheckRef = useRef<NodeJS.Timeout | null>();
+  const STTSocket = useRef<WebSocket | null | any>(null)
 
   const accessMeetingSocketRef = useRef<Socket | null>()
 
@@ -297,6 +296,7 @@ const useWebRtc = (
 
   const retryLimit = 3;
   const attemptCounter = useRef(0);
+  const offerTries = useRef(0);
 
   // useEffect(() => {
   //   if(socket){
@@ -389,7 +389,7 @@ const useWebRtc = (
       goBack()
       Toast.show({
         type: 'error',
-        text1: JSON.stringify(error?.response?.message)
+        text1: JSON.stringify(error)
       })
     }
   }
@@ -487,8 +487,7 @@ const useWebRtc = (
     }, 2000)
   }
 
-  const handleStartRecording = (data: any) => {
-    console.log(data, 'data handleStartRecording');
+  const handleStartRecording = () => {
     Toast.show({
       type: "success",
       text1: t("RecordingStarted"),
@@ -620,7 +619,7 @@ const useWebRtc = (
     remoteAudioStreams?.forEach((stream) => stream?.audioTrack?.release?.())
     remoteVideoStreams?.forEach((stream) => stream?.videoTrack?.stop?.())
     remoteVideoStreams?.forEach((stream) => stream?.videoTrack?.release?.())
-
+    stopOfferCheck()
     if (peerConnection.current) {
       peerConnection.current?.close()
       peerConnection.current = null
@@ -636,21 +635,29 @@ const useWebRtc = (
       STTSocket.current.close()
       STTSocket.current = null
     }
+    invitedParticipantsRef.current === null
 
     disconnectSocketEvents()
     drawChannelRef.current?.removeEventListener("message", handleDrawMessage)
     drawChannelRef.current?.close?.()
+    drawChannelRef.current = null;
     messagesChannelRef?.current?.removeEventListener("message")
     messagesChannelRef.current?.close?.();
+    messagesChannelRef.current = null;
     attemptCounter.current = 0
     setRemoteVideoStreams([])
     setRemoteAudioStreams([])
     setParticipants([])
 
     if (socket) {
+      socket.off()
       socket?.disconnect();
       socket?.close()
-      // socket = null
+    }
+
+    if(wsRef.current){
+      wsRef.current?.close();
+      wsRef.current = null;
     }
 
     saveCalendarEventsLog({
@@ -668,51 +675,83 @@ const useWebRtc = (
 
   const stopLocalStreamTracks = () => {
     if (localStream) {
+      if (peerConnection.current) {
+        peerConnection.current.getSenders().forEach((sender) => {
+          try {
+            sender.track?.stop();
+            peerConnection.current?.removeTrack(sender);
+          } catch (err) {
+            console.warn('Failed to stop sender track:', err);
+          }
+        });
+      }
+
       if (localStream.audioTrack) {
-        localStream.audioTrack.enabled = false
-        localStream.audioTrack.stop()
-        localStream.audioTrack.release()
-        localStream.audioTrack = null
+        localStream.audioTrack.stop();
+        localStream.audioTrack = null;
       }
 
       if (localStream.videoTrack) {
-        localStream.videoTrack.enabled = false
-        localStream.videoTrack.stop()
-        localStream.videoTrack.release()
-
-        localStream.videoTrack = null
+        localStream.videoTrack.stop();
+        localStream.videoTrack = null;
       }
-      const localStreamClone: any = localStream
-      localStreamClone?.getTracks?.()?.forEach((track: any) => {
-        track?.stop?.();
-        track?.release?.();
-      });
     }
-    setLocalStream(null)
+    setLocalStream(null);
   }
 
-  const handleOfferCheck = async () => {
+   const handleOfferCheck = async () => {
     try {
-      RETRY_ATTEMPT++
-      if (RETRY_ATTEMPT > TRIES_LIMIT)
-        throw new Error("Something wrong with connection")
-      if (peerConnection.current?.signalingState !== "stable") return
+      if (!peerConnection.current) {
+        peerConnection.current = createPeerConnection({
+          socket,
+          roomId,
+          setRemoteVideoStreams,
+          setRemoteAudioStreams,
+          participantsRef: participantsRef as any,
+          setTranslatedSubtitles: setTranslatedSubtitles as any,
+          messagesChannelRef,
+          drawChannelRef,
+          endCall,
+          startCall,
+          type: PeerConnectionType.USER,
+        });
+      }
 
-      const offer = await peerConnection.current.createOffer({})
-      await peerConnection.current.setLocalDescription(offer)
-      socket!.emit("offer", {
+      offerTries.current += 1;
+
+      if (offerTries.current > TRIES_LIMIT) {
+        stopOfferCheck();
+
+        return;
+      }
+
+      if (peerConnection.current.signalingState !== 'stable') {
+        console.warn('⚠️ Signaling state is not stable, waiting...');
+
+        return;
+      }
+
+      const offer = await peerConnection.current.createOffer({});
+      await peerConnection.current.setLocalDescription(offer);
+
+      socket?.emit('offer', {
         sdp: peerConnection.current.localDescription,
         roomId,
-      })
+      });
 
-      clearInterval(offerStatusCheckRef.current)
-      if (RETRY_ATTEMPT) RETRY_ATTEMPT = 0
-      return
+      stopOfferCheck();
     } catch (error) {
-      console.error("Error obtaining media:", error)
-      clearInterval(offerStatusCheckRef.current)
+      console.error('Error during offer creation:', error);
+      stopOfferCheck();
     }
-  }
+  };
+
+  const stopOfferCheck = () => {
+    if (offerStatusCheckRef.current) {
+      clearInterval(offerStatusCheckRef.current);
+      offerStatusCheckRef.current = null;
+    }
+  };
 
   const handleOffer = async ({ sdp, peerType }: { sdp: RTCSessionDescription, peerType: string }) => {
     if (peerType === PeerConnectionType.SHARING) {
@@ -777,7 +816,6 @@ const useWebRtc = (
           startCall,
           type: PeerConnectionType.USER,
         });
-        // peerConnection.current = createPeerConnection()
       }
       try {
         const polite = true;
@@ -803,7 +841,7 @@ const useWebRtc = (
           const localDescription = peerConnection.current
             .localDescription as RTCSessionDescription
           socket?.emit("answer", { sdp: localDescription, roomId })
-          clearInterval(offerStatusCheckRef.current)
+          clearInterval(offerStatusCheckRef.current as any)
           if (RETRY_ATTEMPT) RETRY_ATTEMPT = 0
         } else {
           console.error("Local description is null")
@@ -858,7 +896,17 @@ const useWebRtc = (
     userId: string
     participantsInfo: ParticipantsInfo[]
     socketId: string
-  }) => {
+  }) => { 
+    if(socketId !== socket?.id){
+      await prepareParticipants({
+        participantsInfo,
+        invitedParticipantsRef,
+        setParticipants,
+        getUsersById,
+      })
+      return
+    }
+
     try {
       const anySharingOn = participantsInfo.some((p) => p.status.isSharingOn);
 
@@ -868,7 +916,6 @@ const useWebRtc = (
         );
         sharingOwnerRef.current = sharingOwner?.socketId || '';
       }
-      if (socketId === socket?.id) {
         if (!sharePeerConnection.current) {
           sharePeerConnection.current = createPeerConnection({
             setSharedScreen,
@@ -879,7 +926,6 @@ const useWebRtc = (
           roomId,
         });
         setIsScreenSharing(anySharingOn);
-      }
     } catch (error) {
       console.log(error, 'error createSharePeerConnection');
     }
@@ -894,13 +940,6 @@ const useWebRtc = (
           isVideoOn: participant.status.isVideoOn,
           socketId: participant.socketId,
         }
-      })
-
-      await prepareParticipants({
-        participantsInfo,
-        invitedParticipantsRef,
-        setParticipants,
-        getUsersById,
       })
 
       const anySharingOn = participantsInfo.some((p) => p.status.isSharingOn)
@@ -918,6 +957,13 @@ const useWebRtc = (
           videoTrack: stream.getVideoTracks()[0] || null,
         })
       }
+
+      await prepareParticipants({
+        participantsInfo,
+        invitedParticipantsRef,
+        setParticipants,
+        getUsersById,
+      })
 
       if (!peerConnection.current) {
         peerConnection.current = createPeerConnection({
@@ -947,9 +993,11 @@ const useWebRtc = (
         }
       })
       if (offerStatusCheckRef.current) {
-        clearInterval(offerStatusCheckRef.current)
+        clearInterval(offerStatusCheckRef.current);
       }
-      handleOfferCheck()
+
+      offerTries.current = 0;
+      offerStatusCheckRef.current = setInterval(handleOfferCheck, 1000);
       // checkPeerConnection(handleOfferCheck)
     } catch (error) {
       console.error("Error handling user join:", error)
@@ -1216,7 +1264,7 @@ const useWebRtc = (
     STTSocket.current.onopen = onSTTSocketOpen;
     STTSocket.current.onmessage = onSTTSocketMessage;
 
-    STTSocket.current.onerror = (error) => {
+    STTSocket.current.onerror = (error: any) => {
       console.log("STTError: ", error);
       if (isShouldSttConnectionClose.current) return
       if (attemptCounter.current < retryLimit) {
@@ -1230,7 +1278,7 @@ const useWebRtc = (
       isSttConnected.current = false;
     };
 
-    STTSocket.current.onclose = (event) => {
+    STTSocket.current.onclose = (event: any) => {
       console.log("STTOnclose: ", event);
       if (isShouldSttConnectionClose.current) return
       if (attemptCounter.current < retryLimit) {
@@ -1251,8 +1299,8 @@ const useWebRtc = (
     setIsSttSocketConnected(true)
   }
 
-  const toggleMedia = async (type: "audio" | "video") => {
-    if (!peerConnection || !localStream || !socket) {
+  const toggleMedia = useCallback(async (type: "audio" | "video") => {
+    if (!localStream || !socket) {
       return;
     }
 
@@ -1272,6 +1320,13 @@ const useWebRtc = (
     if (isAudio) {
       setIsMuted((prev) => !prev)
       isAudioOff.current = !isAudioOff.current
+      setTimeout(() => {
+        if (isSpeakerOn) {
+          inCallManager.setForceSpeakerphoneOn(true);
+        } else {
+          inCallManager.setForceSpeakerphoneOn(false);
+        }
+      }, 300)
     } else {
       setIsVideoOff((prev) => !prev)
     }
@@ -1291,7 +1346,7 @@ const useWebRtc = (
     })
 
     console.log(`Media toggled: ${type}, new state: ${track.enabled}`)
-  }
+  }, [localStream, socket, isMuted, isVideoOff, isAudioOff, isSpeakerOn, roomId])
 
   const userToggledMedia = ({
     socketId,

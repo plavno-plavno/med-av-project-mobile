@@ -15,7 +15,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { helpers } from "@utils/theme"
 import { isIOS } from "@utils/platformChecker"
 import { useMediaUploadMutation } from "src/api/mediaApi/mediaApi"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import Toast from "react-native-toast-message"
 import { moderateScale } from "react-native-size-matters"
 import { ScreensEnum } from "src/navigation/ScreensEnum"
@@ -56,10 +56,19 @@ const SetupProfileScreen = () => {
   })
   const { data: languageOptions } = useLanguageOptionsQuery()
 
-  const languagesDropdown = [...languageOptions]?.reverse()?.map((item) => ({
-    label: item.name,
-    value: String(item.id),
-  }))
+    const languagesDropdown = useMemo(() => {
+      if(languageOptions){
+        return  [...languageOptions]?.reverse()?.map((item) => ({
+          label: item.name,
+          value: String(item.id),
+        }))
+      }
+      return [{
+        label: '',
+        value: '0',
+      }]
+    }, [languageOptions])
+
   const [mediaUpload] = useMediaUploadMutation()
   const [updateAuthMe, { isLoading: isUpdateAuthMeLoading }] =
     useUpdateAuthMeMutation()
