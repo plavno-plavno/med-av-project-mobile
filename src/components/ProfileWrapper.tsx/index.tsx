@@ -34,7 +34,7 @@ const ProfileWrapper = ({ children }: IProfileWrapper) => {
             height={moderateScale(88)}
           />
         )}
-        <Text style={styles.title}>{fullName ? fullName : authMe?.email}</Text>
+        <Text style={styles.title} numberOfLines={1}>{fullName ? fullName : authMe?.email}</Text>
       </SafeAreaView>
       {children}
     </View>
@@ -60,6 +60,8 @@ export const styles = StyleSheet.create({
     ...fontFamilies.interManropeSemiBold24,
     ...fontWeights.fontWeight500,
     color: colors.white,
+    width: '90%',
+    textAlign: 'center',
   },
   avatar: {
     width: moderateScale(88),

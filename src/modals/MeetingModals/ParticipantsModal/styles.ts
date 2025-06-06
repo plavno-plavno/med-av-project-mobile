@@ -24,6 +24,7 @@ export const styles = StyleSheet.create({
     ...fontFamilies.interManropeSemiBold14,
     ...fontWeights.fontWeight500,
     color: colors.charcoal,
+    maxWidth: '90%'
   },
   participantRole: {
     ...fontFamilies.interManropeRegular12,

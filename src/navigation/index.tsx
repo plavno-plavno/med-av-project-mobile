@@ -32,6 +32,7 @@ import ContactSupportScreen from "src/features/HomeScreens/SettingsScreens/HelpC
 import MyRequestsScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/MyRequestsScreens/MyRequestsScreen"
 import MyRequestsDetailsScreen from "src/features/HomeScreens/SettingsScreens/HelpCenterScreens/MyRequestsScreens/MyRequestsDetailsScreen"
 import PrivacyPolicyScreen from "src/features/PrivacyPolicyScreen"
+import inCallManager from "react-native-incall-manager"
 
 const Stack = createNativeStackNavigator()
 
@@ -69,6 +70,8 @@ const Navigation: React.FC = () => {
     } finally {
       setTimeout(() => {
         SplashScreen.hide()
+        inCallManager.setKeepScreenOn(true)
+        inCallManager.stopProximitySensor()
       }, 500)
     }
   }
@@ -129,7 +132,7 @@ const Navigation: React.FC = () => {
     config: {
       screens: {
         [ScreensEnum.CREATE_PASSWORD]: "auth/setPassword",
-        [ScreensEnum.RESET_PASSWORD]: "password-change",
+        [ScreensEnum.RESET_PASSWORD]: "auth/password-change",
         [ScreensEnum.MEETING_DETAILS]: "meetings/:hash",
       },
     },

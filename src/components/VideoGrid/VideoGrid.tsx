@@ -75,7 +75,7 @@ const VideoGrid = ({
     usersAudioTrackToIdMap,
     usersVideoTrackToIdMap,
   ])
-
+  
   const activeSpeaker = useHighlightSpeaker(
     peerConnection,
     remoteStreamsCombined
@@ -104,6 +104,19 @@ const VideoGrid = ({
     return streams
   }, [remoteStreamsCombined, localStream, isScreenShare, activeSpeaker])
 
+  const [activeVideoSocketIds, setActiveVideoSocketIds] = useState<string[]>([])
+
+  useEffect(() => {
+    const visible = participantsToShow.slice(0, 6).map(p => p.socketId)
+    const newActive = [...visible]
+
+    if (activeSpeaker && !newActive.includes(activeSpeaker)) {
+      newActive.push(activeSpeaker)
+    }
+
+    setActiveVideoSocketIds(newActive)
+  }, [participantsToShow, activeSpeaker])
+
   const totalParticipants = participantsToShow.length
 
   const renderStream = (item: any, index: number) => {
@@ -112,26 +125,31 @@ const VideoGrid = ({
     if (item?.audioTrack) mediaStream.addTrack(item.audioTrack)
 
     const isActiveHighlighter =
-      item?.socketId === localUserSocketId
-        ? activeHostSpeaker && !isMuted
-        : activeSpeaker === item?.socketId
+    item?.socketId === localUserSocketId
+      ? activeHostSpeaker && !isMuted
+      : activeSpeaker === item?.socketId
 
-    const user = participants?.find(
-      (u: User) => u.socketId === item.socketId
-    ) as UserInMeeting
+  const user = participants?.find(
+    (u: User) => u.socketId === item.socketId
+  ) as UserInMeeting
 
-    const isMicMuted =
-      item?.socketId === localUserSocketId ? isMuted : !user?.isAudioOn
-    const isCameraOff =
-      item?.socketId === localUserSocketId ? isVideoOff : !user?.isVideoOn
+  const isMicMuted =
+    item?.socketId === localUserSocketId ? isMuted : !user?.isAudioOn
 
+const shouldShowVideo =
+  item?.socketId === localUserSocketId
+    ? !isVideoOff
+    : user?.isVideoOn && activeVideoSocketIds.includes(item?.socketId)
+    if (item.videoTrack) {
+      item.videoTrack.enabled = shouldShowVideo
+    }
     return (
       <ParticipantItem
         key={user?.id || index}
         isActiveHighlighter={isActiveHighlighter}
         user={user}
         isMicMuted={isMicMuted}
-        isCameraOff={isCameraOff}
+        isCameraOff={!shouldShowVideo}
         totalParticipants={totalParticipants}
         idx={index}
         sharingOwner={isScreenShare}

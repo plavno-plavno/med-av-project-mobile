@@ -56,6 +56,7 @@ const ParticipantsModal = ({
                   helpers.flexRow,
                   helpers.gap12,
                   helpers.alignItemsCenter,
+                  helpers.width100Percent,
                 ]}
                 key={index}
               >
@@ -68,7 +69,7 @@ const ParticipantsModal = ({
                   <Icon name="avatarEmpty" width={48} height={48} />
                 )}
                 <View style={[helpers.flexColumn, { gap: 2 }]}>
-                  <Text style={styles.participantName}>
+                  <Text style={styles.participantName} numberOfLines={1}>
                     {participant.firstName}{" "}
                     {formatLastName(participant.lastName)}
                   </Text>

@@ -29,5 +29,6 @@ export const styles = StyleSheet.create({
     ...fontFamilies.interManropeSemiBold16,
     ...fontWeights.fontWeight400,
     color: colors.charcoal,
+    maxWidth: '90%',
   },
 })

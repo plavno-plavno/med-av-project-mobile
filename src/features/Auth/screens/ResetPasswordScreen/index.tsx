@@ -36,7 +36,7 @@ const ResetPasswordScreen = () => {
     confirmPassword: string
   }) => {
     try {
-      const res = await resetPassword({
+      await resetPassword({
         password: confirmPassword,
         hash,
       }).unwrap()

@@ -11,10 +11,16 @@ const getShortUserName = (
     return "Guest"
   }
 
-  const initial = isRtl ? lastName?.charAt(0) : lastName?.charAt(0) ?? ""
+  const initial = lastName?.charAt(0) ?? ""
 
-  return isRtl ? `${initial} ${firstName}.` : `${firstName} ${initial}.`
+  const isLong = firstName?.length > 15
+  const trimmedFirstName = isLong ? firstName.slice(0, 15) + "..." : firstName
+
+  return isRtl
+    ? `${initial} ${trimmedFirstName}.`
+    : `${trimmedFirstName} ${initial}.`
 }
+
 const SUBTITLES_QUEUE_LIMIT = 3
 
 const handleSubtitles = (newEl: any) => (prev: any[]) => {

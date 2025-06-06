@@ -44,6 +44,7 @@ interface CustomInputProps {
   style?: StyleProp<ViewStyle>
   numberOfLines?: number
   searchField?: boolean
+  maxLength?: number
 }
 
 export interface Input {
@@ -74,6 +75,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
       onBlur: propOnBlur,
       style,
       numberOfLines,
+      maxLength,
       ...rest
     },
     ref
@@ -100,6 +102,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
               keyboardType={keyboardType}
               styles={[styles.input, styles.textInput]}
               numberOfLines={numberOfLines}
+              maxLength={maxLength}
               {...rest}
             />
           )
@@ -194,6 +197,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
                 handleBlur={handleBlur}
                 keyboardType={keyboardType}
                 numberOfLines={numberOfLines}
+                maxLength={maxLength}
                 {...rest}
               />
             </ScrollView>
@@ -230,6 +234,7 @@ const CustomInput = forwardRef<Input, CustomInputProps>(
               keyboardType={keyboardType}
               styles={[styles.input, styles.textAreaInput]}
               numberOfLines={numberOfLines}
+              maxLength={maxLength}
               {...rest}
             />
           )

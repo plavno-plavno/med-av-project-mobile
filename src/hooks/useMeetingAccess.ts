@@ -35,7 +35,7 @@ export const useMeetingAccess = ({
   }, [invitedParticipants])
 
   useEffect(() => {
-    if (!socketInstance) return
+    if (!socketInstance || isSocketConnected) return
 
     const handleConnect = () => {
       console.log("[Meeting Access] Connected")

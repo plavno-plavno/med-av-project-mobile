@@ -33,6 +33,7 @@ interface ICustomInputProps {
   styles?: StyleProp<ViewStyle>
   onKeyPress?: (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => void
   numberOfLines?: number
+  maxLength?: number
 }
 
 const CustomTextInput = ({
@@ -51,6 +52,7 @@ const CustomTextInput = ({
   styles,
   onKeyPress,
   numberOfLines,
+  maxLength,
   ...rest
 }: ICustomInputProps) => {
   return (
@@ -61,6 +63,7 @@ const CustomTextInput = ({
       style={styles}
       placeholder={placeholder}
       value={value}
+      maxLength={maxLength}
       onChangeText={onChangeText}
       onSubmitEditing={onSubmitEditing}
       secureTextEntry={isSecure}

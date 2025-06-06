@@ -30,12 +30,8 @@ import { useMeetingAccess } from "src/hooks/useMeetingAccess"
 import RNFS from "react-native-fs"
 import { Buffer } from "buffer"
 import moment from "moment"
-import { useScreenSharing } from "src/hooks/useScreenSharing"
 import { formatLastName } from "@utils/utils"
 import { moderateScale } from "react-native-size-matters"
-import DeviceInfo from "react-native-device-info"
-import { isIOS } from "@utils/platformChecker"
-import inCallManager from "react-native-incall-manager"
 
 type ParamList = {
   Detail: {
@@ -65,8 +61,8 @@ const MeetingScreen = () => {
   const insets = useSafeAreaInsets()
 
   const hasRoundedCorners =
-  Platform.OS === 'ios' &&
-  (insets.top > 20 || insets.bottom > 0 || insets.left > 0 || insets.right > 0)
+    Platform.OS === 'ios' &&
+    (insets.top > 20 || insets.bottom > 0 || insets.left > 0 || insets.right > 0)
   const {
     socket,
     localStream,
@@ -111,6 +107,7 @@ const MeetingScreen = () => {
     sharedScreen,
     sharingOwner,
     isScreenSharing,
+    isCurrentUserJoined,
   } = useWebRtc(instanceMeetingOwner!, invitedParticipants)
   const [meInvited, setMeInvited] = useState<boolean | null>(null)
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
@@ -207,14 +204,14 @@ const MeetingScreen = () => {
 
 
   const sendActionToMainSocket = useCallback(() => {
-    if(!socket?.id) return
-        socket?.emit('action', {
-        roomId: roomId,
-        action: 'start-recording',
-        socketId: socket?.id,
-      });
+    if (!socket?.id) return
+    socket?.emit('action', {
+      roomId: roomId,
+      action: 'start-recording',
+      socketId: socket?.id,
+    });
   }, [socket?.id])
-  
+
   useEffect(() => {
     if (recordingUrl.current) {
       let reconnectTimeout: NodeJS.Timeout | null = null
@@ -307,35 +304,35 @@ const MeetingScreen = () => {
   }
 
   const handleAsync = useCallback(async () => {
-      const granted = await checkScreenRecordingPermission()
-      if (!granted) {
-        Toast.show({
-          type: "error",
-          text1: t("ScreenRecordingPermissionDenied"),
-        })
-        return
-      }
-      if (isRecordingStarted.current) {
-        handleStopRecording()
-        isRecordingStarted.current = false
-      } else {
-        const recName = `recording-${Date.now()}`
-        recordingNameRef.current = recName
+    const granted = await checkScreenRecordingPermission()
+    if (!granted) {
+      Toast.show({
+        type: "error",
+        text1: t("ScreenRecordingPermissionDenied"),
+      })
+      return
+    }
+    if (isRecordingStarted.current && meetId) {
+      handleStopRecording()
+      isRecordingStarted.current = false
+    } else {
+      const recName = `recording-${Date.now()}`
+      recordingNameRef.current = recName
 
-        const startPayload = {
-          action: 'start',
-          fileName: recName,
-          fileExtension: "raw",
-          meetId,
-          userId: localUserId,
-        };
-      try{
+      const startPayload = {
+        action: 'start',
+        fileName: recName,
+        fileExtension: "raw",
+        meetId,
+        userId: localUserId,
+      };
+      try {
         wsRef.current?.send(JSON.stringify(startPayload))
       } catch (error) {
         console.log(error, 'error handleAsync');
       }
-      }
-    }, [isRecordingStarted.current, recordingNameRef.current, wsRef.current, localUserId])
+    }
+  }, [isRecordingStarted.current, recordingNameRef.current, wsRef.current, localUserId, meetId])
 
   const handleRecordingButton = useCallback(() => {
     if (!instanceMeetingOwner) {
@@ -439,34 +436,7 @@ const MeetingScreen = () => {
     }
   }, [participants?.length, socketInstance, eventId])
 
-  useEffect(() => {
-    if (participants?.length) {
-      if (isSpeakerOn) {
-        if (isIOS()) {
-          setTimeout(() => {
-            DeviceInfo.isHeadphonesConnected().then((enabled) => {
-              if (!enabled) {
-                inCallManager.start({ media: 'audio' });
-                inCallManager.setForceSpeakerphoneOn(true)
-              } else {
-                setIsSpeakerOn(false)
-              }
-            })
-          }, 5000)
-        } else {
-          DeviceInfo.isHeadphonesConnected().then((enabled) => {
-            if (!enabled) {
-              inCallManager.setForceSpeakerphoneOn(true)
-            } else {
-              setIsSpeakerOn(false)
-            }
-          })
-        }
-      }
-    }
-  }, [participants])
-
-  if (!participants?.length) {
+  if (!isCurrentUserJoined) {
     return <Loading />
   }
   return (
@@ -479,6 +449,7 @@ const MeetingScreen = () => {
             borderWidth: moderateScale(2.5),
             borderColor: colors.lightAqua,
             zIndex: 9999,
+            right: 3,
             borderRadius: hasRoundedCorners ? moderateScale(58) : 0,
           }}
         />

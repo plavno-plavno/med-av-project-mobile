@@ -123,7 +123,7 @@ const MeetingChatModal = ({
               renderItem={({ item: msg, index: idx }) => (
                 <View style={styles.message} key={idx}>
                   <View style={[helpers.flexRowCenter, helpers.gap4]}>
-                    <Text style={styles.messageText}>{msg.userName}</Text>
+                    <Text style={styles.messageText} numberOfLines={1}>{msg.userName}</Text>
                     <Text
                       style={[styles.messageText, { color: colors.cadetGrey }]}
                     >

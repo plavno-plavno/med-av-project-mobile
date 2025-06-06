@@ -17,7 +17,7 @@ export const scalerApi = createApi({
   endpoints: (builder) => ({
     scalerFindFreeMachine: builder.mutation<IScalerFindFreeMachineResponse, {id: string}>({
         query: ({id}) => ({
-          url: `scaler/find-free-media-machine/${id}`,
+          url: `scaler/find-free-media-machine/${GROUP_NAME}/${id}`,
           method: "GET",
         }),
       }),

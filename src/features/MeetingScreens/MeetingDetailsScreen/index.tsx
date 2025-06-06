@@ -22,6 +22,7 @@ import { useMeetingAccess } from "src/hooks/useMeetingAccess"
 import { ActivityIndicator } from "react-native-paper"
 import * as Keychain from "react-native-keychain"
 import Toast from "react-native-toast-message"
+import Loading from "src/components/Loading"
 
 type ParamList = {
   Detail: {
@@ -36,13 +37,13 @@ const MeetingDetailsScreen = () => {
   const { navigate, reset, goBack } = useNavigation<ROUTES>()
   const route = useRoute<RouteProp<ParamList, "Detail">>()
   const { hash, ownerEmail } = route.params
-  const { data: authMe, refetch: authMeRefetch } = useAuthMeQuery()
+  const { data: authMe, refetch: authMeRefetch, isLoading: isAuthMeLoading } = useAuthMeQuery()
   const isCreatorMode = authMe?.email === ownerEmail
 
   const [isVideoOff, setIsVideoOff] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [preview, setPreview] = useState<MediaStream>()
-  const { data: getCalendarEventByHashData } = useGetCalendarEventByHashQuery({
+  const { data: getCalendarEventByHashData, refetch: getCalendarEventByHashRefetch, isLoading: isGetCalendarEventByHashLoading } = useGetCalendarEventByHashQuery({
     hash: String(hash),
   })
   const roomId = getCalendarEventByHashData?.meetId
@@ -111,6 +112,7 @@ const MeetingDetailsScreen = () => {
   useFocusEffect(
     useCallback(() => {
       authMeRefetch();
+      getCalendarEventByHashRefetch();
       const initialize = async () => {
         let mediaConstraints = {
           audio: true,
@@ -179,18 +181,21 @@ const MeetingDetailsScreen = () => {
     }, [])
   )
 
+  if (isGetCalendarEventByHashLoading || isAuthMeLoading) {
+    return <Loading />
+  }
   return (
     <ScreenWrapper
       title={getCalendarEventByHashData?.title || hash}
       isBackButton
       isCenterTitle
       handleBackButtonPress={() => {
-        if(preview){
-           preview.getTracks().forEach(track => {
-          track.stop();
-          track.release();
-        });
-        setPreview(undefined)
+        if (preview) {
+          preview.getTracks().forEach(track => {
+            track.stop();
+            track.release();
+          });
+          setPreview(undefined)
         }
         goBack();
       }}

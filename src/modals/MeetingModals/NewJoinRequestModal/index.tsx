@@ -59,5 +59,6 @@ export const styles = StyleSheet.create({
     ...fontFamilies.interManropeSemiBold14,
     ...fontWeights.fontWeight400,
     color: colors.midGrey,
+    maxWidth: '70%'
   },
 })

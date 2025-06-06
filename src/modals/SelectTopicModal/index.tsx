@@ -34,7 +34,7 @@ const SelectTopicModal = ({ sheetRef, formikRef, setTopicId }: any) => {
   const modalHeight =
     topicsList?.length && topicsList?.length > 10
       ? screenHeight * 0.9
-      : 250 + (topicsList?.length || 1) * 56
+      : 250 + (topicsList?.length || 1) * 65
 
   const onModalClose = () => {
     formikRef.current?.setFieldValue("topic", selectedTopic?.name || "")

@@ -92,11 +92,10 @@ const MyRequestsDetailsScreen = () => {
         },
         prefix: "help_center",
         postfix: "request",
-        tag: "request",
       })
 
       if (file[0]?.name && mediaData?.data[0]?.id) {
-        await addMessage({
+        const res = await addMessage({
           requestId: data?.id,
           file: {
             id: mediaData?.data[0]?.id,
@@ -104,6 +103,7 @@ const MyRequestsDetailsScreen = () => {
         })
       }
     } catch (err) {
+        console.log(err, 'error handleSendFile');
       if (DocumentPicker.isCancel(err)) {
       }
     } finally {

@@ -45,6 +45,8 @@ import { createCandidatesManager } from "@utils/candidatesManager"
 import Toast from "react-native-toast-message"
 import { t } from "i18next"
 import { navigationRef } from "src/navigation/RootNavigation"
+import { isIOS } from "@utils/platformChecker"
+import DeviceInfo from "react-native-device-info"
 
 export type Photo = {
   id: string
@@ -298,13 +300,7 @@ const useWebRtc = (
   const attemptCounter = useRef(0);
   const offerTries = useRef(0);
 
-  // useEffect(() => {
-  //   if(socket){
-  //     console.log(socket, 'socketsocketsocketsocketsocketsocketsocketsocket');
-
-  //     socketRef.current = socket
-  //   }
-  // }, [socket])
+  const [isCurrentUserJoined, setIsCurrentUserJoined] = useState(false)
 
   const sendChunkToServer = useCallback(async (base64Chunk: any, type: string) => {
     try {
@@ -659,7 +655,7 @@ const useWebRtc = (
       wsRef.current?.close();
       wsRef.current = null;
     }
-
+    setIsCurrentUserJoined(false)
     saveCalendarEventsLog({
       durationInSeconds: moment().unix() - eventStartedTimeRef.current,
       event: {
@@ -999,6 +995,30 @@ const useWebRtc = (
       offerTries.current = 0;
       offerStatusCheckRef.current = setInterval(handleOfferCheck, 1000);
       // checkPeerConnection(handleOfferCheck)
+      setIsCurrentUserJoined(true);
+
+        if (isSpeakerOn) {
+        if (isIOS()) {
+          setTimeout(() => {
+            DeviceInfo.isHeadphonesConnected().then((enabled) => {
+              if (!enabled) {
+                inCallManager.start({ media: 'audio' });
+                inCallManager.setForceSpeakerphoneOn(true)
+              } else {
+                setIsSpeakerOn(false)
+              }
+            })
+          }, 2000)
+        } else {
+          DeviceInfo.isHeadphonesConnected().then((enabled) => {
+            if (!enabled) {
+              inCallManager.setForceSpeakerphoneOn(true)
+            } else {
+              setIsSpeakerOn(false)
+            }
+          })
+        }
+      }
     } catch (error) {
       console.error("Error handling user join:", error)
     } finally {
@@ -1456,6 +1476,7 @@ const useWebRtc = (
     isScreenSharing,
     isRecordingStarted,
     setIsSpeakerOn,
+    isCurrentUserJoined,
   }
 }
 

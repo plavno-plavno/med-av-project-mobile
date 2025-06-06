@@ -228,6 +228,7 @@ const ProfileSettingsScreen = () => {
                     }
                     onBlur={handleBlur("firstName")}
                     error={touched.firstName && errors.firstName}
+                    maxLength={50}
                   />
                   <CustomInput
                     label={t("LastName")}
@@ -236,6 +237,7 @@ const ProfileSettingsScreen = () => {
                     onChangeText={(val) =>
                       handleChange("lastName")(val as string)
                     }
+                    maxLength={50}
                     onBlur={handleBlur("lastName")}
                     error={touched.lastName && errors.lastName}
                   />

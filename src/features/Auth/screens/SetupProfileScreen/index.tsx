@@ -230,6 +230,7 @@ const SetupProfileScreen = () => {
                         onChangeText={(val) =>
                           handleChange("firstName")(val as string)
                         }
+                        maxLength={50}
                         onBlur={handleBlur("firstName")}
                         error={touched.firstName && errors.firstName}
                       />
@@ -240,6 +241,7 @@ const SetupProfileScreen = () => {
                         onChangeText={(val) =>
                           handleChange("lastName")(val as string)
                         }
+                        maxLength={50}
                         onBlur={handleBlur("lastName")}
                         error={touched.lastName && errors.lastName}
                       />

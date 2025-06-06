@@ -67,7 +67,7 @@ const ParticipantItem = ({
         <View style={styles.participant}>
           <View style={styles.withoutCamera}>
             <Text style={styles.text}>
-              {isShowMorePeopleScreenShare ? morePeopleWithSharing : morePeople}{" "}
+              {isShowMorePeopleScreenShare ? morePeopleWithSharing + 1 : morePeople + 1}{" "}
               {t("morePeople")}
             </Text>
           </View>
@@ -105,7 +105,7 @@ const ParticipantItem = ({
                 />
               </View>
             )}
-            <Text style={styles.userName}>
+            <Text style={styles.userName} numberOfLines={1}>
               {user?.firstName} {lastNameInitial}.
             </Text>
             {isMicMuted && <MicroMuted />}
