@@ -1305,7 +1305,7 @@ const useWebRtc = (
         handleSetSTTSocket({ sttUrl });
         attemptCounter.current += 1;
       } else {
-        navigationRef.current?.goBack();
+        navigationRef.current?.goBack?.();
         Toast.show({
           type: 'error',
           text1: event?.reason || 'Connection to media servers cannot be established, please consider rejoining',

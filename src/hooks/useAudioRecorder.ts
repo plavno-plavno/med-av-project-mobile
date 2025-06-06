@@ -19,7 +19,7 @@ export const useAudioRecorder = ({sendChunkToServer, sendSttAudio}: {sendChunkTo
             sampleRate: 44100,
             channels: 1,
             bitsPerSample: 16,
-            audioSource: 6, // VOICE_RECOGNITION
+            audioSource: 4, // VOICE_CALL
             wavFile: "voiceSample.wav",
         };
         audioRecorderRef.current.init(options);
